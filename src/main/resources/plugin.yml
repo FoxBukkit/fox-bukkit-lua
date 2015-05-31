@@ -1,8 +1,8 @@
 name: FoxBukkit
 main: com.foxelbox.foxbukkit.core.FoxBukkit
 version: 1.0.0
-depend: [WorldEdit, FoxBukkitChatComponent]
-softdepend: [LogBlock]
+depend: [FoxBukkitChatComponent]
+softdepend: [WorldEdit, LogBlock]
 commands:
   fb:
     description: Runs any FoxBukkit command (used for console)

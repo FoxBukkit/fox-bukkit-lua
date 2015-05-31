@@ -16,7 +16,9 @@ public class LuaThread extends Thread implements Listener {
 
     public void invoke(Runnable runnable) {
         pendingTasks.add(runnable);
-        this.notify();
+        synchronized (this) {
+            this.notify();
+        }
     }
 
     public LuaThread() {
@@ -30,14 +32,15 @@ public class LuaThread extends Thread implements Listener {
     @Override
     public void run() {
         try {
+            g.loadfile(new File(FoxBukkit.instance.getLuaFolder(), "init.lua").getAbsolutePath()).call();
             while(true) {
-                g.loadfile(new File(FoxBukkit.instance.getLuaFolder(), "init.lua").getAbsolutePath()).call();
-
                 Runnable runnable;
                 while ((runnable = pendingTasks.poll()) != null) {
                     runnable.run();
                 }
-                this.wait();
+                synchronized (this) {
+                    this.wait();
+                }
             }
         } catch (InterruptedException e) {
             e.printStackTrace();
