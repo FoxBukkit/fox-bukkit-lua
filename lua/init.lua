@@ -4,7 +4,7 @@ end
 
 local function makeClass(tbl)
 	return setmetatable(tbl, {
-		__index = Event,
+		__index = tbl,
 		__metatable = false,
 		__newindex = function()
 			error("Readonly")
