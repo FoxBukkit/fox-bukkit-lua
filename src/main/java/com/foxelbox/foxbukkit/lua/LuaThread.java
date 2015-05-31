@@ -6,6 +6,7 @@ import org.bukkit.event.Listener;
 import org.luaj.vm2.Globals;
 import org.luaj.vm2.LuaFunction;
 import org.luaj.vm2.LuaUserdata;
+import org.luaj.vm2.lib.jse.CoerceJavaToLua;
 import org.luaj.vm2.lib.jse.JsePlatform;
 
 import java.io.File;
@@ -57,7 +58,7 @@ public class LuaThread extends Thread implements Listener {
     public void run() {
         try {
             synchronized (g) {
-                g.set("__LUA_THREAD__", new LuaUserdata(this));
+                g.set("__LUA_THREAD__", CoerceJavaToLua.coerce(this));
                 g.set("__ROOTDIR__", FoxBukkit.instance.getLuaFolder().getAbsolutePath());
                 g.loadfile(new File(FoxBukkit.instance.getLuaFolder(), "init.lua").getAbsolutePath()).call();
             }

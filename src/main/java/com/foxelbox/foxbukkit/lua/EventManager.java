@@ -7,6 +7,7 @@ import org.luaj.vm2.LuaBoolean;
 import org.luaj.vm2.LuaFunction;
 import org.luaj.vm2.LuaUserdata;
 import org.luaj.vm2.LuaValue;
+import org.luaj.vm2.lib.jse.CoerceJavaToLua;
 
 public class EventManager {
     protected static int lID = 0;
@@ -36,7 +37,7 @@ public class EventManager {
                 luaThread.invoke(new Runnable() {
                     @Override
                     public void run() {
-                        LuaValue ret = function.call(new LuaUserdata(event));
+                        LuaValue ret = function.call(CoerceJavaToLua.coerce(event));
                         // Return true/nonboolean for continue, false for cancel
                         if(ret != null && ret.isboolean() && event instanceof Cancellable) {
                             boolean retB = ((LuaBoolean)ret).booleanValue();
