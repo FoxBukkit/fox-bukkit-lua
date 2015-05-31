@@ -1,3 +1,5 @@
-.idea
-*.iml
+/.idea
+/*.iml
 /lua/main.lua
+/target
+/dependency-reduced-pom.xml
