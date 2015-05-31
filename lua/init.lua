@@ -27,3 +27,5 @@ includeClass("Storage")
 includeClass("Player")
 includeClass("Event")
 includeClass("Chat")
+
+include("main.lua")

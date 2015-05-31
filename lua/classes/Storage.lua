@@ -23,10 +23,12 @@ local _entity_mt = {
 }
 
 local _storage_mt = {
-	__call = function (self, entity, entityID)
+	__call = function (self, entity)
 		if not entity then
 			return nil
 		end
+
+		local entityID = entity[self.idFunction](entity)
 
 		local storage = self.storage[entityID]
 		if not storage then
@@ -48,9 +50,10 @@ local _storage_mt = {
 _storage_mt.__index = _storage_mt
 
 return {
-	create = function()
+	create = function(idFunction)
 		return setmetatable({
-			storage = {}
+			storage = {},
+			idFunction = idFunction
 		}, _storage_mt)
 	end
 }

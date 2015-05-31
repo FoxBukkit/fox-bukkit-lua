@@ -1,5 +1,3 @@
---local bukkitServer = luajava.bindClass("org.bukkit.bukkit")
-
 local eventPriority = luajava.bindClass("org.bukkit.event.EventPriority")
 
 return {
