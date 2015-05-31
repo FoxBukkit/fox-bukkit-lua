@@ -88,11 +88,13 @@
             <groupId>org.spigotmc</groupId>
             <artifactId>spigot-api</artifactId>
             <version>1.8.6-R0.1-SNAPSHOT</version>
+            <scope>provided</scope>
         </dependency>
 		<dependency>
 			<groupId>org.spigotmc</groupId>
 			<artifactId>spigot</artifactId>
             <version>1.8.6-R0.1-SNAPSHOT</version>
+            <scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>de.diddiz</groupId>
@@ -120,10 +122,21 @@
 			<artifactId>BarAPI</artifactId>
 			<version>3.4-SNAPSHOT</version>
 		</dependency>
+		<dependency>
+			<groupId>org.luaj</groupId>
+			<artifactId>luaj-jse</artifactId>
+			<version>3.0.1</version>
+		</dependency>
         <dependency>
             <groupId>com.mojang</groupId>
             <artifactId>AccountsClient</artifactId>
             <version>latest</version>
+        </dependency>
+        <dependency>
+            <groupId>com.foxelbox</groupId>
+            <artifactId>FoxBukkitChatComponent</artifactId>
+            <version>1.1.0-SNAPSHOT</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>com.foxelbox</groupId>
