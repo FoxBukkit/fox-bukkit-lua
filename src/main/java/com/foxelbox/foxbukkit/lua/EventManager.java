@@ -36,7 +36,7 @@ public class EventManager {
                 luaThread.invoke(new Runnable() {
                     @Override
                     public void run() {
-                        LuaValue ret = function.method(new LuaUserdata(event));
+                        LuaValue ret = function.call(new LuaUserdata(event));
                         // Return true/nonboolean for continue, false for cancel
                         if(ret != null && ret.isboolean() && event instanceof Cancellable) {
                             boolean retB = ((LuaBoolean)ret).booleanValue();

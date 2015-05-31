@@ -4,6 +4,7 @@ import com.foxelbox.foxbukkit.core.FoxBukkit;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.luaj.vm2.Globals;
+import org.luaj.vm2.LuaFunction;
 import org.luaj.vm2.LuaUserdata;
 import org.luaj.vm2.lib.jse.JsePlatform;
 
@@ -25,6 +26,17 @@ public class LuaThread extends Thread implements Listener {
         }
     }
 
+    public void runOnMainThread(final LuaFunction function) {
+        FoxBukkit.instance.getServer().getScheduler().scheduleSyncDelayedTask(FoxBukkit.instance, new Runnable() {
+            @Override
+            public void run() {
+                synchronized (g) {
+                    function.call();
+                }
+            }
+        });
+    }
+
     public LuaThread() {
         this(JsePlatform.debugGlobals());
     }
@@ -36,9 +48,11 @@ public class LuaThread extends Thread implements Listener {
     @Override
     public void run() {
         try {
-            g.set("__LUA_THREAD__", new LuaUserdata(this));
-            g.set("__ROOTDIR__", FoxBukkit.instance.getLuaFolder().getAbsolutePath());
-            g.loadfile(new File(FoxBukkit.instance.getLuaFolder(), "init.lua").getAbsolutePath()).call();
+            synchronized (g) {
+                g.set("__LUA_THREAD__", new LuaUserdata(this));
+                g.set("__ROOTDIR__", FoxBukkit.instance.getLuaFolder().getAbsolutePath());
+                g.loadfile(new File(FoxBukkit.instance.getLuaFolder(), "init.lua").getAbsolutePath()).call();
+            }
             while(true) {
                 Runnable runnable;
                 while ((runnable = pendingTasks.poll()) != null) {
