@@ -19,6 +19,14 @@ public class LuaThread extends Thread implements Listener {
     private final ChatMessageManager chatMessageManager = new ChatMessageManager(this);
     private final EventManager eventManager = new EventManager(this);
 
+    public EventManager getEventManager() {
+        return eventManager;
+    }
+
+    public ChatMessageManager getChatMessageManager() {
+        return chatMessageManager;
+    }
+
     public void invoke(Runnable runnable) {
         pendingTasks.add(runnable);
         synchronized (this) {
