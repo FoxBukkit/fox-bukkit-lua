@@ -20,10 +20,17 @@ public class FoxBukkit extends JavaPlugin {
 
     public RedisManager redisManager;
 
-    private LuaThread luaThread;
+    private LuaThread luaThread = null;
 
     public File getLuaFolder() {
         return new File(getDataFolder(), "lua");
+    }
+
+    @Override
+    public void onDisable() {
+        if(luaThread != null) {
+            luaThread.terminate();
+        }
     }
 
     @Override
