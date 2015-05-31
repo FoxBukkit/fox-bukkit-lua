@@ -4,6 +4,7 @@ import com.foxelbox.foxbukkit.core.FoxBukkit;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.luaj.vm2.Globals;
+import org.luaj.vm2.LuaUserdata;
 import org.luaj.vm2.lib.jse.JsePlatform;
 
 import java.io.File;
@@ -13,6 +14,9 @@ public class LuaThread extends Thread implements Listener {
     private final Globals g;
 
     private final LinkedBlockingQueue<Runnable> pendingTasks =  new LinkedBlockingQueue<>();
+
+    private final ChatMessageManager chatMessageManager = new ChatMessageManager(this);
+    private final EventManager eventManager = new EventManager(this);
 
     public void invoke(Runnable runnable) {
         pendingTasks.add(runnable);
@@ -32,6 +36,8 @@ public class LuaThread extends Thread implements Listener {
     @Override
     public void run() {
         try {
+            g.set("__LUA_THREAD__", new LuaUserdata(this));
+            g.set("__ROOTDIR__", FoxBukkit.instance.getLuaFolder().getAbsolutePath());
             g.loadfile(new File(FoxBukkit.instance.getLuaFolder(), "init.lua").getAbsolutePath()).call();
             while(true) {
                 Runnable runnable;

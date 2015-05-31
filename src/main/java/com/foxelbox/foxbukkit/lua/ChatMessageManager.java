@@ -8,6 +8,12 @@ import com.foxelbox.foxbukkit.core.FoxBukkit;
 public class ChatMessageManager {
     private final RedisHandler redisHandler = FoxBukkit.chatComponent.getRedisHandler();
 
+    private final LuaThread luaThread;
+
+    public ChatMessageManager(LuaThread luaThread) {
+        this.luaThread = luaThread;
+    }
+
     public void sendGlobal(ChatMessageIn chatMessageIn) {
         RedisHandler.sendMessage(chatMessageIn);
     }
