@@ -17,6 +17,11 @@ local _entity_mt = {
 		return myValue
 	end,
 	__newindex = function(tbl, idx, value)
+		local entity = rawget(tbl, 'entity')
+		if entity[idx] ~= nil then
+			entity[idx] = value
+			return
+		end
 		rawget(tbl, 'storage')[idx] = value
 	end,
 	__metatable = false
