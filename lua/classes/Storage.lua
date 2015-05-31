@@ -2,19 +2,21 @@ local _entity_mt = {
 	__index = function(tbl, idx)
 		local storageTbl = rawget(tbl, 'storage')
 		local myValue = storageTbl[idx]
-		if myValue == nil then
-			local entity = rawget(tbl, 'entity')
-			local func = entity[idx]
-			if func and type(func) == 'function' then
-				myValue = function(self, ...)
-					return func(entity, ...)
-				end
-				storageTbl[idx] = myValue
-			else
-				myValue = func
-			end
+		if myValue ~= nil then
+			return myValue
 		end
-		return myValue
+
+		local entity = rawget(tbl, 'entity')
+		local entityValue = entity[idx]
+		if entityValue and type(entityValue) == 'function' then
+			myValue = function(self, ...)
+				return entityValue(entity, ...)
+			end
+			storageTbl[idx] = myValue
+			return myValue
+		else
+			return entityValue
+		end
 	end,
 	__newindex = function(tbl, idx, value)
 		local entity = rawget(tbl, 'entity')
