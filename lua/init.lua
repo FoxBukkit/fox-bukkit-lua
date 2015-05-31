@@ -24,6 +24,7 @@ function includeClass(clsName)
 end
 
 includeClass("Storage")
+includeClass("Server")
 includeClass("Player")
 includeClass("Event")
 includeClass("Chat")

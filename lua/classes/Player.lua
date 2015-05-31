@@ -1,4 +1,4 @@
-local BukkitServer = luajava.bindClass("org.bukkit.Bukkit")
+local BukkitServer = C.Server.getBukkitServer()
 local UUID = luajava.bindClass("java.util.UUID")
 
 local playerStorage = C.Storage.create('getUniqueId')
