@@ -5,7 +5,6 @@ import org.bukkit.event.*;
 import org.bukkit.plugin.EventExecutor;
 import org.luaj.vm2.LuaBoolean;
 import org.luaj.vm2.LuaFunction;
-import org.luaj.vm2.LuaUserdata;
 import org.luaj.vm2.LuaValue;
 import org.luaj.vm2.lib.jse.CoerceJavaToLua;
 
@@ -34,17 +33,19 @@ public class EventManager {
                     return;
                 }
 
-                luaThread.invoke(new Runnable() {
+                LuaValue ret = new LuaThread.Invoker(luaThread) {
                     @Override
-                    public void run() {
-                        LuaValue ret = function.call(CoerceJavaToLua.coerce(event));
-                        // Return true/nonboolean for continue, false for cancel
-                        if(ret != null && ret.isboolean() && event instanceof Cancellable) {
-                            boolean retB = ((LuaBoolean)ret).booleanValue();
-                            ((Cancellable)event).setCancelled(!retB);
-                        }
+                    public LuaValue invoke() {
+                        return function.call(CoerceJavaToLua.coerce(event));
                     }
-                });
+                }.getResult();
+
+                // Return true/nonboolean for continue, false for cancel
+                if(ret != null && ret.isboolean() && event instanceof Cancellable) {
+                    boolean retB = ((LuaBoolean)ret).booleanValue();
+                    ((Cancellable)event).setCancelled(!retB);
+                }
+
             }
         }, FoxBukkit.instance, b);
 
