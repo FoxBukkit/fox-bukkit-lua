@@ -1,0 +1,10 @@
+name: FoxBukkit
+main: com.foxelbox.foxbukkit.core.FoxBukkit
+version: 1.0.0
+depend: [WorldEdit]
+softdepend: [LogBlock]
+commands:
+    fb:
+        description: Runs any FoxBukkit command (used for console)
+        permission: foxbukkit.no_one_has_this_ever
+        usage: /<command>
