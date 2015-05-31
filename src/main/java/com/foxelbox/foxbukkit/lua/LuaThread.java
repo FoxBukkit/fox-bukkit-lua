@@ -30,7 +30,6 @@ public class LuaThread extends Thread implements Listener {
 
     public static abstract class Invoker implements Runnable {
         private volatile LuaValue result = null;
-        protected volatile boolean completed = false;
         protected volatile boolean running = false;
 
         private final LuaThread luaThread;
@@ -38,14 +37,25 @@ public class LuaThread extends Thread implements Listener {
             this.luaThread = luaThread;
         }
 
-        public final void waitOnCompletion() {
+        public final Invoker waitOnCompletion() {
             try {
                 synchronized (this) {
-                    while (!this.completed) {
-                            this.wait();
+                    while (this.running) {
+                        this.wait();
                     }
                 }
             } catch (InterruptedException e) { }
+            return this;
+        }
+
+        public final Invoker reset() {
+            synchronized (this) {
+                if(running) {
+                    waitOnCompletion();
+                }
+                result = null;
+            }
+            return this;
         }
 
         public final LuaValue getResult() {
@@ -58,24 +68,31 @@ public class LuaThread extends Thread implements Listener {
             run(true);
         }
 
-        public final synchronized void run(boolean wait) {
-            if(running || completed) {
-                return;
-            }
-            running = true;
-            synchronized (luaThread) {
-                luaThread.pendingTasks.add(this);
-                luaThread.notify();
-            }
-            if(wait) {
-                waitOnCompletion();
+        public final void run(boolean wait) {
+            synchronized (this) {
+                if (!running) {
+                    running = true;
+                    synchronized (luaThread) {
+                        luaThread.pendingTasks.add(this);
+                        luaThread.notify();
+                    }
+                }
+                if (wait) {
+                    waitOnCompletion();
+                }
             }
         }
 
         protected final void start() {
-            result = invoke();
-            completed = true;
             synchronized (this) {
+                try {
+                    result = invoke();
+                } catch (Exception e) {
+                    System.err.println("Exception running Invoker");
+                    e.printStackTrace();
+                    result = null;
+                }
+                running = false;
                 this.notify();
             }
         }
