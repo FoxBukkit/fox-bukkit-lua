@@ -28,17 +28,22 @@ public class EventManager {
 
         FoxBukkit.instance.getServer().getPluginManager().registerEvent(eventClass, l, eventPriority, new EventExecutor() {
             @Override
-            public void execute(Listener listener, Event event) throws EventException {
+            public void execute(Listener listener, final Event event) throws EventException {
                 if(listener != l) {
                     return;
                 }
 
-                LuaValue ret = function.method(new LuaUserdata(event));
-                // Return true/nonboolean for continue, false for cancel
-                if(ret != null && ret.isboolean() && event instanceof Cancellable) {
-                    boolean retB = ((LuaBoolean)ret).booleanValue();
-                    ((Cancellable)event).setCancelled(!retB);
-                }
+                luaThread.invoke(new Runnable() {
+                    @Override
+                    public void run() {
+                        LuaValue ret = function.method(new LuaUserdata(event));
+                        // Return true/nonboolean for continue, false for cancel
+                        if(ret != null && ret.isboolean() && event instanceof Cancellable) {
+                            boolean retB = ((LuaBoolean)ret).booleanValue();
+                            ((Cancellable)event).setCancelled(!retB);
+                        }
+                    }
+                });
             }
         }, FoxBukkit.instance, b);
 
