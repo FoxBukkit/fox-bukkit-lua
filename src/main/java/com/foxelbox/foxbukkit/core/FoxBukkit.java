@@ -5,6 +5,7 @@ import com.foxelbox.dependencies.redis.RedisManager;
 import com.foxelbox.dependencies.threading.SimpleThreadCreator;
 import com.foxelbox.foxbukkit.chatcomponent.FBChatComponent;
 import com.foxelbox.foxbukkit.lua.LuaThread;
+import com.foxelbox.foxbukkit.permissions.PermissionsPlayerListener;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -41,6 +42,8 @@ public class FoxBukkit extends JavaPlugin {
         chatComponent = (FBChatComponent)getServer().getPluginManager().getPlugin("FoxBukkitChatComponent");
         luaThread = new LuaThread();
         luaThread.start();
+
+        getServer().getPluginManager().registerEvents(new PermissionsPlayerListener(), this);
 
         getServer().getPluginCommand("fbluareload").setExecutor(new CommandExecutor() {
             @Override

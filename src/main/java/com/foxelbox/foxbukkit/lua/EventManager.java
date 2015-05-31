@@ -8,10 +8,12 @@ import org.luaj.vm2.LuaFunction;
 import org.luaj.vm2.LuaValue;
 import org.luaj.vm2.lib.jse.CoerceJavaToLua;
 
-public class EventManager implements EventExecutor {
-    protected static int lID = 0;
+import java.util.ArrayList;
+import java.util.List;
 
+public class EventManager implements EventExecutor {
     private final LuaThread luaThread;
+    private final List<LuaListener> listeners = new ArrayList<>();
 
     public EventManager(LuaThread luaThread) {
         this.luaThread = luaThread;
@@ -38,7 +40,6 @@ public class EventManager implements EventExecutor {
     }
 
     private class LuaListener implements Listener {
-        private final int id = lID++;
         private final LuaEventInvoker invoker;
 
         public LuaListener(final LuaFunction function) {
@@ -56,40 +57,40 @@ public class EventManager implements EventExecutor {
                 ((Cancellable)event).setCancelled(!retB);
             }
         }
-
-        @Override
-        public int hashCode() {
-            return id;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-
-            LuaListener that = (LuaListener) o;
-
-            return id == that.id;
-
-        }
     }
 
     @Override
     public void execute(Listener listener, Event event) throws EventException {
-        if(!(listener instanceof LuaListener))
+        if(!(listener instanceof LuaListener)) {
             return;
+        }
 
         LuaListener luaListener = (LuaListener)listener;
         luaListener.run(event);
     }
 
     public Listener register(final Class<? extends Event> eventClass, final EventPriority eventPriority, final boolean b, final LuaFunction function) {
-        final Listener listener = new LuaListener(function);
+        final LuaListener listener = new LuaListener(function);
         FoxBukkit.instance.getServer().getPluginManager().registerEvent(eventClass, listener, eventPriority, this, FoxBukkit.instance, b);
+        synchronized (listeners) {
+            listeners.add(listener);
+        }
         return listener;
     }
 
-    public void unregister(Listener l) {
-        HandlerList.unregisterAll(l);
+    public void unregister(LuaListener l) {
+        synchronized (listeners) {
+            HandlerList.unregisterAll(l);
+            listeners.remove(l);
+        }
+    }
+
+    public void unregisterAll() {
+        synchronized (listeners) {
+            for (LuaListener l : listeners) {
+                HandlerList.unregisterAll(l);
+            }
+            listeners.clear();
+        }
     }
 }

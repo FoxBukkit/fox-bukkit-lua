@@ -151,7 +151,7 @@ public class LuaThread extends Thread implements Listener {
     }
 
     public void terminate() {
-        HandlerList.unregisterAll(FoxBukkit.instance);
+        eventManager.unregisterAll();
         pendingTasks.clear();
     }
 }
