@@ -8,10 +8,9 @@ import com.foxelbox.foxbukkit.lua.LuaThread;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
-import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.luaj.vm2.Globals;
-import org.luaj.vm2.lib.jse.JsePlatform;
+
+import java.io.File;
 
 public class FoxBukkit extends JavaPlugin {
     public static FoxBukkit instance;
@@ -23,7 +22,9 @@ public class FoxBukkit extends JavaPlugin {
 
     private LuaThread luaThread;
 
-
+    public File getLuaFolder() {
+        return new File(getDataFolder(), "lua");
+    }
 
     @Override
     public void onEnable() {

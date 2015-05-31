@@ -6,6 +6,7 @@ import org.bukkit.event.Listener;
 import org.luaj.vm2.Globals;
 import org.luaj.vm2.lib.jse.JsePlatform;
 
+import java.io.File;
 import java.util.concurrent.LinkedBlockingQueue;
 
 public class LuaThread extends Thread implements Listener {
@@ -30,7 +31,8 @@ public class LuaThread extends Thread implements Listener {
     public void run() {
         try {
             while(true) {
-                //TODO: Run initializer Lua
+                g.loadfile(new File(FoxBukkit.instance.getLuaFolder(), "init.lua").getAbsolutePath()).call();
+
                 Runnable runnable;
                 while ((runnable = pendingTasks.poll()) != null) {
                     runnable.run();
@@ -44,5 +46,6 @@ public class LuaThread extends Thread implements Listener {
 
     public void terminate() {
         HandlerList.unregisterAll(FoxBukkit.instance);
+        pendingTasks.clear();
     }
 }
