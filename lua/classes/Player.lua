@@ -1,7 +1,7 @@
-local BukkitServer = C.Server.getBukkitServer()
+local BukkitServer = require('Server').getBukkitServer()
 local UUID = luajava.bindClass("java.util.UUID")
 
-local playerStorage = C.Storage.create('getUniqueId')
+local playerStorage = require('Storage').create('getUniqueId')
 
 return {
 	getByUUID = function(uuid)
