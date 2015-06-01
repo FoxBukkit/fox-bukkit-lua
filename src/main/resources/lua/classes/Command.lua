@@ -21,13 +21,28 @@ local cmdManager = __LUA_THREAD:getCommandManager()
 
 local Player = require('Player')
 
+local _flags_mt = {
+    __index = {
+        has = function(self, flag)
+            return self.str:find(flag, 1, true) ~= nil
+        end
+    },
+    __metatable = false,
+    __newindex = function()
+        error("Readonly")
+    end
+}
+
 return {
     register = function(self, cmd, func)
-        return cmdManager:register(cmd, function(ply, ...)
+        return cmdManager:register(cmd, function(ply, cmd, args, argStr, flagStr)
+            flagStr = setmetatable({
+                str = flagStr
+            }, _flags_mt)
             if ply.getUniqueId then
                 ply = Player:extend(ply)
             end
-            return func(ply, ...)
+            return func(ply, cmd, args, argStr, flagStr)
         end)
     end,
     unregister = function(self, cmd)
