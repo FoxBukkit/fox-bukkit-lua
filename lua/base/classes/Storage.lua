@@ -18,8 +18,17 @@
 ]]
 local _entity_mt = {
 	__index = function(tbl, idx)
+		if type(idx) == "string" and idx:sub(1,2) == "__" then
+			return rawget(tbl, idx:sub(3))
+		end
+
 		local storageTbl = rawget(tbl, 'storage')
 		local myValue = storageTbl[idx]
+		if myValue ~= nil then
+			return myValue
+		end
+
+		myValue = rawget(tbl, 'extensions')[idx]
 		if myValue ~= nil then
 			return myValue
 		end
@@ -62,7 +71,8 @@ local _storage_mt = {
 		end
 		return setmetatable({
 			entity = entity,
-			storage = storage
+			storage = storage,
+			extensions = self.extensions
 		}, _entity_mt)
 	end,
 
@@ -75,9 +85,10 @@ local _storage_mt = {
 _storage_mt.__index = _storage_mt
 
 return {
-	create = function(idFunction)
+	create = function(self, idFunction, extensions)
 		return setmetatable({
 			storage = {},
+			extensions = extensions or {},
 			idFunction = idFunction
 		}, _storage_mt)
 	end

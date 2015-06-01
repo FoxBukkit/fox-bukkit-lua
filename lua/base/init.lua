@@ -16,9 +16,11 @@
     along with FoxBukkitLua.  If not, see <http://www.gnu.org/licenses/>.
 
 ]]
-package.path = __ROOTDIR__ .. "/classes/?.lua;" .. __ROOTDIR__ .. "/?.lua"
+package.path = __MODULEDIR__ .. "/classes/?.lua;" .. __ROOTDIR__ .. "/classes/?.lua"
 
-local rootDir = __ROOTDIR__
+local includeDir = __MODULEDIR__
 function include(file) 
-	return dofile(rootDir .. '/' .. file)
+	return dofile(includeDir .. '/' .. file)
 end
+
+include("main.lua")

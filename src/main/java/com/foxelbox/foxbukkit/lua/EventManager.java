@@ -71,6 +71,10 @@ public class EventManager implements EventExecutor {
                 ((Cancellable)event).setCancelled(!retB);
             }
         }
+
+        public void unregister() {
+            EventManager.this.unregister(this);
+        }
     }
 
     @Override

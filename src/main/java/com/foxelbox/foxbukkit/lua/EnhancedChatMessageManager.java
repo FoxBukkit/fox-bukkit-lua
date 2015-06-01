@@ -29,17 +29,15 @@ import java.util.UUID;
 
 public class EnhancedChatMessageManager {
     private final RedisHandler redisHandler;
-    private final FBChatComponent fbChatComponent;
-    private final LuaThread luaThread;
+    //private final LuaThread luaThread;
 
     public EnhancedChatMessageManager(LuaThread luaThread, Plugin enhancedChatPlugin) {
         try {
-            fbChatComponent = (FBChatComponent) enhancedChatPlugin;
-            redisHandler = fbChatComponent.getRedisHandler();
+            redisHandler = ((FBChatComponent)enhancedChatPlugin).getRedisHandler();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-        this.luaThread = luaThread;
+        //this.luaThread = luaThread;
     }
 
     private CommandSender getConsole() {
@@ -86,5 +84,9 @@ public class EnhancedChatMessageManager {
         chatMessageOut.contents = content;
         chatMessageOut.to = new MessageTarget(chatTarget, targetFilter);
         redisHandler.onMessage(chatMessageOut);
+    }
+
+    public boolean isAvailable() {
+        return true;
     }
 }

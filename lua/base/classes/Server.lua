@@ -20,13 +20,13 @@ local BukkitServer = luajava.bindClass("org.bukkit.Bukkit")
 local LuaThread = __LUA_THREAD__
 
 return {
-	getBukkitServer = function()
+	getBukkitServer = function(self)
 		return BukkitServer
 	end,
-	runOnMainThread = function(func)
+	runOnMainThread = function(self, func)
 		LuaThread:runOnMainThread(func)
 	end,
-	runOnLuaThread = function(func)
+	runOnLuaThread = function(self, func)
 		LuaThread:runOnLuaThread(func)
 	end
 }

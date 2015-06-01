@@ -16,6 +16,24 @@
     along with FoxBukkitLua.  If not, see <http://www.gnu.org/licenses/>.
 
 ]]
-return {
-	
-}
+
+local chatAPI = __LUA_THREAD__:getEnhancedChatMessageManager()
+
+if not chatAPI then
+    local function notImpl()
+        error("Enhanced chat API not available")
+    end
+
+    return {
+        sendGlobal = notImpl,
+        broadcastLocal = notImpl,
+        sendLocalToPlayer = notImpl,
+        sendLocalToPermission = notImpl,
+        sendLocal = notImpl,
+        isAvailable = function(self)
+            return false
+        end
+    }
+end
+
+return chatAPI
