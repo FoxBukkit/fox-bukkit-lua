@@ -30,6 +30,7 @@ import org.luaj.vm2.Varargs;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -62,50 +63,40 @@ public class CommandManagerMaster implements Listener {
 
     public void unregisterAll(LuaThread luaThread) {
         synchronized (commandHandlers) {
-            for(LuaCommandInvoker invoker : commandHandlers.values()) {
+            Iterator<LuaCommandInvoker> iterator = commandHandlers.values().iterator();
+            while(iterator.hasNext()) {
+                LuaCommandInvoker invoker = iterator.next();
                 if(invoker.luaThread == luaThread) {
-                    commandHandlers.remove(invoker.command);
+                    iterator.remove();
                 }
             }
         }
     }
 
-    private class LuaCommandInvoker extends LuaThread.Invoker {
-        private CommandManagerMaster.ParsedCommandLine commandLine;
+    private class LuaCommandInvoker {
         private final LuaValue function;
         private final String command;
         private final String permission;
         private final LuaThread luaThread;
 
-        public LuaCommandInvoker setCommandLine(CommandManagerMaster.ParsedCommandLine commandLine) {
-            this.commandLine = commandLine;
-            return this;
-        }
-
         public LuaCommandInvoker(String command, String permission, LuaThread luaThread, LuaValue function) {
-            super(luaThread);
             this.luaThread = luaThread;
             this.function = function;
             this.command = command;
             this.permission = permission;
         }
 
-        @Override
-        protected LuaValue invoke() {
-            Varargs varargs = LuaValue.varargsOf(new LuaValue[] {
-                    coerce(commandLine.getSource()),
-                    coerce(commandLine.getCommand()),
-                    commandLine.getArguments(),
-                    coerce(commandLine.getArgumentString()),
-                    coerce(commandLine.getFlagsString())
+        public LuaValue invoke(ParsedCommandLine commandLine) {
+            Varargs varargs = LuaValue.varargsOf(new LuaValue[]{
+                coerce(commandLine.getSource()),
+                coerce(commandLine.getCommand()),
+                commandLine.getArguments(),
+                coerce(commandLine.getArgumentString()),
+                coerce(commandLine.getFlagsString())
             });
-            return function.invoke(varargs).arg1();
-        }
-
-        private synchronized LuaValue doRun(CommandManagerMaster.ParsedCommandLine commandLine) {
-            reset();
-            setCommandLine(commandLine);
-            return getResult();
+            synchronized (luaThread.luaLock) {
+                return function.invoke(varargs).arg1();
+            }
         }
     }
 
@@ -143,8 +134,8 @@ public class CommandManagerMaster implements Listener {
             return;
         }
 
-        final LuaValue ret = invoker.doRun(new ParsedCommandLine(source, cmdStr, argStr));
 
+        final LuaValue ret = invoker.invoke(new ParsedCommandLine(source, cmdStr, argStr));
         // Return true/nonboolean for handled, false for unhandled (fallthrough)
         if(ret == null || !ret.isboolean() || ((LuaBoolean)ret).booleanValue()) {
             event.setCancelled(true);

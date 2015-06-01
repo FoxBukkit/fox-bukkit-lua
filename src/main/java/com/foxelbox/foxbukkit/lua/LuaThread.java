@@ -28,6 +28,7 @@ import java.io.InputStream;
 import java.util.concurrent.LinkedBlockingQueue;
 
 public class LuaThread extends Thread implements Listener {
+    final Object luaLock = new Object();
     Globals g;
     private volatile boolean running = true;
     private final String module;
@@ -135,7 +136,7 @@ public class LuaThread extends Thread implements Listener {
         protected final void start() {
             synchronized (this) {
                 try {
-                    synchronized (luaThread.g) {
+                    synchronized (luaThread.luaLock) {
                         result = invoke();
                     }
                 } catch (Exception e) {
@@ -166,7 +167,14 @@ public class LuaThread extends Thread implements Listener {
     }
 
     public void runOnMainThread(final LuaValue function) {
-        FoxBukkitLua.instance.getServer().getScheduler().scheduleSyncDelayedTask(FoxBukkitLua.instance, new LuaFunctionInvoker(LuaThread.this, function));
+        FoxBukkitLua.instance.getServer().getScheduler().scheduleSyncDelayedTask(FoxBukkitLua.instance, new Runnable() {
+            @Override
+            public void run() {
+                synchronized (luaLock) {
+                    function.call();
+                }
+            }
+        });
     }
 
     public void runOnLuaThread(final LuaValue function) {
@@ -186,14 +194,16 @@ public class LuaThread extends Thread implements Listener {
         if(inputStream == null) {
             return null;
         }
-        return g.load(inputStream, name, "t", g);
+        synchronized (luaLock) {
+            return g.load(inputStream, name, "t", g);
+        }
     }
 
     @Override
     public void run() {
         try {
-            g = JsePlatform.debugGlobals();
-            synchronized (g) {
+            synchronized (luaLock) {
+                g = JsePlatform.debugGlobals();
                 g.set("__LUA_THREAD", CoerceJavaToLua.coerce(this));
                 File overrideInit = new File(getRootDir(), "init.lua");
                 if(overrideInit.exists()) {
@@ -232,7 +242,7 @@ public class LuaThread extends Thread implements Listener {
         running = false;
 
         synchronized (this) {
-            synchronized (g) {
+            synchronized (luaLock) {
                 running = false;
                 pendingTasks.clear();
                 eventManager.unregisterAll();

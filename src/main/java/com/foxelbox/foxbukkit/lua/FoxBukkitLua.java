@@ -203,7 +203,9 @@ public class FoxBukkitLua extends JavaPlugin {
 
                 LuaValue code;
                 try {
-                    code = luaThread.g.load(Utils.concatArray(strings, 1, ""));
+                    synchronized (luaThread.luaLock) {
+                        code = luaThread.g.load(Utils.concatArray(strings, 1, ""));
+                    }
                 } catch (Exception e) {
                     commandSender.sendMessage(makeMessageBuilder().append("Error in Lua code: ").append(e.getMessage()).toString());
                     return true;
@@ -232,7 +234,9 @@ public class FoxBukkitLua extends JavaPlugin {
 
                 LuaValue code;
                 try {
-                    code = luaThread.g.loadfile(new File(getLuaScriptsFolder(), strings[1]).getAbsolutePath());
+                    synchronized (luaThread.luaLock) {
+                        code = luaThread.g.loadfile(new File(getLuaScriptsFolder(), strings[1]).getAbsolutePath());
+                    }
                 } catch (Exception e) {
                     commandSender.sendMessage(makeMessageBuilder().append("Error in Lua file: ").append(e.getMessage()).toString());
                     return true;
