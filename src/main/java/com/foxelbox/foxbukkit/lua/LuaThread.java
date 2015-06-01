@@ -1,7 +1,6 @@
 package com.foxelbox.foxbukkit.lua;
 
 import com.foxelbox.foxbukkit.core.FoxBukkit;
-import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.luaj.vm2.Globals;
 import org.luaj.vm2.LuaFunction;
@@ -14,6 +13,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 public class LuaThread extends Thread implements Listener {
     private final Globals g;
+    private volatile boolean running = true;
 
     private final LinkedBlockingQueue<Invoker> pendingTasks =  new LinkedBlockingQueue<>();
 
@@ -136,7 +136,7 @@ public class LuaThread extends Thread implements Listener {
                 g.set("__ROOTDIR__", FoxBukkit.instance.getLuaFolder().getAbsolutePath());
                 g.loadfile(new File(FoxBukkit.instance.getLuaFolder(), "init.lua").getAbsolutePath()).call();
             }
-            while(true) {
+            while(running) {
                 Invoker invoker;
                 while ((invoker = pendingTasks.poll()) != null) {
                     invoker.start();
@@ -152,8 +152,23 @@ public class LuaThread extends Thread implements Listener {
         }
     }
 
-    public void terminate() {
-        eventManager.unregisterAll();
-        pendingTasks.clear();
+    public synchronized void terminate() {
+        if(!running) {
+            return;
+        }
+        running = false;
+        synchronized (this) {
+            synchronized (g) {
+                running = false;
+                eventManager.unregisterAll();
+                pendingTasks.clear();
+                this.notify();
+            }
+        }
+        try {
+            this.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 }
