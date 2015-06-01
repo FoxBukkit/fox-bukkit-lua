@@ -36,7 +36,7 @@ public class FoxBukkitLua extends JavaPlugin {
     public Configuration configuration;
     public RedisManager redisManager;
     private final HashMap<String, LuaThread> luaThreadList = new HashMap<>();
-    private CommandManagerMaster commandManagerMaster;
+    public CommandManagerMaster commandManagerMaster;
 
     public File getLuaFolder() {
         return new File(getDataFolder(), "base");

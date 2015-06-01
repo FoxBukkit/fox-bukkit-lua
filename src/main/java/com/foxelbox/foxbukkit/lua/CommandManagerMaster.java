@@ -1,20 +1,83 @@
 package com.foxelbox.foxbukkit.lua;
 
 import org.bukkit.entity.Player;
-import org.bukkit.event.*;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
+import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
-import org.bukkit.event.player.PlayerEvent;
 import org.bukkit.plugin.PluginManager;
+import org.luaj.vm2.LuaBoolean;
+import org.luaj.vm2.LuaValue;
+import org.luaj.vm2.lib.jse.CoerceJavaToLua;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class CommandManagerMaster implements Listener {
     private final PluginManager pluginManager;
+    private final HashMap<String, LuaCommandInvoker> commandHandlers = new HashMap<>();
+
     public CommandManagerMaster() {
         pluginManager = FoxBukkitLua.instance.getServer().getPluginManager();
         pluginManager.registerEvents(this, FoxBukkitLua.instance);
+    }
+
+    public void register(String command, LuaThread thread, LuaValue handler) {
+        synchronized (commandHandlers) {
+            commandHandlers.put(command.trim().toLowerCase(), new LuaCommandInvoker(command, thread, handler));
+        }
+    }
+
+    public void unregister(String command, LuaThread luaThread) {
+        command = command.trim().toLowerCase();
+        synchronized (commandHandlers) {
+            LuaCommandInvoker invoker = commandHandlers.get(command);
+            if(invoker.luaThread == luaThread) {
+                commandHandlers.remove(command);
+            }
+        }
+    }
+
+    public void unregisterAll(LuaThread luaThread) {
+        synchronized (commandHandlers) {
+            for(LuaCommandInvoker invoker : commandHandlers.values()) {
+                if(invoker.luaThread == luaThread) {
+                    commandHandlers.remove(invoker.command);
+                }
+            }
+        }
+    }
+
+    private class LuaCommandInvoker extends LuaThread.Invoker {
+        private CommandManagerMaster.ParsedCommandLine commandLine;
+        private final LuaValue function;
+        private final String command;
+        private final LuaThread luaThread;
+
+        public LuaCommandInvoker setCommandLine(CommandManagerMaster.ParsedCommandLine commandLine) {
+            this.commandLine = commandLine;
+            return this;
+        }
+
+        public LuaCommandInvoker(String command, LuaThread luaThread, LuaValue function) {
+            super(luaThread);
+            this.luaThread = luaThread;
+            this.function = function;
+            this.command = command;
+        }
+
+        @Override
+        protected LuaValue invoke() {
+            return function.call(CoerceJavaToLua.coerce(commandLine));
+        }
+
+        private synchronized LuaValue doRun(CommandManagerMaster.ParsedCommandLine commandLine) {
+            reset();
+            setCommandLine(commandLine);
+            return getResult();
+        }
     }
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
@@ -39,9 +102,23 @@ public class CommandManagerMaster implements Listener {
 
         cmdStr = cmdStr.trim().toLowerCase();
 
-        CommandEvent commandEvent = new CommandEvent(who, cmdStr, argStr);
-        pluginManager.callEvent(commandEvent);
-        event.setCancelled(commandEvent.isCancelled());
+        final LuaCommandInvoker invoker;
+        synchronized (commandHandlers) {
+            invoker = commandHandlers.get(cmdStr);
+        }
+        if(invoker == null) {
+            return;
+        }
+
+        final LuaValue ret = invoker.doRun(new ParsedCommandLine(cmdStr, argStr));
+
+        // Return true/nonboolean for continue, false for cancel
+        if(ret != null && ret.isboolean()) {
+            boolean retB = ((LuaBoolean)ret).booleanValue();
+            event.setCancelled(!retB);
+        } else {
+            event.setCancelled(true);
+        }
     }
 
     public static class ParsedCommandLine {
@@ -114,53 +191,6 @@ public class CommandManagerMaster implements Listener {
 
         public String getCommand() {
             return command;
-        }
-    }
-
-    public static class CommandEvent extends PlayerEvent implements Cancellable {
-        private static final HandlerList handlers = new HandlerList();
-        private boolean cancelled = false;
-
-        private final String command;
-
-        private final String argStr;
-
-        private ParsedCommandLine parsedCommandLine;
-
-        public CommandEvent(Player who, String command, String arguments) {
-            super(who);
-            this.command = command;
-            this.argStr = arguments;
-        }
-
-        public synchronized ParsedCommandLine getParsedCommandLine() {
-            if(parsedCommandLine == null) {
-                parsedCommandLine = new ParsedCommandLine(command, argStr);
-            }
-            return parsedCommandLine;
-        }
-
-        public String getCommand() {
-            return command;
-        }
-
-        @Override
-        public boolean isCancelled() {
-            return cancelled;
-        }
-
-        @Override
-        public void setCancelled(boolean b) {
-            cancelled = b;
-        }
-
-        @Override
-        public HandlerList getHandlers() {
-            return handlers;
-        }
-
-        public static HandlerList getHandlerList() {
-            return handlers;
         }
     }
 }
