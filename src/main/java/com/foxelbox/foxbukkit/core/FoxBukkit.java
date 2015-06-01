@@ -5,14 +5,12 @@ import com.foxelbox.dependencies.redis.RedisManager;
 import com.foxelbox.dependencies.threading.SimpleThreadCreator;
 import com.foxelbox.foxbukkit.chatcomponent.FBChatComponent;
 import com.foxelbox.foxbukkit.lua.LuaThread;
-import com.foxelbox.foxbukkit.permissions.PermissionsPlayerListener;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -122,8 +120,6 @@ public class FoxBukkit extends JavaPlugin {
         configuration = new Configuration(getDataFolder());
         redisManager = new RedisManager(new SimpleThreadCreator(), configuration);
         chatComponent = (FBChatComponent)getServer().getPluginManager().getPlugin("FoxBukkitChatComponent");
-
-        getServer().getPluginManager().registerEvents(new PermissionsPlayerListener(), this);
 
         restartAllLuaThreads();
 
