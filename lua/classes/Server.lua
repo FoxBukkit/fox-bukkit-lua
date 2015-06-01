@@ -7,5 +7,8 @@ return {
 	end,
 	runOnMainThread = function(func)
 		LuaThread:runOnMainThread(func)
+	end,
+	runOnLuaThread = function(func)
+		LuaThread:runOnLuaThread(func)
 	end
 }
