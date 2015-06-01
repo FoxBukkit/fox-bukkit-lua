@@ -120,6 +120,10 @@ public class LuaThread extends Thread implements Listener {
         FoxBukkit.instance.getServer().getScheduler().scheduleSyncDelayedTask(FoxBukkit.instance, new LuaFunctionInvoker(LuaThread.this, function));
     }
 
+    public void runOnLuaThread(final LuaFunction function) {
+        new LuaFunctionInvoker(LuaThread.this, function).run(false);
+    }
+
     public LuaThread() {
         this(JsePlatform.debugGlobals());
     }
