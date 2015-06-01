@@ -20,6 +20,8 @@
 local cmdManager = __LUA_THREAD:getCommandManager()
 local moduleName = __LUA_THREAD:getModule()
 
+local basePermission = "foxbukkit." .. moduleName .. "."
+
 local Player = require('Player')
 
 local _flags_mt = {
@@ -36,7 +38,7 @@ local _flags_mt = {
 
 return {
     register = function(self, cmd, func, permission)
-        permission = permission or ("foxbukkit." .. moduleName .. "." .. cmd)
+        permission = permission or (basePermission .. cmd)
         return cmdManager:register(cmd, permission, function(ply, cmd, args, argStr, flagStr)
             flagStr = setmetatable({
                 str = flagStr
@@ -49,5 +51,8 @@ return {
     end,
     unregister = function(self, cmd)
         cmdManager:unregister(cmd)
+    end,
+    getPermissionBase = function(self)
+        return basePermission
     end
 }
