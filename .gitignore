@@ -1,5 +1,4 @@
 /.idea
 /*.iml
-/lua/modules/test
 /target
 /dependency-reduced-pom.xml
