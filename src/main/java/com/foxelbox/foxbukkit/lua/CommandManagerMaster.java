@@ -44,37 +44,25 @@ public class CommandManagerMaster implements Listener {
         event.setCancelled(commandEvent.isCancelled());
     }
 
-    public static class CommandEvent extends PlayerEvent implements Cancellable {
-        private static final HandlerList handlers = new HandlerList();
-        private boolean cancelled = false;
-
+    public static class ParsedCommandLine {
+        private final String[] parsedArguments;
+        private final String flagStr;
+        private final String rawArguments;
         private final String command;
-
-        private final String argStr;
-
-        private String[] parsedArguments = null;
-        private String flagStr = null;
-
-        public CommandEvent(Player who, String command, String arguments) {
-            super(who);
-            this.command = command;
-            this.argStr = arguments;
-        }
 
         private static final Pattern ARGUMENT_PATTERN = Pattern.compile("([^\"]\\S*|\".+?\")\\s*");
 
-        private synchronized void parseCommandline() {
-            if(parsedArguments != null) {
-                return;
-            }
+        public ParsedCommandLine(String command, String rawArguments) {
+            this.rawArguments = rawArguments;
+            this.command = command;
 
-            if(argStr.isEmpty()) {
+            if(rawArguments.isEmpty()) {
                 parsedArguments = new String[0];
                 flagStr = "";
                 return;
             }
 
-            String myArgStr = argStr;
+            String myArgStr = rawArguments;
             if(myArgStr.length() > 1 && myArgStr.charAt(0) == '-') {
                 char firstFlag = myArgStr.charAt(1);
                 if((firstFlag >= 'a' && firstFlag <= 'z') || (firstFlag >= 'A' && firstFlag <= 'Z')) {
@@ -87,7 +75,11 @@ public class CommandManagerMaster implements Listener {
                         parsedArguments = new String[0];
                         return;
                     }
+                } else {
+                    flagStr = "";
                 }
+            } else {
+                flagStr = "";
             }
 
             if(myArgStr.isEmpty()) {
@@ -109,21 +101,47 @@ public class CommandManagerMaster implements Listener {
         }
 
         public String[] getArguments() {
-            parseCommandline();
             return parsedArguments;
+        }
+
+        public String getArgumentString() {
+            return rawArguments;
+        }
+
+        public boolean hasFlag(char flag) {
+            return flagStr.indexOf(flag) >= 0;
         }
 
         public String getCommand() {
             return command;
         }
+    }
 
-        public String getArgumentString() {
-            return argStr;
+    public static class CommandEvent extends PlayerEvent implements Cancellable {
+        private static final HandlerList handlers = new HandlerList();
+        private boolean cancelled = false;
+
+        private final String command;
+
+        private final String argStr;
+
+        private ParsedCommandLine parsedCommandLine;
+
+        public CommandEvent(Player who, String command, String arguments) {
+            super(who);
+            this.command = command;
+            this.argStr = arguments;
         }
 
-        public boolean hasFlag(char flag) {
-            parseCommandline();
-            return flagStr.indexOf(flag) >= 0;
+        public synchronized ParsedCommandLine getParsedCommandLine() {
+            if(parsedCommandLine == null) {
+                parsedCommandLine = new ParsedCommandLine(command, argStr);
+            }
+            return parsedCommandLine;
+        }
+
+        public String getCommand() {
+            return command;
         }
 
         @Override

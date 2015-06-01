@@ -42,7 +42,7 @@ public class EventManager implements EventExecutor {
             return this;
         }
 
-        public LuaEventInvoker(LuaThread luaThread, LuaValue function) {
+        public LuaEventInvoker(LuaValue function) {
             super(luaThread);
             this.function = function;
         }
@@ -57,10 +57,10 @@ public class EventManager implements EventExecutor {
         private final LuaEventInvoker invoker;
 
         public LuaListener(final LuaValue function) {
-            this.invoker = new LuaEventInvoker(luaThread, function);
+            this.invoker = new LuaEventInvoker(function);
         }
 
-        public void run(final Event event) {
+        public synchronized void run(final Event event) {
             invoker.reset();
             invoker.setEvent(event);
             final LuaValue ret = invoker.getResult();
