@@ -17,7 +17,7 @@
 
 ]]
 local bukkitServer = luajava.bindClass("org.bukkit.Bukkit")
-local luaThread = luajava.__LUA_THREAD__
+local luaThread = __LUA_THREAD
 
 return {
 	getBukkitServer = function(self)

@@ -16,7 +16,7 @@
     along with FoxBukkitLua.  If not, see <http://www.gnu.org/licenses/>.
 
 ]]
-local BukkitServer = require('Server'):getBukkitServer()
+local bukkitServer = require('Server'):getBukkitServer()
 local UUID = luajava.bindClass("java.util.UUID")
 
 local Chat = require('Chat')
@@ -32,12 +32,12 @@ return {
 		if type(uuid) == "string" then
 			uuid = UUID:fromString(uuid)
 		end
-		return playerStorage(BukkitServer:getPlayer(uuid))
+		return playerStorage(bukkitServer:getPlayer(uuid))
 	end,
 
 	getAll = function(self)
 		local players = {}
-		for _, ply in pairs(BukkitServer:getOnlinePlayers()) do
+		for _, ply in pairs(bukkitServer:getOnlinePlayers()) do
 			players:insert(playerStorage(ply))
 		end
 		return players

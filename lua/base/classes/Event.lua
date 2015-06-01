@@ -18,7 +18,7 @@
 ]]
 local eventPriority = luajava.bindClass("org.bukkit.event.EventPriority")
 
-local eventManager = luajava.__LUA_THREAD__:getEventManager()
+local eventManager = __LUA_THREAD:getEventManager()
 
 return {
 	register = function(self, event, priority, callback, b)

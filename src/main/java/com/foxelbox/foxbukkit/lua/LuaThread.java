@@ -189,7 +189,7 @@ public class LuaThread extends Thread implements Listener {
     public void run() {
         try {
             synchronized (g) {
-                g.get("luajava").set("__LUA_THREAD__", CoerceJavaToLua.coerce(this));
+                g.set("__LUA_THREAD", CoerceJavaToLua.coerce(this));
                 g.loadfile(new File(FoxBukkitLua.instance.getLuaFolder(), "init.lua").getAbsolutePath()).call();
             }
             while (running) {

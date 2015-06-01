@@ -17,8 +17,8 @@
 
 ]]
 
-local includeDir = luajava.__LUA_THREAD__:getModuleDir()
-package.path = includeDir .. "/classes/?.lua;" .. luajava.__LUA_THREAD__:getRootDir() .. "/classes/?.lua"
+local includeDir = __LUA_THREAD:getModuleDir()
+package.path = includeDir .. "/classes/?.lua;" .. __LUA_THREAD:getRootDir() .. "/classes/?.lua"
 
 function include(file) 
 	return dofile(includeDir .. '/' .. file)
