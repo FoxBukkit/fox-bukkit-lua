@@ -147,6 +147,7 @@ public class FoxBukkitLua extends JavaPlugin {
                     commandSender.sendMessage(makeMessageBuilder().append("Reloaded Lua module ").append(strings[0]).toString());
                     return true;
                 }
+
                 restartAllLuaThreads();
                 commandSender.sendMessage(makeMessageBuilder().append("Reloaded all Lua modules").toString());
                 return true;
@@ -156,24 +157,26 @@ public class FoxBukkitLua extends JavaPlugin {
         getServer().getPluginCommand("lua_load").setExecutor(new CommandExecutor() {
             @Override
             public boolean onCommand(CommandSender commandSender, Command command, String s, String[] strings) {
-                if(strings.length > 0) {
-                    startLuaThread(strings[0], false);
-                    commandSender.sendMessage(makeMessageBuilder().append("Loaded Lua module ").append(strings[0]).toString());
-                    return true;
+                if(strings.length < 1) {
+                    return false;
                 }
-                return false;
+
+                startLuaThread(strings[0], false);
+                commandSender.sendMessage(makeMessageBuilder().append("Loaded Lua module ").append(strings[0]).toString());
+                return true;
             }
         });
 
         getServer().getPluginCommand("lua_unload").setExecutor(new CommandExecutor() {
             @Override
             public boolean onCommand(CommandSender commandSender, Command command, String s, String[] strings) {
-                if(strings.length > 0) {
-                    terminateLuaThread(strings[0]);
-                    commandSender.sendMessage(makeMessageBuilder().append("Unloaded Lua module ").append(strings[0]).toString());
-                    return true;
+                if(strings.length < 1) {
+                    return false;
                 }
-                return false;
+
+                terminateLuaThread(strings[0]);
+                commandSender.sendMessage(makeMessageBuilder().append("Unloaded Lua module ").append(strings[0]).toString());
+                return true;
             }
         });
 
@@ -183,6 +186,7 @@ public class FoxBukkitLua extends JavaPlugin {
                 if(strings.length < 2) {
                     return false;
                 }
+
                 LuaThread luaThread;
                 synchronized (luaThreadList) {
                     luaThread = luaThreadList.get(strings[0]);
@@ -211,6 +215,7 @@ public class FoxBukkitLua extends JavaPlugin {
                 if(strings.length < 2) {
                     return false;
                 }
+                
                 LuaThread luaThread;
                 synchronized (luaThreadList) {
                     luaThread = luaThreadList.get(strings[0]);
@@ -249,7 +254,7 @@ public class FoxBukkitLua extends JavaPlugin {
                     ret.append(module);
                 }
                 commandSender.sendMessage(ret.toString());
-                return false;
+                return true;
             }
         });
     }
