@@ -28,16 +28,19 @@ public class Utils {
     public static UUID CONSOLE_UUID = UUID.nameUUIDFromBytes("[CONSOLE]".getBytes());
 
     public static UUID getCommandSenderUUID(CommandSender commandSender) {
-        if(commandSender instanceof Player)
+        if(commandSender instanceof Player) {
             return ((Player) commandSender).getUniqueId();
-        if(commandSender instanceof ConsoleCommandSender)
+        }
+        if(commandSender instanceof ConsoleCommandSender) {
             return CONSOLE_UUID;
+        }
         return UUID.nameUUIDFromBytes(("[CSUUID:" + commandSender.getClass().getName() + "]").getBytes());
     }
 
     public static String getCommandSenderDisplayName(CommandSender commandSender) {
-        if(commandSender instanceof Player)
+        if(commandSender instanceof Player) {
             return ((Player) commandSender).getDisplayName();
+        }
         return commandSender.getName();
     }
 
