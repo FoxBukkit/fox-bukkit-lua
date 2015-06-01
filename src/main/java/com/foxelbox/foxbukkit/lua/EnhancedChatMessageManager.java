@@ -21,13 +21,14 @@ import com.foxelbox.foxbukkit.chatcomponent.RedisHandler;
 import com.foxelbox.foxbukkit.chatcomponent.json.ChatMessageIn;
 import com.foxelbox.foxbukkit.chatcomponent.json.ChatMessageOut;
 import org.bukkit.command.CommandSender;
+import org.bukkit.plugin.Plugin;
 
 public class EnhancedChatMessageManager {
     private final RedisHandler redisHandler;
 
-    public EnhancedChatMessageManager(LuaThread luaThread) {
+    public EnhancedChatMessageManager(LuaThread luaThread, Plugin enhancedChatPlugin) {
         try {
-            FBChatComponent chatComponent = (FBChatComponent) FoxBukkitLua.instance.getServer().getPluginManager().getPlugin("FoxBukkitChatComponent");
+            FBChatComponent chatComponent = (FBChatComponent) enhancedChatPlugin;
             redisHandler = chatComponent.getRedisHandler();
         } catch (Exception e) {
             throw new RuntimeException(e);

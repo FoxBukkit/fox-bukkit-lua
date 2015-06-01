@@ -17,6 +17,7 @@
 package com.foxelbox.foxbukkit.lua;
 
 import org.bukkit.event.Listener;
+import org.bukkit.plugin.Plugin;
 import org.luaj.vm2.Globals;
 import org.luaj.vm2.LuaFunction;
 import org.luaj.vm2.LuaValue;
@@ -41,12 +42,17 @@ public class LuaThread extends Thread implements Listener {
     }
 
     public LuaThread(Globals g, String module) {
-        EnhancedChatMessageManager ecmm;
+        EnhancedChatMessageManager ecmm = null;
         try {
-            ecmm = new EnhancedChatMessageManager(this);
-        } catch (Exception e) {
-            System.err.println("Could not find FoxBukkitChatComponent. Disabling enhanced chat API.");
+            Plugin ecp = FoxBukkitLua.instance.getServer().getPluginManager().getPlugin("FoxBukkitChatComponent");
+            if(ecp != null) {
+                ecmm = new EnhancedChatMessageManager(this, ecp);
+            }
+        } catch (Throwable t) {
             ecmm = null;
+        }
+        if(ecmm == null) {
+            System.err.println("Could not find FoxBukkitChatComponent. Disabling enhanced chat API.");
         }
         enhancedChatMessageManager = ecmm;
 
