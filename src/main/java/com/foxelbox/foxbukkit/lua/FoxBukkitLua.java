@@ -215,7 +215,7 @@ public class FoxBukkitLua extends JavaPlugin {
                 if(strings.length < 2) {
                     return false;
                 }
-                
+
                 LuaThread luaThread;
                 synchronized (luaThreadList) {
                     luaThread = luaThreadList.get(strings[0]);
