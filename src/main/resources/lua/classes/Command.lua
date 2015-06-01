@@ -45,12 +45,12 @@ return {
 
         permission = permission or self:getSubPermission(cmd[1])
 
-         local syncFunc
-         if sync then
+        local syncFunc
+        if sync or sync == nil then
             syncFunc = Server.runOnMainThread
-         else
+        else
             syncFunc = Server.runOnLuaThread
-         end
+        end
 
         local executor = function(ply, cmd, args, argStr, flagStr)
              flagStr = setmetatable({
