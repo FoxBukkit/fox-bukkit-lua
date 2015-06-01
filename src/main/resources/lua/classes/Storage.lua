@@ -22,20 +22,20 @@ local _entity_mt = {
 			return rawget(tbl, idx:sub(3))
 		end
 
-		local storageTbl = rawget(tbl, 'storage')
+		local storageTbl = rawget(tbl, "storage")
 		local myValue = storageTbl[idx]
 		if myValue ~= nil then
 			return myValue
 		end
 
-		myValue = rawget(tbl, 'extensions')[idx]
+		myValue = rawget(tbl, "extensions")[idx]
 		if myValue ~= nil then
 			return myValue
 		end
 
-		local entity = rawget(tbl, 'entity')
+		local entity = rawget(tbl, "entity")
 		local entityValue = entity[idx]
-		if entityValue and type(entityValue) == 'function' then
+		if entityValue and type(entityValue) == "function" then
 			myValue = function(self, ...)
 				return entityValue(entity, ...)
 			end
@@ -46,12 +46,12 @@ local _entity_mt = {
 		end
 	end,
 	__newindex = function(tbl, idx, value)
-		local entity = rawget(tbl, 'entity')
+		local entity = rawget(tbl, "entity")
 		if entity[idx] ~= nil then
 			entity[idx] = value
 			return
 		end
-		rawget(tbl, 'storage')[idx] = value
+		rawget(tbl, "storage")[idx] = value
 	end,
 	__metatable = false
 }
@@ -75,11 +75,10 @@ local _storage_mt = {
 			extensions = self.extensions
 		}, _entity_mt)
 	end,
-
-	__metatable = false,
 	__newindex = function()
 		error("Readonly")
-	end
+	end,
+	__metatable = false
 }
 
 _storage_mt.__index = _storage_mt

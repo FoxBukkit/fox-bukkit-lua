@@ -22,8 +22,8 @@ local moduleName = __LUA_THREAD:getModule()
 
 local basePermission = "foxbukkit." .. moduleName
 
-local Player = require('Player')
-local Server = require('Server')
+local Player = require("Player")
+local Server = require("Server")
 
 local _flags_mt = {
     __index = {
@@ -31,10 +31,10 @@ local _flags_mt = {
             return self.str:find(flag, 1, true) ~= nil
         end
     },
-    __metatable = false,
     __newindex = function()
         error("Readonly")
-    end
+    end,
+    __metatable = false
 }
 
 return {

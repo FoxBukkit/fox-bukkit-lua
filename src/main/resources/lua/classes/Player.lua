@@ -16,12 +16,12 @@
     along with FoxBukkitLua.  If not, see <http://www.gnu.org/licenses/>.
 
 ]]
-local bukkitServer = require('Server'):getBukkitServer()
+local bukkitServer = require("Server"):getBukkitServer()
 local UUID = luajava.bindClass("java.util.UUID")
 
-local Chat = require('Chat')
+local Chat = require("Chat")
 
-local playerStorage = require('Storage'):create('getUniqueId', {
+local playerStorage = require("Storage"):create("getUniqueId", {
 	sendXML = function(self, message)
 		return Chat:sendLocalToPlayer(message, self.__entity)
 	end

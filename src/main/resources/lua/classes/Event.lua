@@ -22,10 +22,10 @@ local eventManager = __LUA_THREAD:getEventManager()
 
 return {
 	register = function(self, event, priority, callback, b)
-		if type(event) == 'string' then
+		if type(event) == "string" then
 			event = luajava.bindClass(event)
 		end
-		if type(priority) == 'string' then
+		if type(priority) == "string" then
 			priority = eventPriority[priority:upper()]
 		end
 		return eventManager:register(event, priority, b or false, callback)
