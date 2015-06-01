@@ -4,5 +4,3 @@ local rootDir = __ROOTDIR__
 function include(file) 
 	return dofile(rootDir .. '/' .. file)
 end
-
-include("main.lua")

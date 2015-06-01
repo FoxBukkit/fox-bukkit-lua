@@ -14,6 +14,15 @@ import java.util.concurrent.LinkedBlockingQueue;
 public class LuaThread extends Thread implements Listener {
     private final Globals g;
     private volatile boolean running = true;
+    private final String module;
+
+    public String getModule() {
+        return module;
+    }
+
+    public boolean isRunning() {
+        return running;
+    }
 
     private final LinkedBlockingQueue<Invoker> pendingTasks =  new LinkedBlockingQueue<>();
 
@@ -124,12 +133,14 @@ public class LuaThread extends Thread implements Listener {
         new LuaFunctionInvoker(LuaThread.this, function).run(false);
     }
 
-    public LuaThread() {
-        this(JsePlatform.debugGlobals());
+    public LuaThread(String module) {
+        this(JsePlatform.debugGlobals(), module);
     }
 
-    public LuaThread(Globals g) {
+    public LuaThread(Globals g, String module) {
         this.g = g;
+        this.module = module;
+        setName("LuaThread - " + module);
     }
 
     @Override
@@ -138,25 +149,33 @@ public class LuaThread extends Thread implements Listener {
             synchronized (g) {
                 g.set("__LUA_THREAD__", CoerceJavaToLua.coerce(this));
                 g.set("__ROOTDIR__", FoxBukkit.instance.getLuaFolder().getAbsolutePath());
+                g.set("__MODULEDIR__", new File(FoxBukkit.instance.getLuaModulesFolder(), module).getAbsolutePath());
                 g.loadfile(new File(FoxBukkit.instance.getLuaFolder(), "init.lua").getAbsolutePath()).call();
             }
-            while(running) {
+            while (running) {
                 Invoker invoker;
                 while ((invoker = pendingTasks.poll()) != null) {
                     invoker.start();
                 }
                 synchronized (this) {
-                    if(pendingTasks.isEmpty()) {
+                    if (pendingTasks.isEmpty()) {
                         this.wait();
                     }
                 }
             }
         } catch (InterruptedException e) {
+
+        } catch (Exception e) {
             e.printStackTrace();
+            terminate(false);
         }
     }
 
-    public synchronized void terminate() {
+    public void terminate() {
+        terminate(true);
+    }
+
+    private synchronized void terminate(boolean doJoin) {
         if(!running) {
             return;
         }
@@ -167,18 +186,20 @@ public class LuaThread extends Thread implements Listener {
                 running = false;
                 pendingTasks.clear();
                 eventManager.unregisterAll();
-                this.notify();
+                if(doJoin) {
+                    this.notify();
+                }
             }
         }
 
-        try {
-            this.join();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        if(doJoin) {
+            try {
+                this.join();
+            } catch (Exception e) { }
 
-        //Ensure there are no leftover events. At this point the thread has ended so it is impossible for more to come up
-        eventManager.unregisterAll();
-        pendingTasks.clear();
+            //Ensure there are no leftover events. At this point the thread has ended so it is impossible for more to come up
+            eventManager.unregisterAll();
+            pendingTasks.clear();
+        }
     }
 }
