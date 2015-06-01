@@ -1,5 +1,6 @@
 package com.foxelbox.foxbukkit.lua;
 
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -73,6 +74,7 @@ public class CommandManagerMaster implements Listener {
         @Override
         protected LuaValue invoke() {
             Varargs varargs = LuaValue.varargsOf(new LuaValue[] {
+                    coerce(commandLine.getSource()),
                     coerce(commandLine.getCommand()),
                     coerce(commandLine.getArguments()),
                     coerce(commandLine.getArgumentString()),
@@ -90,7 +92,6 @@ public class CommandManagerMaster implements Listener {
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onPlayerCommandPreprocess(PlayerCommandPreprocessEvent event) {
-        final Player who = event.getPlayer();
         String message = event.getMessage();
 
         int splitter = message.indexOf(' ');
@@ -118,7 +119,7 @@ public class CommandManagerMaster implements Listener {
             return;
         }
 
-        final LuaValue ret = invoker.doRun(new ParsedCommandLine(cmdStr, argStr));
+        final LuaValue ret = invoker.doRun(new ParsedCommandLine(event.getPlayer(), cmdStr, argStr));
 
         // Return true/nonboolean for continue, false for cancel
         if(ret != null && ret.isboolean()) {
@@ -134,12 +135,14 @@ public class CommandManagerMaster implements Listener {
         private final String flagStr;
         private final String rawArguments;
         private final String command;
+        private final CommandSender source;
 
         private static final Pattern ARGUMENT_PATTERN = Pattern.compile("([^\"]\\S*|\".+?\")\\s*");
 
-        public ParsedCommandLine(String command, String rawArguments) {
+        public ParsedCommandLine(CommandSender source, String command, String rawArguments) {
             this.rawArguments = rawArguments;
             this.command = command;
+            this.source = source;
 
             if(rawArguments.isEmpty()) {
                 parsedArguments = new String[0];
@@ -199,6 +202,10 @@ public class CommandManagerMaster implements Listener {
 
         public String getFlagsString() {
             return flagStr;
+        }
+
+        public CommandSender getSource() {
+            return source;
         }
 
         public String getCommand() {
