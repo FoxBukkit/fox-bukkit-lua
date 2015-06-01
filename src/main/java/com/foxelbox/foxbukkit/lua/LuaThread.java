@@ -35,6 +35,7 @@ public class LuaThread extends Thread implements Listener {
 
     private final EnhancedChatMessageManager enhancedChatMessageManager;
     private final EventManager eventManager = new EventManager(this);
+    private final CommandManager commandManager = new CommandManager(this);
 
     public LuaThread(String module) {
         this(JsePlatform.debugGlobals(), module);
@@ -74,6 +75,10 @@ public class LuaThread extends Thread implements Listener {
 
     public EnhancedChatMessageManager getEnhancedChatMessageManager() {
         return enhancedChatMessageManager;
+    }
+
+    public CommandManager getCommandManager() {
+        return commandManager;
     }
 
     public static abstract class Invoker implements Runnable {
