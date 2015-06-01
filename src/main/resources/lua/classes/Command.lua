@@ -38,16 +38,25 @@ local _flags_mt = {
 
 return {
     register = function(self, cmd, func, permission)
-        permission = permission or self:getSubPermission(cmd)
-        return cmdManager:register(cmd, permission, function(ply, cmd, args, argStr, flagStr)
-            flagStr = setmetatable({
-                str = flagStr
-            }, _flags_mt)
-            if ply.getUniqueId then
-                ply = Player:extend(ply)
-            end
-            return func(ply, cmd, args, argStr, flagStr)
-        end)
+        if type(cmd) ~= "table" then
+            cmd = {cmd}
+        end
+
+        permission = permission or self:getSubPermission(cmd[1])
+
+        local executor = function(ply, cmd, args, argStr, flagStr)
+             flagStr = setmetatable({
+                 str = flagStr
+             }, _flags_mt)
+             if ply.getUniqueId then
+                 ply = Player:extend(ply)
+             end
+             return func(ply, cmd, args, argStr, flagStr)
+         end
+
+        for _, cmdAlias in pairs(cmd) do
+            return cmdManager:register(cmdAlias, permission, executor)
+        end
     end,
     unregister = function(self, cmd)
         cmdManager:unregister(cmd)
