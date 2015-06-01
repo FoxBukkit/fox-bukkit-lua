@@ -19,7 +19,6 @@ package com.foxelbox.foxbukkit.lua;
 import org.bukkit.event.*;
 import org.bukkit.plugin.EventExecutor;
 import org.luaj.vm2.LuaBoolean;
-import org.luaj.vm2.LuaFunction;
 import org.luaj.vm2.LuaValue;
 import org.luaj.vm2.lib.jse.CoerceJavaToLua;
 
@@ -36,14 +35,14 @@ public class EventManager implements EventExecutor {
 
     private class LuaEventInvoker extends LuaThread.Invoker {
         private Event event;
-        private final LuaFunction function;
+        private final LuaValue function;
 
         public LuaEventInvoker setEvent(Event event) {
             this.event = event;
             return this;
         }
 
-        public LuaEventInvoker(LuaThread luaThread, LuaFunction function) {
+        public LuaEventInvoker(LuaThread luaThread, LuaValue function) {
             super(luaThread);
             this.function = function;
         }
@@ -57,7 +56,7 @@ public class EventManager implements EventExecutor {
     private class LuaListener implements Listener {
         private final LuaEventInvoker invoker;
 
-        public LuaListener(final LuaFunction function) {
+        public LuaListener(final LuaValue function) {
             this.invoker = new LuaEventInvoker(luaThread, function);
         }
 
@@ -84,7 +83,7 @@ public class EventManager implements EventExecutor {
         luaListener.run(event);
     }
 
-    public Listener register(final Class<? extends Event> eventClass, final EventPriority eventPriority, final boolean b, final LuaFunction function) {
+    public Listener register(final Class<? extends Event> eventClass, final EventPriority eventPriority, final boolean b, final LuaValue function) {
         final LuaListener listener = new LuaListener(function);
         FoxBukkitLua.instance.getServer().getPluginManager().registerEvent(eventClass, listener, eventPriority, this, FoxBukkitLua.instance, b);
         synchronized (listeners) {

@@ -19,11 +19,11 @@ package com.foxelbox.foxbukkit.lua;
 import com.foxelbox.dependencies.config.Configuration;
 import com.foxelbox.dependencies.redis.RedisManager;
 import com.foxelbox.dependencies.threading.SimpleThreadCreator;
-import com.foxelbox.foxbukkit.chatcomponent.FBChatComponent;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.luaj.vm2.LuaValue;
 
 import java.io.File;
 import java.util.Collection;
@@ -32,12 +32,9 @@ import java.util.LinkedList;
 
 public class FoxBukkitLua extends JavaPlugin {
     public static FoxBukkitLua instance;
-    public static FBChatComponent chatComponent;
 
     public Configuration configuration;
-
     public RedisManager redisManager;
-
     private final HashMap<String, LuaThread> luaThreadList = new HashMap<>();
 
     public File getLuaFolder() {
@@ -46,6 +43,10 @@ public class FoxBukkitLua extends JavaPlugin {
 
     public File getLuaModulesFolder() {
         return new File(getDataFolder(), "modules");
+    }
+
+    public File getLuaScriptsFolder() {
+        return new File(getDataFolder(), "scripts");
     }
 
     private void cleanupLuaThreadList() {
@@ -130,6 +131,7 @@ public class FoxBukkitLua extends JavaPlugin {
     public void onEnable() {
         getLuaFolder().mkdirs();
         getLuaModulesFolder().mkdirs();
+        getLuaScriptsFolder().mkdirs();
 
         instance = this;
         configuration = new Configuration(getDataFolder());
@@ -172,6 +174,62 @@ public class FoxBukkitLua extends JavaPlugin {
                     return true;
                 }
                 return false;
+            }
+        });
+
+        getServer().getPluginCommand("lua_run").setExecutor(new CommandExecutor() {
+            @Override
+            public boolean onCommand(CommandSender commandSender, Command command, String s, String[] strings) {
+                if(strings.length < 2) {
+                    return false;
+                }
+                LuaThread luaThread;
+                synchronized (luaThreadList) {
+                    luaThread = luaThreadList.get(strings[0]);
+                }
+                if(luaThread == null) {
+                    return false;
+                }
+
+                LuaValue code;
+                try {
+                    code = luaThread.g.load(Utils.concatArray(strings, 1, ""));
+                } catch (Exception e) {
+                    commandSender.sendMessage(makeMessageBuilder().append("Error in Lua code: ").append(e.getMessage()).toString());
+                    return true;
+                }
+
+                LuaValue ret = new LuaThread.LuaFunctionInvoker(luaThread, code).getResult();
+                commandSender.sendMessage(makeMessageBuilder().append("Code = ").append(ret).toString());
+                return true;
+            }
+        });
+
+        getServer().getPluginCommand("lua_runfile").setExecutor(new CommandExecutor() {
+            @Override
+            public boolean onCommand(CommandSender commandSender, Command command, String s, String[] strings) {
+                if(strings.length < 2) {
+                    return false;
+                }
+                LuaThread luaThread;
+                synchronized (luaThreadList) {
+                    luaThread = luaThreadList.get(strings[0]);
+                }
+                if(luaThread == null) {
+                    return false;
+                }
+
+                LuaValue code;
+                try {
+                    code = luaThread.g.loadfile(new File(getLuaScriptsFolder(), strings[1]).getAbsolutePath());
+                } catch (Exception e) {
+                    commandSender.sendMessage(makeMessageBuilder().append("Error in Lua file: ").append(e.getMessage()).toString());
+                    return true;
+                }
+
+                LuaValue ret = new LuaThread.LuaFunctionInvoker(luaThread, code).getResult();
+                commandSender.sendMessage(makeMessageBuilder().append("Code = ").append(ret).toString());
+                return true;
             }
         });
 

@@ -19,7 +19,6 @@ package com.foxelbox.foxbukkit.lua;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.Plugin;
 import org.luaj.vm2.Globals;
-import org.luaj.vm2.LuaFunction;
 import org.luaj.vm2.LuaValue;
 import org.luaj.vm2.lib.jse.CoerceJavaToLua;
 import org.luaj.vm2.lib.jse.JsePlatform;
@@ -28,7 +27,7 @@ import java.io.File;
 import java.util.concurrent.LinkedBlockingQueue;
 
 public class LuaThread extends Thread implements Listener {
-    private final Globals g;
+    public final Globals g;
     private volatile boolean running = true;
     private final String module;
 
@@ -152,9 +151,9 @@ public class LuaThread extends Thread implements Listener {
     }
 
     public static class LuaFunctionInvoker extends Invoker {
-        private final LuaFunction function;
+        private final LuaValue function;
 
-        public LuaFunctionInvoker(LuaThread luaThread, LuaFunction function) {
+        public LuaFunctionInvoker(LuaThread luaThread, LuaValue function) {
             super(luaThread);
             this.function = function;
         }
@@ -165,11 +164,11 @@ public class LuaThread extends Thread implements Listener {
         }
     }
 
-    public void runOnMainThread(final LuaFunction function) {
+    public void runOnMainThread(final LuaValue function) {
         FoxBukkitLua.instance.getServer().getScheduler().scheduleSyncDelayedTask(FoxBukkitLua.instance, new LuaFunctionInvoker(LuaThread.this, function));
     }
 
-    public void runOnLuaThread(final LuaFunction function) {
+    public void runOnLuaThread(final LuaValue function) {
         new LuaFunctionInvoker(LuaThread.this, function).run(false);
     }
 

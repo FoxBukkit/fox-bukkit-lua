@@ -23,3 +23,11 @@ commands:
     description: Lists loaded/available modules
     permission: foxbukkit.lua.list
     usage: /<command>
+  lua_run:
+    description: Run lua code in context of module
+    permission: foxbukkit.lua.run
+    usage: /<command> <module> <code>
+  lua_runfile:
+    description: Run lua file in context of module
+    permission: foxbukkit.lua.runfile
+    usage: /<command> <module> <file>
