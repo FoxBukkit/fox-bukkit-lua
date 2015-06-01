@@ -8,7 +8,9 @@ import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.plugin.PluginManager;
 import org.luaj.vm2.LuaBoolean;
 import org.luaj.vm2.LuaValue;
-import org.luaj.vm2.lib.jse.CoerceJavaToLua;
+import org.luaj.vm2.Varargs;
+
+import static org.luaj.vm2.lib.jse.CoerceJavaToLua.coerce;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -70,7 +72,13 @@ public class CommandManagerMaster implements Listener {
 
         @Override
         protected LuaValue invoke() {
-            return function.call(CoerceJavaToLua.coerce(commandLine));
+            Varargs varargs = LuaValue.varargsOf(new LuaValue[] {
+                    coerce(commandLine.getCommand()),
+                    coerce(commandLine.getArguments()),
+                    coerce(commandLine.getArgumentString()),
+                    coerce(commandLine.getFlagsString())
+            });
+            return function.invoke(varargs).arg1();
         }
 
         private synchronized LuaValue doRun(CommandManagerMaster.ParsedCommandLine commandLine) {
@@ -187,6 +195,10 @@ public class CommandManagerMaster implements Listener {
 
         public boolean hasFlag(char flag) {
             return flagStr.indexOf(flag) >= 0;
+        }
+
+        public String getFlagsString() {
+            return flagStr;
         }
 
         public String getCommand() {
