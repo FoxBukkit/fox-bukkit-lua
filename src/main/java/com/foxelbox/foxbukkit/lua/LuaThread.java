@@ -86,7 +86,9 @@ public class LuaThread extends Thread implements Listener {
         protected final void start() {
             synchronized (this) {
                 try {
-                    result = invoke();
+                    synchronized (luaThread.g) {
+                        result = invoke();
+                    }
                 } catch (Exception e) {
                     System.err.println("Exception running Invoker");
                     e.printStackTrace();
