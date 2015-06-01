@@ -24,6 +24,8 @@ import org.luaj.vm2.lib.jse.CoerceJavaToLua;
 import org.luaj.vm2.lib.jse.JsePlatform;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.concurrent.LinkedBlockingQueue;
 
 public class LuaThread extends Thread implements Listener {
@@ -185,12 +187,25 @@ public class LuaThread extends Thread implements Listener {
         return new File(FoxBukkitLua.instance.getLuaModulesFolder(), module).getAbsolutePath();
     }
 
+    public LuaValue loadPackagedFile(String name) {
+        InputStream inputStream = LuaThread.class.getResourceAsStream("/lua/" + name);
+        if(inputStream == null) {
+            return null;
+        }
+        return g.load(inputStream, name, "t", g);
+    }
+
     @Override
     public void run() {
         try {
             synchronized (g) {
                 g.set("__LUA_THREAD", CoerceJavaToLua.coerce(this));
-                g.loadfile(new File(FoxBukkitLua.instance.getLuaFolder(), "init.lua").getAbsolutePath()).call();
+                File overrideInit = new File(getRootDir(), "init.lua");
+                if(overrideInit.exists()) {
+                    g.loadfile(overrideInit.getAbsolutePath()).call();
+                } else {
+                    loadPackagedFile("init.lua").call();
+                }
             }
             while (running) {
                 Invoker invoker;

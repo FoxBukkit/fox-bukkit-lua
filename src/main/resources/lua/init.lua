@@ -17,11 +17,25 @@
 
 ]]
 
-local includeDir = __LUA_THREAD:getModuleDir()
-package.path = includeDir .. "/classes/?.lua;" .. __LUA_THREAD:getRootDir() .. "/classes/?.lua"
+local luaThread = __LUA_THREAD
+local includeDir = luaThread:getModuleDir()
+package.path = includeDir .. "/classes/?.lua;" .. luaThread:getRootDir() .. "/classes/?.lua"
 
-function include(file) 
-	return dofile(includeDir .. '/' .. file)
+table.insert(package.searchers, 2, function(module)
+    return luaThread:loadPackagedFile("classes/" .. module .. ".lua")
+end)
+
+for k,v in pairs(package.searchers) do
+    print(tostring(k) .. "      " .. tostring(v))
 end
 
-include("main.lua")
+local _dofile = dofile
+local _loadfile = loadfile
+function dofile(file)
+	return _dofile(includeDir .. '/' .. file)
+end
+function loadfile(file)
+    return _loadfile(includeDir .. '/' .. file)
+end
+
+dofile("main.lua")
