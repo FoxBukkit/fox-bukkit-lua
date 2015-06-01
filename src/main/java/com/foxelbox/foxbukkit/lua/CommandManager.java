@@ -1,9 +1,8 @@
 package com.foxelbox.foxbukkit.lua;
 
 import org.bukkit.event.EventHandler;
-import org.bukkit.event.EventPriority;
+import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
-import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 
 public class CommandManager implements Listener {
     private final LuaThread luaThread;
@@ -13,8 +12,12 @@ public class CommandManager implements Listener {
         FoxBukkitLua.instance.getServer().getPluginManager().registerEvents(this, FoxBukkitLua.instance);
     }
 
-    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
-    public void onPlayerCommandPreprocess(PlayerCommandPreprocessEvent event) {
+    public void unregisterAll() {
+        HandlerList.unregisterAll(this);
+    }
+
+    @EventHandler(ignoreCancelled = true)
+    public void onCommand(CommandManagerMaster.CommandEvent event) {
 
     }
 }

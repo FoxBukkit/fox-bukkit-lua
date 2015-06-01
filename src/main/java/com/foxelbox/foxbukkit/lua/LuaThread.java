@@ -220,6 +220,7 @@ public class LuaThread extends Thread implements Listener {
                 running = false;
                 pendingTasks.clear();
                 eventManager.unregisterAll();
+                commandManager.unregisterAll();
                 if(doJoin) {
                     this.notify();
                 }

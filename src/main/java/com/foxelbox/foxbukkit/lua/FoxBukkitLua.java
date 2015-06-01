@@ -36,6 +36,7 @@ public class FoxBukkitLua extends JavaPlugin {
     public Configuration configuration;
     public RedisManager redisManager;
     private final HashMap<String, LuaThread> luaThreadList = new HashMap<>();
+    private CommandManagerMaster commandManagerMaster;
 
     public File getLuaFolder() {
         return new File(getDataFolder(), "base");
@@ -121,6 +122,10 @@ public class FoxBukkitLua extends JavaPlugin {
     @Override
     public void onDisable() {
         terminateAllLuaThreads();
+        configuration = null;
+        redisManager = null;
+        commandManagerMaster = null;
+        instance = null;
     }
 
     private StringBuilder makeMessageBuilder() {
@@ -136,6 +141,7 @@ public class FoxBukkitLua extends JavaPlugin {
         instance = this;
         configuration = new Configuration(getDataFolder());
         redisManager = new RedisManager(new SimpleThreadCreator(), configuration);
+        commandManagerMaster = new CommandManagerMaster();
 
         restartAllLuaThreads();
 
