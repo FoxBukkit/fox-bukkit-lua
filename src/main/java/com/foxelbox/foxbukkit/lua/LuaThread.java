@@ -157,18 +157,24 @@ public class LuaThread extends Thread implements Listener {
             return;
         }
         running = false;
+
         synchronized (this) {
             synchronized (g) {
                 running = false;
-                eventManager.unregisterAll();
                 pendingTasks.clear();
+                eventManager.unregisterAll();
                 this.notify();
             }
         }
+
         try {
             this.join();
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+
+        //Ensure there are no leftover events. At this point the thread has ended so it is impossible for more to come up
+        eventManager.unregisterAll();
+        pendingTasks.clear();
     }
 }
