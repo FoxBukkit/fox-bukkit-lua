@@ -31,6 +31,30 @@ public class LuaThread extends Thread implements Listener {
     private volatile boolean running = true;
     private final String module;
 
+    private final LinkedBlockingQueue<Invoker> pendingTasks =  new LinkedBlockingQueue<>();
+
+    private final EnhancedChatMessageManager enhancedChatMessageManager;
+    private final EventManager eventManager = new EventManager(this);
+
+    public LuaThread(String module) {
+        this(JsePlatform.debugGlobals(), module);
+    }
+
+    public LuaThread(Globals g, String module) {
+        EnhancedChatMessageManager ecmm;
+        try {
+            ecmm = new EnhancedChatMessageManager(this);
+        } catch (Exception e) {
+            System.err.println("Could not find FoxBukkitChatComponent. Disabling enhanced chat API.");
+            ecmm = null;
+        }
+        enhancedChatMessageManager = ecmm;
+
+        this.g = g;
+        this.module = module;
+        setName("LuaThread - " + module);
+    }
+
     public String getModule() {
         return module;
     }
@@ -39,17 +63,12 @@ public class LuaThread extends Thread implements Listener {
         return running;
     }
 
-    private final LinkedBlockingQueue<Invoker> pendingTasks =  new LinkedBlockingQueue<>();
-
-    private final ChatMessageManager chatMessageManager = new ChatMessageManager(this);
-    private final EventManager eventManager = new EventManager(this);
-
     public EventManager getEventManager() {
         return eventManager;
     }
 
-    public ChatMessageManager getChatMessageManager() {
-        return chatMessageManager;
+    public EnhancedChatMessageManager getEnhancedChatMessageManager() {
+        return enhancedChatMessageManager;
     }
 
     public static abstract class Invoker implements Runnable {
@@ -146,16 +165,6 @@ public class LuaThread extends Thread implements Listener {
 
     public void runOnLuaThread(final LuaFunction function) {
         new LuaFunctionInvoker(LuaThread.this, function).run(false);
-    }
-
-    public LuaThread(String module) {
-        this(JsePlatform.debugGlobals(), module);
-    }
-
-    public LuaThread(Globals g, String module) {
-        this.g = g;
-        this.module = module;
-        setName("LuaThread - " + module);
     }
 
     @Override

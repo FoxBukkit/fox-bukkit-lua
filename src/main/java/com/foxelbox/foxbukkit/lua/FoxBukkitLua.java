@@ -134,7 +134,6 @@ public class FoxBukkitLua extends JavaPlugin {
         instance = this;
         configuration = new Configuration(getDataFolder());
         redisManager = new RedisManager(new SimpleThreadCreator(), configuration);
-        chatComponent = (FBChatComponent)getServer().getPluginManager().getPlugin("FoxBukkitChatComponent");
 
         restartAllLuaThreads();
 

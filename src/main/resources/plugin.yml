@@ -1,7 +1,7 @@
 name: FoxBukkitLua
 main: com.foxelbox.foxbukkit.lua.FoxBukkitLua
 version: 1.0.0
-softdepend: [WorldEdit, LogBlock, FoxBukkitChatComponent]
+softdepend: [FoxBukkitChatComponent]
 commands:
   fbl:
     description: Runs any FoxBukkit Lua command (used for console)
