@@ -1,22 +1,22 @@
 package com.foxelbox.foxbukkit.lua;
 
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.plugin.PluginManager;
 import org.luaj.vm2.LuaBoolean;
+import org.luaj.vm2.LuaTable;
 import org.luaj.vm2.LuaValue;
 import org.luaj.vm2.Varargs;
-
-import static org.luaj.vm2.lib.jse.CoerceJavaToLua.coerce;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import static org.luaj.vm2.lib.jse.CoerceJavaToLua.coerce;
 
 public class CommandManagerMaster implements Listener {
     private final PluginManager pluginManager;
@@ -76,7 +76,7 @@ public class CommandManagerMaster implements Listener {
             Varargs varargs = LuaValue.varargsOf(new LuaValue[] {
                     coerce(commandLine.getSource()),
                     coerce(commandLine.getCommand()),
-                    coerce(commandLine.getArguments()),
+                    commandLine.getArguments(),
                     coerce(commandLine.getArgumentString()),
                     coerce(commandLine.getFlagsString())
             });
@@ -93,6 +93,10 @@ public class CommandManagerMaster implements Listener {
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onPlayerCommandPreprocess(PlayerCommandPreprocessEvent event) {
         String message = event.getMessage();
+        if(message.length() < 2) {
+            return;
+        }
+        message = message.substring(1);
 
         int splitter = message.indexOf(' ');
         if(splitter == 0) {
@@ -131,7 +135,7 @@ public class CommandManagerMaster implements Listener {
     }
 
     public static class ParsedCommandLine {
-        private final String[] parsedArguments;
+        private final LuaTable parsedArguments;
         private final String flagStr;
         private final String rawArguments;
         private final String command;
@@ -144,8 +148,8 @@ public class CommandManagerMaster implements Listener {
             this.command = command;
             this.source = source;
 
+            this.parsedArguments = new LuaTable();
             if(rawArguments.isEmpty()) {
-                parsedArguments = new String[0];
                 flagStr = "";
                 return;
             }
@@ -160,7 +164,6 @@ public class CommandManagerMaster implements Listener {
                         myArgStr = myArgStr.substring(spacePos + 1).trim();
                     } else {
                         flagStr = myArgStr.toLowerCase();
-                        parsedArguments = new String[0];
                         return;
                     }
                 } else {
@@ -171,7 +174,6 @@ public class CommandManagerMaster implements Listener {
             }
 
             if(myArgStr.isEmpty()) {
-                parsedArguments = new String[0];
                 return;
             }
 
@@ -182,13 +184,11 @@ public class CommandManagerMaster implements Listener {
                 if(str.charAt(0) == '"') {
                     str = str.substring(1, str.length() - 1);
                 }
-                arguments.add(str);
+                parsedArguments.insert(0, coerce(str));
             }
-
-            parsedArguments = arguments.toArray(new String[arguments.size()]);
         }
 
-        public String[] getArguments() {
+        public LuaTable getArguments() {
             return parsedArguments;
         }
 
