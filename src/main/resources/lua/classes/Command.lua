@@ -45,26 +45,26 @@ return {
 
         permission = permission or self:getSubPermission(cmd[1])
 
-        local syncFunc
-        if sync or sync == nil then
-            syncFunc = Server.runOnMainThread
-        else
-            syncFunc = Server.runOnLuaThread
+        local executor = function(ply, cmd, args, argStr, flagStr)
+            flagStr = setmetatable({
+                str = flagStr
+            }, _flags_mt)
+
+            if ply.getUniqueId then
+                ply = Player:extend(ply)
+            end
+
+            return func(ply, cmd, args, argStr, flagStr)
         end
 
-        local executor = function(ply, cmd, args, argStr, flagStr)
-             flagStr = setmetatable({
-                 str = flagStr
-             }, _flags_mt)
-
-             if ply.getUniqueId then
-                 ply = Player:extend(ply)
-             end
-
-            syncFunc(Server, function()
-                return func(ply, cmd, args, argStr, flagStr)
-            end)
-         end
+        if sync == false then
+            local execFunc = executor
+            executor = function(ply, cmd, args, argStr, flagStr)
+                Server:runOnLuaThread(function()
+                    return execFunc(ply, cmd, args, argStr, flagStr)
+                end)
+            end
+        end
 
         for _, cmdAlias in pairs(cmd) do
             return cmdManager:register(cmdAlias, permission, executor)

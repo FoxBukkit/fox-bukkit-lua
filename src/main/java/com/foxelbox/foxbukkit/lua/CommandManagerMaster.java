@@ -102,10 +102,10 @@ public class CommandManagerMaster implements Listener {
             return function.invoke(varargs).arg1();
         }
 
-        private synchronized void doRun(CommandManagerMaster.ParsedCommandLine commandLine) {
+        private synchronized LuaValue doRun(CommandManagerMaster.ParsedCommandLine commandLine) {
             reset();
             setCommandLine(commandLine);
-            run(false);
+            return getResult();
         }
     }
 
@@ -143,8 +143,12 @@ public class CommandManagerMaster implements Listener {
             return;
         }
 
-        event.setCancelled(true);
-        invoker.doRun(new ParsedCommandLine(source, cmdStr, argStr));
+        final LuaValue ret = invoker.doRun(new ParsedCommandLine(source, cmdStr, argStr));
+
+        // Return true/nonboolean for handled, false for unhandled (fallthrough)
+        if(ret == null || !ret.isboolean() || ((LuaBoolean)ret).booleanValue()) {
+            event.setCancelled(true);
+        }
     }
 
     public static class ParsedCommandLine {
