@@ -17,6 +17,7 @@
 package com.foxelbox.foxbukkit.lua;
 
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -43,9 +44,9 @@ public class CommandManagerMaster implements Listener {
         pluginManager.registerEvents(this, FoxBukkitLua.instance);
     }
 
-    public void register(String command, LuaThread thread, LuaValue handler) {
+    public void register(String command, String permission, LuaThread thread, LuaValue handler) {
         synchronized (commandHandlers) {
-            commandHandlers.put(command.trim().toLowerCase(), new LuaCommandInvoker(command, thread, handler));
+            commandHandlers.put(command.trim().toLowerCase(), new LuaCommandInvoker(command, permission, thread, handler));
         }
     }
 
@@ -73,6 +74,7 @@ public class CommandManagerMaster implements Listener {
         private CommandManagerMaster.ParsedCommandLine commandLine;
         private final LuaValue function;
         private final String command;
+        private final String permission;
         private final LuaThread luaThread;
 
         public LuaCommandInvoker setCommandLine(CommandManagerMaster.ParsedCommandLine commandLine) {
@@ -80,11 +82,12 @@ public class CommandManagerMaster implements Listener {
             return this;
         }
 
-        public LuaCommandInvoker(String command, LuaThread luaThread, LuaValue function) {
+        public LuaCommandInvoker(String command, String permission, LuaThread luaThread, LuaValue function) {
             super(luaThread);
             this.luaThread = luaThread;
             this.function = function;
             this.command = command;
+            this.permission = permission;
         }
 
         @Override
@@ -135,11 +138,12 @@ public class CommandManagerMaster implements Listener {
         synchronized (commandHandlers) {
             invoker = commandHandlers.get(cmdStr);
         }
-        if(invoker == null) {
+        Player source = event.getPlayer();
+        if(invoker == null || !source.hasPermission(invoker.permission)) {
             return;
         }
 
-        final LuaValue ret = invoker.doRun(new ParsedCommandLine(event.getPlayer(), cmdStr, argStr));
+        final LuaValue ret = invoker.doRun(new ParsedCommandLine(source, cmdStr, argStr));
 
         // Return true/nonboolean for continue, false for cancel
         if(ret != null && ret.isboolean()) {

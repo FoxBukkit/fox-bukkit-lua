@@ -18,6 +18,7 @@
 ]]
 
 local cmdManager = __LUA_THREAD:getCommandManager()
+local moduleName = __LUA_THREAD:getModule()
 
 local Player = require('Player')
 
@@ -34,8 +35,9 @@ local _flags_mt = {
 }
 
 return {
-    register = function(self, cmd, func)
-        return cmdManager:register(cmd, function(ply, cmd, args, argStr, flagStr)
+    register = function(self, cmd, func, permission)
+        permission = permission or ("foxbukkit." .. moduleName .. "." .. cmd)
+        return cmdManager:register(cmd, permission, function(ply, cmd, args, argStr, flagStr)
             flagStr = setmetatable({
                 str = flagStr
             }, _flags_mt)

@@ -29,8 +29,8 @@ public class CommandManager {
         FoxBukkitLua.instance.commandManagerMaster.unregisterAll(luaThread);
     }
 
-    public void register(String command,  LuaValue handler) {
-        FoxBukkitLua.instance.commandManagerMaster.register(command, luaThread, handler);
+    public void register(String command, String permission, LuaValue handler) {
+        FoxBukkitLua.instance.commandManagerMaster.register(command, permission, luaThread, handler);
     }
 
     public void unregister(String command) {
