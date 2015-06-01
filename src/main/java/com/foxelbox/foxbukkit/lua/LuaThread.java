@@ -24,12 +24,11 @@ import org.luaj.vm2.lib.jse.CoerceJavaToLua;
 import org.luaj.vm2.lib.jse.JsePlatform;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.concurrent.LinkedBlockingQueue;
 
 public class LuaThread extends Thread implements Listener {
-    public final Globals g;
+    Globals g;
     private volatile boolean running = true;
     private final String module;
 
@@ -40,10 +39,6 @@ public class LuaThread extends Thread implements Listener {
     private final CommandManager commandManager = new CommandManager(this);
 
     public LuaThread(String module) {
-        this(JsePlatform.debugGlobals(), module);
-    }
-
-    public LuaThread(Globals g, String module) {
         EnhancedChatMessageManager ecmm = null;
         try {
             Plugin ecp = FoxBukkitLua.instance.getServer().getPluginManager().getPlugin("FoxBukkitChatComponent");
@@ -58,7 +53,6 @@ public class LuaThread extends Thread implements Listener {
         }
         enhancedChatMessageManager = ecmm;
 
-        this.g = g;
         this.module = module;
         setName("LuaThread - " + module);
     }
@@ -198,6 +192,7 @@ public class LuaThread extends Thread implements Listener {
     @Override
     public void run() {
         try {
+            g = JsePlatform.debugGlobals();
             synchronized (g) {
                 g.set("__LUA_THREAD", CoerceJavaToLua.coerce(this));
                 File overrideInit = new File(getRootDir(), "init.lua");
