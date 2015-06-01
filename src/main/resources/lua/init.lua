@@ -21,13 +21,9 @@ local luaThread = __LUA_THREAD
 local includeDir = luaThread:getModuleDir()
 package.path = includeDir .. "/classes/?.lua;" .. luaThread:getRootDir() .. "/classes/?.lua"
 
-table.insert(package.searchers, 2, function(module)
+table.insert(package.searchers, 3, function(module)
     return luaThread:loadPackagedFile("classes/" .. module .. ".lua")
 end)
-
-for k,v in pairs(package.searchers) do
-    print(tostring(k) .. "      " .. tostring(v))
-end
 
 local _dofile = dofile
 local _loadfile = loadfile
