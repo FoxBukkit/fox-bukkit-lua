@@ -16,17 +16,17 @@
     along with FoxBukkitLua.  If not, see <http://www.gnu.org/licenses/>.
 
 ]]
-local BukkitServer = luajava.bindClass("org.bukkit.Bukkit")
-local LuaThread = __LUA_THREAD__
+local bukkitServer = luajava.bindClass("org.bukkit.Bukkit")
+local luaThread = luajava.__LUA_THREAD__
 
 return {
 	getBukkitServer = function(self)
-		return BukkitServer
+		return bukkitServer
 	end,
 	runOnMainThread = function(self, func)
-		LuaThread:runOnMainThread(func)
+		luaThread:runOnMainThread(func)
 	end,
 	runOnLuaThread = function(self, func)
-		LuaThread:runOnLuaThread(func)
+		luaThread:runOnLuaThread(func)
 	end
 }

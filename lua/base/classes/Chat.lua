@@ -17,7 +17,7 @@
 
 ]]
 
-local chatAPI = __LUA_THREAD__:getEnhancedChatMessageManager()
+local chatAPI = luajava.__LUA_THREAD__:getEnhancedChatMessageManager()
 
 if not chatAPI then
     local function notImpl()

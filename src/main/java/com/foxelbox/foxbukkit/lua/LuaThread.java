@@ -177,13 +177,19 @@ public class LuaThread extends Thread implements Listener {
         new LuaFunctionInvoker(LuaThread.this, function).run(false);
     }
 
+    public String getRootDir() {
+        return FoxBukkitLua.instance.getLuaFolder().getAbsolutePath();
+    }
+
+    public String getModuleDir() {
+        return new File(FoxBukkitLua.instance.getLuaModulesFolder(), module).getAbsolutePath();
+    }
+
     @Override
     public void run() {
         try {
             synchronized (g) {
-                g.set("__LUA_THREAD__", CoerceJavaToLua.coerce(this));
-                g.set("__ROOTDIR__", FoxBukkitLua.instance.getLuaFolder().getAbsolutePath());
-                g.set("__MODULEDIR__", new File(FoxBukkitLua.instance.getLuaModulesFolder(), module).getAbsolutePath());
+                g.get("luajava").set("__LUA_THREAD__", CoerceJavaToLua.coerce(this));
                 g.loadfile(new File(FoxBukkitLua.instance.getLuaFolder(), "init.lua").getAbsolutePath()).call();
             }
             while (running) {

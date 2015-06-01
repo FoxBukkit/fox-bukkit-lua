@@ -17,7 +17,7 @@
 
 ]]
 
-local cmdManager = __LUA_THREAD__:getCommandManager()
+local cmdManager = luajava.__LUA_THREAD__:getCommandManager()
 
 local Player = require('Player')
 
