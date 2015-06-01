@@ -14,13 +14,12 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with FoxBukkitLua.  If not, see <http://www.gnu.org/licenses/>.
  */
-package com.foxelbox.foxbukkit.core;
+package com.foxelbox.foxbukkit.lua;
 
 import com.foxelbox.dependencies.config.Configuration;
 import com.foxelbox.dependencies.redis.RedisManager;
 import com.foxelbox.dependencies.threading.SimpleThreadCreator;
 import com.foxelbox.foxbukkit.chatcomponent.FBChatComponent;
-import com.foxelbox.foxbukkit.lua.LuaThread;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -31,8 +30,8 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
 
-public class FoxBukkit extends JavaPlugin {
-    public static FoxBukkit instance;
+public class FoxBukkitLua extends JavaPlugin {
+    public static FoxBukkitLua instance;
     public static FBChatComponent chatComponent;
 
     public Configuration configuration;

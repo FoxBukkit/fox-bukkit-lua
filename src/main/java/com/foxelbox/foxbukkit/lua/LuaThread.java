@@ -16,7 +16,6 @@
  */
 package com.foxelbox.foxbukkit.lua;
 
-import com.foxelbox.foxbukkit.core.FoxBukkit;
 import org.bukkit.event.Listener;
 import org.luaj.vm2.Globals;
 import org.luaj.vm2.LuaFunction;
@@ -142,7 +141,7 @@ public class LuaThread extends Thread implements Listener {
     }
 
     public void runOnMainThread(final LuaFunction function) {
-        FoxBukkit.instance.getServer().getScheduler().scheduleSyncDelayedTask(FoxBukkit.instance, new LuaFunctionInvoker(LuaThread.this, function));
+        FoxBukkitLua.instance.getServer().getScheduler().scheduleSyncDelayedTask(FoxBukkitLua.instance, new LuaFunctionInvoker(LuaThread.this, function));
     }
 
     public void runOnLuaThread(final LuaFunction function) {
@@ -164,9 +163,9 @@ public class LuaThread extends Thread implements Listener {
         try {
             synchronized (g) {
                 g.set("__LUA_THREAD__", CoerceJavaToLua.coerce(this));
-                g.set("__ROOTDIR__", FoxBukkit.instance.getLuaFolder().getAbsolutePath());
-                g.set("__MODULEDIR__", new File(FoxBukkit.instance.getLuaModulesFolder(), module).getAbsolutePath());
-                g.loadfile(new File(FoxBukkit.instance.getLuaFolder(), "init.lua").getAbsolutePath()).call();
+                g.set("__ROOTDIR__", FoxBukkitLua.instance.getLuaFolder().getAbsolutePath());
+                g.set("__MODULEDIR__", new File(FoxBukkitLua.instance.getLuaModulesFolder(), module).getAbsolutePath());
+                g.loadfile(new File(FoxBukkitLua.instance.getLuaFolder(), "init.lua").getAbsolutePath()).call();
             }
             while (running) {
                 Invoker invoker;

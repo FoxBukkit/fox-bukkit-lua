@@ -16,7 +16,6 @@
  */
 package com.foxelbox.foxbukkit.lua;
 
-import com.foxelbox.foxbukkit.core.FoxBukkit;
 import org.bukkit.event.*;
 import org.bukkit.plugin.EventExecutor;
 import org.luaj.vm2.LuaBoolean;
@@ -87,7 +86,7 @@ public class EventManager implements EventExecutor {
 
     public Listener register(final Class<? extends Event> eventClass, final EventPriority eventPriority, final boolean b, final LuaFunction function) {
         final LuaListener listener = new LuaListener(function);
-        FoxBukkit.instance.getServer().getPluginManager().registerEvent(eventClass, listener, eventPriority, this, FoxBukkit.instance, b);
+        FoxBukkitLua.instance.getServer().getPluginManager().registerEvent(eventClass, listener, eventPriority, this, FoxBukkitLua.instance, b);
         synchronized (listeners) {
             listeners.add(listener);
         }
