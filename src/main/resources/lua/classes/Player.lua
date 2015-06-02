@@ -20,7 +20,7 @@ local bukkitServer = require("Server"):getBukkitServer()
 local UUID = luajava.bindClass("java.util.UUID")
 
 local Chat = require("Chat")
-local Permissions = require("Permissions")
+local Permission = require("Permission")
 
 local playerStorage = require("Storage"):create("getUniqueId", {
 	sendXML = function(self, message)

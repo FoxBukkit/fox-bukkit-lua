@@ -24,7 +24,7 @@ local basePermission = "foxbukkit." .. moduleName
 
 local Player = require("Player")
 local Server = require("Server")
-local Permissions = require("Permissions")
+local Permission = require("Permission")
 
 local next = next
 
@@ -56,7 +56,7 @@ local validators = {
 }
 
 local function makeArgMaxImmunity(self, ply)
-    if not ply or not self.ImmunityRequirement or not Permissions:isAvailable() then
+    if not ply or not self.ImmunityRequirement or not Permission:isAvailable() then
         return
     end
     return self.ImmunityRequirement
