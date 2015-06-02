@@ -20,11 +20,14 @@ import org.bukkit.event.Listener;
 import org.bukkit.plugin.Plugin;
 import org.luaj.vm2.Globals;
 import org.luaj.vm2.LuaValue;
+import org.luaj.vm2.Prototype;
 import org.luaj.vm2.lib.jse.CoerceJavaToLua;
 import org.luaj.vm2.lib.jse.JsePlatform;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashMap;
 
 public class LuaState implements Listener, Runnable {
     final Object luaLock = new Object();
@@ -97,13 +100,31 @@ public class LuaState implements Listener, Runnable {
         return new File(FoxBukkitLua.instance.getLuaModulesFolder(), module).getAbsolutePath();
     }
 
+    private static final HashMap<String, Prototype> packagedCompiles = new HashMap<>();
+    static void clearCache() {
+        packagedCompiles.clear();
+    }
     public LuaValue loadPackagedFile(String name) {
-        InputStream inputStream = LuaState.class.getResourceAsStream("/src/main/lua/" + name);
-        if(inputStream == null) {
-            return null;
+        Prototype p = packagedCompiles.get(name);
+        if(p == null) {
+            InputStream inputStream = LuaState.class.getResourceAsStream("/src/main/lua/" + name);
+            if(inputStream == null) {
+                return null;
+            }
+            synchronized (luaLock) {
+                try {
+                    p = g.loadPrototype(inputStream, name, "bt");
+                } catch (IOException e) {
+                    return Globals.error("compile "+name+": "+e);
+                }
+            }
         }
         synchronized (luaLock) {
-            return g.load(inputStream, name, "bt", g);
+            try {
+                return g.loader.load(p, "bt", g);
+            } catch (IOException e) {
+                return Globals.error("load "+name+": "+e);
+            }
         }
     }
 
