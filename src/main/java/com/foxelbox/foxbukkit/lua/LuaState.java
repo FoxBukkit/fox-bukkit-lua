@@ -25,7 +25,6 @@ import org.luaj.vm2.lib.jse.JsePlatform;
 
 import java.io.File;
 import java.io.InputStream;
-import java.util.concurrent.LinkedBlockingQueue;
 
 public class LuaState implements Listener, Runnable {
     final Object luaLock = new Object();
@@ -99,12 +98,12 @@ public class LuaState implements Listener, Runnable {
     }
 
     public LuaValue loadPackagedFile(String name) {
-        InputStream inputStream = LuaState.class.getResourceAsStream("/lua/" + name);
+        InputStream inputStream = LuaState.class.getResourceAsStream("/src/main/lua/" + name);
         if(inputStream == null) {
             return null;
         }
         synchronized (luaLock) {
-            return g.load(inputStream, name, "t", g);
+            return g.load(inputStream, name, "bt", g);
         }
     }
 
