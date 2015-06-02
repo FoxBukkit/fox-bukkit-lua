@@ -195,7 +195,7 @@ class = {
                 parsedArgs = args
             end
 
-            return cmd:run(ply, cmdStr, parsedArgs, argStr, flagStr)
+            return cmd:run(ply, parsedArgs, flagStr, argStr, cmdStr)
         end
 
         cmdManager:register(cmd.name, cmd.permission, executor)
