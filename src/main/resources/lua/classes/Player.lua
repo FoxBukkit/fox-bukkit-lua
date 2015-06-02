@@ -27,6 +27,10 @@ local playerStorage = require("Storage"):create("getUniqueId", {
 		return Chat:sendLocalToPlayer(message, self.__entity)
 	end,
 
+	sendReply = function(self, message)
+		return self:sendXML("<color name=\"dark_purple\">[FB]</color> " .. message)
+	end,
+
 	compareImmunityLevel = function(self, other)
 		return Permissions:compareImmunityLevel(self, other)
 	end,
@@ -50,10 +54,32 @@ return {
 
 	getAll = function(self)
 		local players = {}
-		for _, ply in pairs(bukkitServer:getOnlinePlayers()) do
-			players:insert(playerStorage(ply))
+		local iter = bukkitServer:getOnlinePlayers():iterator()
+		while iter:hasNext() do
+			table.insert(players, playerStorage(iter:next()))
 		end
 		return players
+	end,
+
+	findSingle = function(self, match, nomatch, immunitydelta)
+		local matches = self:find(match, nomatch, immunitydelta)
+		if #matches ~= 1 then
+			return nil
+		end
+		return matches[1]
+	end,
+
+	find = function(self, match, nomatch, immunitydelta, immunityply)
+		local matches = {}
+		for _, ply in next, self:getAll() do
+			if ply ~= nomatch and
+				(not immunitydelta or immunityply:compareImmunityLevel(ply) == immunitydelta) and
+				(ply:getName():find(match, 1, true) or ply:getDisplayName():find(match, 1, true))
+			then
+				table.insert(matches, ply)
+			end
+		end
+		return matches
 	end,
 
 	extend = function(self, player)

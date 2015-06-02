@@ -24,6 +24,9 @@ local basePermission = "foxbukkit." .. moduleName
 
 local Player = require("Player")
 local Server = require("Server")
+local Permissions = require("Permissions")
+
+local next = next
 
 local _flags_mt = {
     __index = {
@@ -37,41 +40,154 @@ local _flags_mt = {
     __metatable = false
 }
 
+local validators = {
+    string = function(self, arg)
+        return true
+    end,
+    number = function(self, arg)
+        return tonumber(arg) ~= nil
+    end,
+    player = function(self, arg)
+        return true
+    end,
+    players = function(self, arg)
+        return true
+    end
+}
+
+local function makeArgMaxImmunity(self, ply)
+    if not ply or not self.ImmunityRequirement or not Permissions:isAvailable() then
+        return
+    end
+    return self.ImmunityRequirement
+end
+
+local parsers = {
+    string = function(self, arg)
+        return arg
+    end,
+    number = function(self, arg)
+        return tonumber(arg)
+    end,
+    player = function(self, arg, ply)
+        return Player:findSingle(arg, self.NoMatchSelf and ply or nil, makeArgMaxImmunity(self, ply), ply)
+    end,
+    players = function(self, arg)
+        return Player:find(arg, self.NoMatchSelf and ply or nil, makeArgMaxImmunity(self, ply), ply)
+    end    
+}
+
+local defaults = {
+    string = "",
+    number = 0,
+    player = function(self, arg, ply)
+        return ply
+    end,
+    players = function(self, arg, ply)
+        return {ply}
+    end
+}
+
 return {
-    register = function(self, cmd, func, permission, sync)
-        if type(cmd) ~= "table" then
-            cmd = {cmd}
+    register = function(self, cmd)
+        cmd.permission = cmd.permission or self:getSubPermission(cmd.name)
+        cmd.permissionOther = cmd.permissionOther or (cmd.permission .. ".other")
+
+        if cmd.arguments then
+            cmd.lastRequiredArgument = 0
+            for k, options in pairs(cmd.arguments) do
+                options.required = (options.required ~= false)
+                options.type = (options.type or "string"):lower()
+                options.validator = options.validator or validators[options.type] or validators.string
+                options.parser = options.parser or parsers[options.type] or parsers.string
+                options.default = options.default or defaults[options.type]
+                if options.required then
+                    cmd.lastRequiredArgument = k
+                end
+                cmd.arguments[k] = options
+            end
         end
 
-        permission = permission or self:getSubPermission(cmd[1])
-
-        local executor = function(ply, cmd, args, argStr, flagStr)
+        local executor = function(ply, cmdStr, args, argStr, flagStr)
             flagStr = setmetatable({
                 str = flagStr
             }, _flags_mt)
 
-            if ply.getUniqueId then
+            if ply and ply.getUniqueId then
                 ply = Player:extend(ply)
             end
 
-            return func(ply, cmd, args, argStr, flagStr)
-        end
-
-        if sync == false then
-            local execFunc = executor
-            executor = function(ply, cmd, args, argStr, flagStr)
-                Server:runOnLuaThread(function()
-                    return execFunc(ply, cmd, args, argStr, flagStr)
-                end)
+            local parsedArgs
+            if cmd.arguments then
+                parsedArgs = {}
+                local currentFitArg = 1
+                local tryArg = cmd.arguments[currentFitArg]
+                for _, v in next, args do
+                    if not tryArg then
+                        ply:sendReply("Too many arguments (or unfitting optionals)")
+                        return
+                    end
+                    local fits = tryArg:validator(v)
+                    if fits or not tryArg.required then
+                        if fits then
+                            v = tryArg:parser(v, ply, cmdStr)
+                            if v == nil then
+                                ply:sendReply("Could not find match for argument \"" .. tryArg.name .. "\"")
+                                return
+                            end
+                            parsedArgs[tryArg.name] = v
+                        else
+                            if type(tryArg.default) == "function" then
+                                parsedArgs[tryArg.name] = tryArg:default(v, ply, cmdStr)
+                            else
+                                parsedArgs[tryArg.name] = tryArg.default
+                            end
+                        end
+                        currentFitArg = currentFitArg + 1
+                        tryArg = cmd.arguments[currentFitArg]
+                    end
+                end
+                if currentFitArg <= cmd.lastRequiredArgument then
+                    ply:sendReply("Not enough arguments")
+                    return
+                end
+                for i = currentFitArg, #cmd.arguments do
+                    tryArg = cmd.arguments[i]
+                    if type(tryArg.default) == "function" then
+                        parsedArgs[tryArg.name] = tryArg:default(v, ply, cmdStr)
+                    else
+                        parsedArgs[tryArg.name] = tryArg.default
+                    end
+                end
+            else
+                parsedArgs = args
             end
+
+            return cmd:run(ply, cmdStr, parsedArgs, argStr, flagStr)
         end
 
-        for _, cmdAlias in pairs(cmd) do
-            return cmdManager:register(cmdAlias, permission, executor)
+        cmdManager:register(cmd.name, cmd.permission, executor)
+        if cmd.aliases then
+            for _, cmdAlias in pairs(cmd.aliases) do
+                cmdManager:register(cmdAlias, cmd.permission, executor)
+            end
         end
     end,
     unregister = function(self, cmd)
-        cmdManager:unregister(cmd)
+        if type(cmd) == "string" then
+            cmdManager:unregister(cmd)
+        elseif cmd.name then
+            cmdManager:unregister(cmd.name)
+            if cmd.aliases then
+                for _, cmdAlias in pairs(cmd.aliases) do
+                    cmdManager:unregister(cmdAlias)
+                end
+            end
+        else
+            for _, v in pairs(cmd) do
+                self:unregister(cmd)
+            end
+        end
     end,
     getPermissionBase = function(self)
         return basePermission
