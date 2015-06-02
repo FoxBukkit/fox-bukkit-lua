@@ -79,18 +79,23 @@ public class FoxBukkitLua extends JavaPlugin {
     }
 
     private void startLuaThread(String module, boolean overwrite) {
-        synchronized (luaThreadList) {
-            LuaState luaState = luaThreadList.get(module);
-            if(luaState != null && luaState.isRunning()) {
-                if(overwrite) {
-                    luaState.terminate();
-                } else {
-                    return;
+        try {
+            synchronized (luaThreadList) {
+                LuaState luaState = luaThreadList.get(module);
+                if (luaState != null && luaState.isRunning()) {
+                    if (overwrite) {
+                        luaState.terminate();
+                    } else {
+                        return;
+                    }
                 }
+                luaState = new LuaState(module);
+                luaThreadList.put(module, luaState);
+                luaState.run();
             }
-            luaState = new LuaState(module);
-            luaThreadList.put(module, luaState);
-            luaState.run();
+        } catch (Exception e) {
+            System.err.println("Error starting Lua thread " + module);
+            e.printStackTrace();
         }
     }
 

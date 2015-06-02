@@ -116,6 +116,10 @@ public class LuaState implements Listener, Runnable {
                     p = g.loadPrototype(inputStream, name, "bt");
                 } catch (IOException e) {
                     return Globals.error("compile "+name+": "+e);
+                } finally {
+                    try {
+                        inputStream.close();
+                    } catch (IOException e) { }
                 }
             }
         }
