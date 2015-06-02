@@ -194,7 +194,7 @@ return {
             end
         else
             for _, v in pairs(cmd) do
-                self:unregister(cmd)
+                self:unregister(v)
             end
         end
     end,
