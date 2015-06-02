@@ -16,9 +16,11 @@
     along with FoxBukkitLua.  If not, see <http://www.gnu.org/licenses/>.
 
 ]]
-local eventPriority = luajava.bindClass("org.bukkit.event.EventPriority")
 
 local eventManager = __LUA_STATE:getEventManager()
+local eventPriority = luajava.bindClass("org.bukkit.event.EventPriority")
+
+local type = type
 
 return {
 	register = function(self, event, priority, callback, ignoreCancelled)

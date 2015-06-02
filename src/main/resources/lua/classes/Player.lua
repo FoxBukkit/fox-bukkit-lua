@@ -16,11 +16,14 @@
     along with FoxBukkitLua.  If not, see <http://www.gnu.org/licenses/>.
 
 ]]
+
 local bukkitServer = require("Server"):getBukkitServer()
 local UUID = luajava.bindClass("java.util.UUID")
 
 local Chat = require("Chat")
 local Permission = require("Permission")
+
+local table_insert = table.insert
 
 local playerStorage = require("Storage"):create("getUniqueId", {
 	sendXML = function(self, message)
@@ -60,7 +63,7 @@ return {
 		local players = {}
 		local iter = bukkitServer:getOnlinePlayers()
 		for i = 1, #iter do
-			table.insert(players, playerStorage(iter[i]))
+			table_insert(players, playerStorage(iter[i]))
 		end
 		return players
 	end,
@@ -81,7 +84,7 @@ return {
 				(not immunitydelta or ply == immunityply or immunityply:fitsImmunityRequirement(ply, immunitydelta)) and
 				(ply:getName():lower():find(match, 1, true) or ply:getDisplayName():lower():find(match, 1, true))
 			then
-				table.insert(matches, ply)
+				table_insert(matches, ply)
 			end
 		end
 		return matches

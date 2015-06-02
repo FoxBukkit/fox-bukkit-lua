@@ -20,13 +20,14 @@
 local cmdManager = __LUA_STATE:getCommandManager()
 local moduleName = __LUA_STATE:getModule()
 
-local basePermission = "foxbukkit." .. moduleName
-
 local Player = require("Player")
 local Server = require("Server")
 local Permission = require("Permission")
 
 local next = next
+local tonumber = tonumber
+
+local basePermission = "foxbukkit." .. moduleName
 
 local _flags_mt = {
     __index = {

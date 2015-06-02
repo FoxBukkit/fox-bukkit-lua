@@ -16,6 +16,10 @@
     along with FoxBukkitLua.  If not, see <http://www.gnu.org/licenses/>.
 
 ]]
+
+local rawget = rawget
+local type = type
+
 local _entity_mt = {
 	__index = function(tbl, idx)
 		if type(idx) == "string" and idx:sub(1,2) == "__" then

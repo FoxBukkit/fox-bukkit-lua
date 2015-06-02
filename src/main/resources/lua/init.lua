@@ -19,6 +19,8 @@
 
 local luaState = __LUA_STATE
 local includeDir = luaState:getModuleDir()
+local File = luajava.bindClass("java.io.File")
+
 package.path = includeDir .. "/classes/?.lua;" .. luaState:getRootDir() .. "/classes/?.lua"
 
 table.insert(package.searchers, 3, function(module)
@@ -34,7 +36,6 @@ function loadfile(file)
     return _loadfile(includeDir .. '/' .. file)
 end
 
-local File = luajava.bindClass("java.io.File")
 local function _scandir(dir, cb, recursive, rootDirLen)
     local iter = dir:listFiles()
     for i = 1, #iter do
