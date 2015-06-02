@@ -128,26 +128,28 @@ local _command_mt = {
 
 class = {
     register = function(self, cmd)
-        cmd.permission = cmd.permission or (basePermission .. "." .. cmd.name)
-        if cmd.permissionOther == nil or cmd.permissionOther == true then
-            cmd.permissionOther = cmd.permission .. ".other"
-        end
-
-        if cmd.arguments then
-            cmd.lastRequiredArgument = 0
-            for k, options in pairs(cmd.arguments) do
-                options.required = (options.required ~= false)
-                options.type = (options.type or "string"):lower()
-                options.parser = options.parser or parsers[options.type] or parsers.string
-                options.default = options.default or defaults[options.type]
-                if options.required then
-                    cmd.lastRequiredArgument = k
-                end
-                cmd.arguments[k] = options
+        if not cmd.__fullySetUp then
+            cmd.permission = cmd.permission or (basePermission .. "." .. cmd.name)
+            if cmd.permissionOther == nil or cmd.permissionOther == true then
+                cmd.permissionOther = cmd.permission .. ".other"
             end
-        end
 
-        cmd = setmetatable(cmd, _command_mt)
+            if cmd.arguments then
+                cmd.lastRequiredArgument = 0
+                for k, options in pairs(cmd.arguments) do
+                    options.required = (options.required ~= false)
+                    options.type = (options.type or "string"):lower()
+                    options.parser = options.parser or parsers[options.type] or parsers.string
+                    options.default = options.default or defaults[options.type]
+                    if options.required then
+                        cmd.lastRequiredArgument = k
+                    end
+                    cmd.arguments[k] = options
+                end
+            end
+            cmd.__fullySetUp = true
+            cmd = setmetatable(cmd, _command_mt)
+        end
 
         local executor = function(ply, cmdStr, args, argStr, flagStr)
             flagStr = setmetatable({
@@ -202,6 +204,8 @@ class = {
                 cmdManager:register(cmdAlias, cmd.permission, executor)
             end
         end
+
+        return cmd
     end,
     unregister = function(self, cmd)
         if type(cmd) == "string" then
