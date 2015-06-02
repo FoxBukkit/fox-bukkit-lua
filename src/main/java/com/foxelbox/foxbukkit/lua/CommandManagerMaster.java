@@ -27,7 +27,6 @@ import org.luaj.vm2.LuaTable;
 import org.luaj.vm2.LuaValue;
 import org.luaj.vm2.Varargs;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.regex.Matcher;
@@ -41,9 +40,9 @@ public class CommandManagerMaster implements Listener {
 
     private static final Pattern ARGUMENT_PATTERN = Pattern.compile("([^\"]\\S*|\".+?\")\\s*");
 
-    public CommandManagerMaster() {
-        pluginManager = FoxBukkitLua.instance.getServer().getPluginManager();
-        pluginManager.registerEvents(this, FoxBukkitLua.instance);
+    public CommandManagerMaster(FoxBukkitLua plugin) {
+        pluginManager = plugin.getServer().getPluginManager();
+        pluginManager.registerEvents(this, plugin);
     }
 
     public void register(String command, String permission, LuaState thread, LuaValue handler) {

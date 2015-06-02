@@ -29,7 +29,7 @@ import java.util.UUID;
 
 public class EnhancedChatMessageManager {
     private final RedisHandler redisHandler;
-    //private final LuaThread luaThread;
+    private final LuaState luaState;
 
     public EnhancedChatMessageManager(LuaState luaState, Plugin enhancedChatPlugin) {
         try {
@@ -37,11 +37,11 @@ public class EnhancedChatMessageManager {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-        //this.luaThread = luaThread;
+        this.luaState = luaState;
     }
 
     private CommandSender getConsole() {
-        return FoxBukkitLua.instance.getServer().getConsoleSender();
+        return luaState.plugin.getServer().getConsoleSender();
     }
 
     public void sendGlobal(CommandSender source, String type, String content) {

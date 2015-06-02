@@ -69,7 +69,7 @@ public class EventManager implements EventExecutor {
 
     public Listener register(final Class<? extends Event> eventClass, final EventPriority eventPriority, final boolean ignoreCancelled, final LuaValue function) {
         final LuaListener listener = new LuaListener(function);
-        FoxBukkitLua.instance.getServer().getPluginManager().registerEvent(eventClass, listener, eventPriority, this, FoxBukkitLua.instance, ignoreCancelled);
+        luaState.plugin.getServer().getPluginManager().registerEvent(eventClass, listener, eventPriority, this, luaState.plugin, ignoreCancelled);
         synchronized (listeners) {
             listeners.add(listener);
         }

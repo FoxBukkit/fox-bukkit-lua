@@ -76,6 +76,9 @@ return {
     getPermissionBase = function(self)
         return basePermission
     end,
+    getPermissionOther = function(self, cmd)
+        return self:getSubPermission(cmd, "other")
+    end,
     getSubPermission = function(self, cmd, perm)
         if not perm then
             return basePermission .. "." .. cmd

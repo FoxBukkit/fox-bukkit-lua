@@ -20,10 +20,23 @@ local bukkitServer = require("Server"):getBukkitServer()
 local UUID = luajava.bindClass("java.util.UUID")
 
 local Chat = require("Chat")
+local Permissions = require("Permissions")
 
 local playerStorage = require("Storage"):create("getUniqueId", {
 	sendXML = function(self, message)
 		return Chat:sendLocalToPlayer(message, self.__entity)
+	end,
+
+	compareImmunityLevel = function(self, other)
+		return Permissions:compareImmunityLevel(self, other)
+	end,
+
+	getImmunityLevel = function(self)
+		return Permissions:getImmunityLevel(self)
+	end,
+
+	getGroup = function(self)
+		return Permissions:getGroup(self)
 	end
 })
 

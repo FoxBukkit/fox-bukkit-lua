@@ -35,24 +35,59 @@ public class LuaState implements Listener, Runnable {
     private volatile boolean running = true;
     private final String module;
 
+    final FoxBukkitLua plugin;
+
     private final EnhancedChatMessageManager enhancedChatMessageManager;
+    private final EnhancedPermissionManager enhancedPermissionManager;
     private final EventManager eventManager = new EventManager(this);
     private final CommandManager commandManager = new CommandManager(this);
 
-    public LuaState(String module) {
-        EnhancedChatMessageManager ecmm = null;
-        try {
-            Plugin ecp = FoxBukkitLua.instance.getServer().getPluginManager().getPlugin("FoxBukkitChatComponent");
-            if(ecp != null) {
-                ecmm = new EnhancedChatMessageManager(this, ecp);
-            }
-        } catch (Throwable t) {
-            ecmm = null;
+    private static Plugin enhancedChatPlugin = null;
+    private static Plugin enhancedPermissionPlugin = null;
+    private static boolean loaded = false;
+
+    public static synchronized void load(FoxBukkitLua plugin) {
+        if(loaded) {
+            return;
         }
-        if(ecmm == null) {
+        loaded = true;
+
+        enhancedChatPlugin = plugin.getServer().getPluginManager().getPlugin("FoxBukkitChatComponent");
+        enhancedPermissionPlugin = plugin.getServer().getPluginManager().getPlugin("FoxBukkitPermissions");
+
+        if(enhancedChatPlugin == null) {
             System.err.println("Could not find FoxBukkitChatComponent. Disabling enhanced chat API.");
+        } else {
+            System.out.println("Hooked FoxBukkitChatComponent. Enabled enhanced chat API.");
         }
-        enhancedChatMessageManager = ecmm;
+
+        if(enhancedPermissionPlugin == null) {
+            System.err.println("Could not find FoxBukkitPermissions. Disabling enhanced permissions API.");
+        } else {
+            System.out.println("Hooked FoxBukkitPermissions. Enabled enhanced permissions API.");
+        }
+    }
+
+    public static synchronized void unload() {
+        enhancedChatPlugin = null;
+        enhancedPermissionPlugin = null;
+        loaded = false;
+    }
+
+    public LuaState(String module, FoxBukkitLua plugin) {
+        this.plugin = plugin;
+
+        if(enhancedChatPlugin != null) {
+            enhancedChatMessageManager = new EnhancedChatMessageManager(this, enhancedChatPlugin);
+        } else {
+            enhancedChatMessageManager = null;
+        }
+
+        if(enhancedPermissionPlugin != null) {
+            enhancedPermissionManager = new EnhancedPermissionManager(this, enhancedPermissionPlugin);
+        } else {
+            enhancedPermissionManager = null;
+        }
 
         this.module = module;
     }
@@ -73,6 +108,10 @@ public class LuaState implements Listener, Runnable {
         return enhancedChatMessageManager;
     }
 
+    public EnhancedPermissionManager getEnhancedPermissionManager() {
+        return enhancedPermissionManager;
+    }
+
     public CommandManager getCommandManager() {
         return commandManager;
     }
@@ -89,15 +128,15 @@ public class LuaState implements Listener, Runnable {
     }
 
     public FoxBukkitLua getFoxBukkitLua() {
-        return FoxBukkitLua.instance;
+        return plugin;
     }
 
     public String getRootDir() {
-        return FoxBukkitLua.instance.getLuaFolder().getAbsolutePath();
+        return plugin.getLuaFolder().getAbsolutePath();
     }
 
     public String getModuleDir() {
-        return new File(FoxBukkitLua.instance.getLuaModulesFolder(), module).getAbsolutePath();
+        return new File(plugin.getLuaModulesFolder(), module).getAbsolutePath();
     }
 
     private static final HashMap<String, Prototype> packagedCompiles = new HashMap<>();

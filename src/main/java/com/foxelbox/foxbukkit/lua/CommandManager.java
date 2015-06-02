@@ -26,14 +26,14 @@ public class CommandManager {
     }
 
     public void unregisterAll() {
-        FoxBukkitLua.instance.commandManagerMaster.unregisterAll(luaState);
+        luaState.plugin.commandManagerMaster.unregisterAll(luaState);
     }
 
     public void register(String command, String permission, LuaValue handler) {
-        FoxBukkitLua.instance.commandManagerMaster.register(command, permission, luaState, handler);
+        luaState.plugin.commandManagerMaster.register(command, permission, luaState, handler);
     }
 
     public void unregister(String command) {
-        FoxBukkitLua.instance.commandManagerMaster.unregister(command, luaState);
+        luaState.plugin.commandManagerMaster.unregister(command, luaState);
     }
 }
