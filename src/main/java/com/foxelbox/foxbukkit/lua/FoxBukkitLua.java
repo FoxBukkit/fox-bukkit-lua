@@ -132,7 +132,7 @@ public class FoxBukkitLua extends JavaPlugin {
         LuaState.clearCache();
     }
 
-    private StringBuilder makeMessageBuilder() {
+    public static StringBuilder makeMessageBuilder() {
         return new StringBuilder("\u00a75[FB] \u00a7f");
     }
 

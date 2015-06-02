@@ -106,9 +106,29 @@ local defaults = {
     end
 }
 
-return {
+local class
+
+local _command_mt = {
+    __index = {
+        register = function(self)
+            return class:register(self)
+        end,
+        unregister = function(self)
+            return class:unregister(self)
+        end,
+        getSubPermission = function(self, sub)
+            return self.permission .. "." .. sub
+        end
+    },
+    __newindex = function()
+        error("Readonly")
+    end,
+    __metatable = false
+}
+
+class = {
     register = function(self, cmd)
-        cmd.permission = cmd.permission or self:getSubPermission(cmd.name)
+        cmd.permission = cmd.permission or (basePermission .. "." .. cmd.name)
         if cmd.permissionOther == nil or cmd.permissionOther == true then
             cmd.permissionOther = cmd.permission .. ".other"
         end
@@ -126,6 +146,8 @@ return {
                 cmd.arguments[k] = options
             end
         end
+
+        cmd = setmetatable(cmd, _command_mt)
 
         local executor = function(ply, cmdStr, args, argStr, flagStr)
             flagStr = setmetatable({
@@ -196,17 +218,7 @@ return {
                 self:unregister(cmd)
             end
         end
-    end,
-    getPermissionBase = function(self)
-        return basePermission
-    end,
-    getPermissionOther = function(self, cmd)
-        return self:getSubPermission(cmd, "other")
-    end,
-    getSubPermission = function(self, cmd, perm)
-        if not perm then
-            return basePermission .. "." .. cmd
-        end
-        return basePermission .. "." .. cmd .. "." .. perm
     end
 }
+
+return class

@@ -165,12 +165,19 @@ public class CommandManagerMaster implements Listener {
                 coerce(argStr),
                 coerce(flagStr)
         });
-        final LuaValue ret;
-        synchronized (invoker.luaState.luaLock) {
-            ret = invoker.function.invoke(varargs).arg1();
-        }
-        // Return true/nonboolean for handled, false for unhandled (fallthrough)
-        if(ret == null || !ret.isboolean() || ((LuaBoolean)ret).booleanValue()) {
+
+        try {
+            final LuaValue ret;
+            synchronized (invoker.luaState.luaLock) {
+                ret = invoker.function.invoke(varargs).arg1();
+            }
+            // Return true/nonboolean for handled, false for unhandled (fallthrough)
+            if (ret == null || !ret.isboolean() || ((LuaBoolean) ret).booleanValue()) {
+                event.setCancelled(true);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            source.sendMessage(FoxBukkitLua.makeMessageBuilder().append("Internal error running command").toString());
             event.setCancelled(true);
         }
     }
