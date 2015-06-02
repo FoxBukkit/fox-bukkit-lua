@@ -129,7 +129,6 @@ public class FoxBukkitLua extends JavaPlugin {
         redisManager = null;
         commandManagerMaster = null;
         LuaState.unload();
-        LuaState.clearCache();
     }
 
     public static StringBuilder makeMessageBuilder() {
