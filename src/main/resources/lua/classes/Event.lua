@@ -21,14 +21,14 @@ local eventPriority = luajava.bindClass("org.bukkit.event.EventPriority")
 local eventManager = __LUA_STATE:getEventManager()
 
 return {
-	register = function(self, event, priority, callback, b)
+	register = function(self, event, priority, callback, ignoreCancelled)
 		if type(event) == "string" then
 			event = luajava.bindClass(event)
 		end
 		if type(priority) == "string" then
 			priority = eventPriority[priority:upper()]
 		end
-		return eventManager:register(event, priority, b or false, callback)
+		return eventManager:register(event, priority, ignoreCancelled or false, callback)
 	end,
 
 	unregister = function(self, listener)
