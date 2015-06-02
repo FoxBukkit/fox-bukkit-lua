@@ -126,40 +126,36 @@ public class CommandManagerMaster implements Listener {
         parsedArguments = new LuaTable();
         if(argStr.isEmpty()) {
             flagStr = "";
-            return;
-        }
-
-        String myArgStr = argStr;
-        if(myArgStr.length() > 1 && myArgStr.charAt(0) == '-') {
-            char firstFlag = myArgStr.charAt(1);
-            if((firstFlag >= 'a' && firstFlag <= 'z') || (firstFlag >= 'A' && firstFlag <= 'Z')) {
-                int spacePos = myArgStr.indexOf(' ');
-                if (spacePos > 0) {
-                    flagStr = myArgStr.substring(1, spacePos).toLowerCase();
-                    myArgStr = myArgStr.substring(spacePos + 1).trim();
+        } else {
+            String myArgStr = argStr;
+            if (myArgStr.length() > 1 && myArgStr.charAt(0) == '-') {
+                char firstFlag = myArgStr.charAt(1);
+                if ((firstFlag >= 'a' && firstFlag <= 'z') || (firstFlag >= 'A' && firstFlag <= 'Z')) {
+                    int spacePos = myArgStr.indexOf(' ');
+                    if (spacePos > 0) {
+                        flagStr = myArgStr.substring(1, spacePos).toLowerCase();
+                        myArgStr = myArgStr.substring(spacePos + 1).trim();
+                    } else {
+                        flagStr = myArgStr.toLowerCase();
+                        myArgStr = "";
+                    }
                 } else {
-                    flagStr = myArgStr.toLowerCase();
-                    return;
+                    flagStr = "";
                 }
             } else {
                 flagStr = "";
             }
-        } else {
-            flagStr = "";
-        }
 
-        if(myArgStr.isEmpty()) {
-            return;
-        }
-
-        ArrayList<String> arguments = new ArrayList<>();
-        Matcher m = ARGUMENT_PATTERN.matcher(myArgStr);
-        while(m.find()) {
-            String str = m.group(1);
-            if(str.charAt(0) == '"') {
-                str = str.substring(1, str.length() - 1);
+            if(!myArgStr.isEmpty()) {
+                Matcher m = ARGUMENT_PATTERN.matcher(myArgStr);
+                while(m.find()) {
+                    String str = m.group(1);
+                    if(str.charAt(0) == '"') {
+                        str = str.substring(1, str.length() - 1);
+                    }
+                    parsedArguments.insert(0, coerce(str));
+                }
             }
-            parsedArguments.insert(0, coerce(str));
         }
         //END parse
 
