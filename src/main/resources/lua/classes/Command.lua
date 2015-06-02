@@ -40,24 +40,6 @@ local _flags_mt = {
     __metatable = false
 }
 
-local validators = {
-    string = function(self, arg)
-        return true
-    end,
-    number = function(self, arg)
-        return tonumber(arg) ~= nil
-    end,
-    player = function(self, arg)
-        return true
-    end,
-    players = function(self, arg)
-        return true
-    end,
-    enum = function(self, arg)
-        return self.enum[arg:upper()] ~= nil
-    end
-}
-
 local function makeArgMaxImmunity(self, ply)
     if not ply or not self.immunityRequirement or not Permission:isAvailable() then
         return
@@ -136,7 +118,6 @@ return {
             for k, options in pairs(cmd.arguments) do
                 options.required = (options.required ~= false)
                 options.type = (options.type or "string"):lower()
-                options.validator = options.validator or validators[options.type] or validators.string
                 options.parser = options.parser or parsers[options.type] or parsers.string
                 options.default = options.default or defaults[options.type]
                 if options.required then
@@ -165,28 +146,14 @@ return {
                         ply:sendReply("Too many arguments (or unfitting optionals)")
                         return
                     end
-                    local fits = tryArg:validator(v)
-                    if fits or not tryArg.required then
-                        if fits then
-                            v = tryArg:parser(v, ply, cmd)
-                            if v == nil then
-                                ply:sendReply("Could not find match for argument \"" .. tryArg.name .. "\"")
-                                return
-                            end
-                            parsedArgs[tryArg.name] = v
-                        else
-                            if type(tryArg.default) == "function" then
-                                parsedArgs[tryArg.name] = tryArg:default(v, ply, cmd)
-                            else
-                                parsedArgs[tryArg.name] = tryArg.default
-                            end
-                        end
-                        currentFitArg = currentFitArg + 1
-                        tryArg = cmd.arguments[currentFitArg]
-                    else
-                        ply:sendReply("Unfitting argument for \"" .. tryArg.name .."\"")
+                    v = tryArg:parser(v, ply, cmd)
+                    if v == nil then
+                        ply:sendReply("Could not find match for argument \"" .. tryArg.name .. "\"")
                         return
                     end
+                    parsedArgs[tryArg.name] = v
+                    currentFitArg = currentFitArg + 1
+                    tryArg = cmd.arguments[currentFitArg]
                 end
                 if currentFitArg <= cmd.lastRequiredArgument then
                     ply:sendReply("Not enough arguments")
