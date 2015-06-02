@@ -107,9 +107,9 @@ public class LuaState implements Listener, Runnable {
     public LuaValue loadPackagedFile(String name) {
         Prototype p = packagedCompiles.get(name);
         if(p == null) {
-            InputStream inputStream = LuaState.class.getResourceAsStream("/src/main/lua/" + name);
+            InputStream inputStream = LuaState.class.getResourceAsStream("/lua/" + name);
             if(inputStream == null) {
-                return null;
+                return Globals.error("open "+name+": File not found");
             }
             synchronized (luaLock) {
                 try {
