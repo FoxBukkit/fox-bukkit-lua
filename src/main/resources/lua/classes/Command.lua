@@ -127,7 +127,7 @@ local defaults = {
 return {
     register = function(self, cmd)
         cmd.permission = cmd.permission or self:getSubPermission(cmd.name)
-        if cmd.permissionOther == true then
+        if cmd.permissionOther == nil or cmd.permissionOther == true then
             cmd.permissionOther = cmd.permission .. ".other"
         end
 
