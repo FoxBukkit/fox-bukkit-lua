@@ -16,17 +16,20 @@
     along with FoxBukkitLua.  If not, see <http://www.gnu.org/licenses/>.
 
 ]]
+
+local luaState = __LUA_STATE
 local bukkitServer = luajava.bindClass("org.bukkit.Bukkit")
-local luaThread = __LUA_THREAD
+local scheduler = bukkitServer:getScheduler()
+local plugin = luaState:getFoxBukkitLua()
 
 return {
 	getBukkitServer = function(self)
 		return bukkitServer
 	end,
 	runOnMainThread = function(self, func)
-		luaThread:runOnMainThread(func)
-	end,
-	runOnLuaThread = function(self, func)
-		luaThread:runOnLuaThread(func)
+	    scheduler:scheduleSyncDelayedTask(
+	        plugin,
+	        luaState:createLuaValueRunnable(func)
+	    )
 	end
 }

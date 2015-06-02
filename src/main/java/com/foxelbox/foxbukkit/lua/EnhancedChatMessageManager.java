@@ -31,7 +31,7 @@ public class EnhancedChatMessageManager {
     private final RedisHandler redisHandler;
     //private final LuaThread luaThread;
 
-    public EnhancedChatMessageManager(LuaThread luaThread, Plugin enhancedChatPlugin) {
+    public EnhancedChatMessageManager(LuaState luaState, Plugin enhancedChatPlugin) {
         try {
             redisHandler = ((FBChatComponent)enhancedChatPlugin).getRedisHandler();
         } catch (Exception e) {

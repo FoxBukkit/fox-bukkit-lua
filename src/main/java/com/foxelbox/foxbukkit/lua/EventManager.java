@@ -26,45 +26,25 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class EventManager implements EventExecutor {
-    private final LuaThread luaThread;
+    private final LuaState luaState;
     private final List<LuaListener> listeners = new ArrayList<>();
 
-    public EventManager(LuaThread luaThread) {
-        this.luaThread = luaThread;
-    }
-
-    private class LuaEventInvoker extends LuaThread.Invoker {
-        private Event event;
-        private final LuaValue function;
-
-        public LuaEventInvoker setEvent(Event event) {
-            this.event = event;
-            return this;
-        }
-
-        public LuaEventInvoker(LuaValue function) {
-            super(luaThread);
-            this.function = function;
-        }
-
-        @Override
-        protected LuaValue invoke() {
-            return function.call(CoerceJavaToLua.coerce(event));
-        }
+    public EventManager(LuaState luaState) {
+        this.luaState = luaState;
     }
 
     private class LuaListener implements Listener {
-        private final LuaEventInvoker invoker;
+        private final LuaValue function;
 
         public LuaListener(final LuaValue function) {
-            this.invoker = new LuaEventInvoker(function);
+            this.function = function;
         }
 
         public synchronized void run(final Event event) {
-            invoker.reset();
-            invoker.setEvent(event);
-            final LuaValue ret = invoker.getResult();
-
+            final LuaValue ret;
+            synchronized (luaState.luaLock) {
+                ret = function.call(CoerceJavaToLua.coerce(event));
+            }
             // Return true/nonboolean for continue, false for cancel
             if(ret != null && ret.isboolean() && event instanceof Cancellable) {
                 boolean retB = ((LuaBoolean)ret).booleanValue();

@@ -17,7 +17,7 @@
 
 ]]
 
-local chatAPI = __LUA_THREAD:getEnhancedChatMessageManager()
+local chatAPI = __LUA_STATE:getEnhancedChatMessageManager()
 
 if not chatAPI then
     local function notImpl()

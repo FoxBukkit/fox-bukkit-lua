@@ -35,7 +35,7 @@ public class FoxBukkitLua extends JavaPlugin {
 
     public Configuration configuration;
     public RedisManager redisManager;
-    private final HashMap<String, LuaThread> luaThreadList = new HashMap<>();
+    private final HashMap<String, LuaState> luaThreadList = new HashMap<>();
     public CommandManagerMaster commandManagerMaster;
 
     public File getLuaFolder() {
@@ -52,7 +52,7 @@ public class FoxBukkitLua extends JavaPlugin {
 
     private void cleanupLuaThreadList() {
         synchronized (luaThreadList) {
-            for (LuaThread t : luaThreadList.values()) {
+            for (LuaState t : luaThreadList.values()) {
                 if(!t.isRunning()) {
                     luaThreadList.remove(t.getModule());
                 }
@@ -62,16 +62,16 @@ public class FoxBukkitLua extends JavaPlugin {
 
     private void terminateLuaThread(String module) {
         synchronized (luaThreadList) {
-            LuaThread luaThread = luaThreadList.remove(module);
-            if(luaThread != null) {
-                luaThread.terminate();
+            LuaState luaState = luaThreadList.remove(module);
+            if(luaState != null) {
+                luaState.terminate();
             }
         }
     }
 
     private void terminateAllLuaThreads() {
         synchronized (luaThreadList) {
-            for(LuaThread t : luaThreadList.values()) {
+            for(LuaState t : luaThreadList.values()) {
                 t.terminate();
             }
             luaThreadList.clear();
@@ -80,17 +80,17 @@ public class FoxBukkitLua extends JavaPlugin {
 
     private void startLuaThread(String module, boolean overwrite) {
         synchronized (luaThreadList) {
-            LuaThread luaThread = luaThreadList.get(module);
-            if(luaThread != null && luaThread.isRunning()) {
+            LuaState luaState = luaThreadList.get(module);
+            if(luaState != null && luaState.isRunning()) {
                 if(overwrite) {
-                    luaThread.terminate();
+                    luaState.terminate();
                 } else {
                     return;
                 }
             }
-            luaThread = new LuaThread(module);
-            luaThreadList.put(module, luaThread);
-            luaThread.start();
+            luaState = new LuaState(module);
+            luaThreadList.put(module, luaState);
+            luaState.run();
         }
     }
 
@@ -193,25 +193,28 @@ public class FoxBukkitLua extends JavaPlugin {
                     return false;
                 }
 
-                LuaThread luaThread;
+                LuaState luaState;
                 synchronized (luaThreadList) {
-                    luaThread = luaThreadList.get(strings[0]);
+                    luaState = luaThreadList.get(strings[0]);
                 }
-                if(luaThread == null) {
+                if(luaState == null) {
                     return false;
                 }
 
                 LuaValue code;
                 try {
-                    synchronized (luaThread.luaLock) {
-                        code = luaThread.g.load(Utils.concatArray(strings, 1, ""));
+                    synchronized (luaState.luaLock) {
+                        code = luaState.g.load(Utils.concatArray(strings, 1, ""));
                     }
                 } catch (Exception e) {
                     commandSender.sendMessage(makeMessageBuilder().append("Error in Lua code: ").append(e.getMessage()).toString());
                     return true;
                 }
 
-                LuaValue ret = new LuaThread.LuaFunctionInvoker(luaThread, code).getResult();
+                final LuaValue ret;
+                synchronized (luaState.luaLock) {
+                    ret = code.call();
+                }
                 commandSender.sendMessage(makeMessageBuilder().append("Code = ").append(ret).toString());
                 return true;
             }
@@ -224,25 +227,28 @@ public class FoxBukkitLua extends JavaPlugin {
                     return false;
                 }
 
-                LuaThread luaThread;
+                LuaState luaState;
                 synchronized (luaThreadList) {
-                    luaThread = luaThreadList.get(strings[0]);
+                    luaState = luaThreadList.get(strings[0]);
                 }
-                if(luaThread == null) {
+                if(luaState == null) {
                     return false;
                 }
 
                 LuaValue code;
                 try {
-                    synchronized (luaThread.luaLock) {
-                        code = luaThread.g.loadfile(new File(getLuaScriptsFolder(), strings[1]).getAbsolutePath());
+                    synchronized (luaState.luaLock) {
+                        code = luaState.g.loadfile(new File(getLuaScriptsFolder(), strings[1]).getAbsolutePath());
                     }
                 } catch (Exception e) {
                     commandSender.sendMessage(makeMessageBuilder().append("Error in Lua file: ").append(e.getMessage()).toString());
                     return true;
                 }
 
-                LuaValue ret = new LuaThread.LuaFunctionInvoker(luaThread, code).getResult();
+                final LuaValue ret;
+                synchronized (luaState.luaLock) {
+                    ret = code.call();
+                }
                 commandSender.sendMessage(makeMessageBuilder().append("Code = ").append(ret).toString());
                 return true;
             }

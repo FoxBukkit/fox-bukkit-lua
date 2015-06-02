@@ -19,21 +19,21 @@ package com.foxelbox.foxbukkit.lua;
 import org.luaj.vm2.LuaValue;
 
 public class CommandManager {
-    private final LuaThread luaThread;
+    private final LuaState luaState;
 
-    public CommandManager(LuaThread luaThread) {
-        this.luaThread = luaThread;
+    public CommandManager(LuaState luaState) {
+        this.luaState = luaState;
     }
 
     public void unregisterAll() {
-        FoxBukkitLua.instance.commandManagerMaster.unregisterAll(luaThread);
+        FoxBukkitLua.instance.commandManagerMaster.unregisterAll(luaState);
     }
 
     public void register(String command, String permission, LuaValue handler) {
-        FoxBukkitLua.instance.commandManagerMaster.register(command, permission, luaThread, handler);
+        FoxBukkitLua.instance.commandManagerMaster.register(command, permission, luaState, handler);
     }
 
     public void unregister(String command) {
-        FoxBukkitLua.instance.commandManagerMaster.unregister(command, luaThread);
+        FoxBukkitLua.instance.commandManagerMaster.unregister(command, luaState);
     }
 }

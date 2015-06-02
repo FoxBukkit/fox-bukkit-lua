@@ -17,8 +17,8 @@
 
 ]]
 
-local cmdManager = __LUA_THREAD:getCommandManager()
-local moduleName = __LUA_THREAD:getModule()
+local cmdManager = __LUA_STATE:getCommandManager()
+local moduleName = __LUA_STATE:getModule()
 
 local basePermission = "foxbukkit." .. moduleName
 

@@ -17,12 +17,12 @@
 
 ]]
 
-local luaThread = __LUA_THREAD
-local includeDir = luaThread:getModuleDir()
-package.path = includeDir .. "/classes/?.lua;" .. luaThread:getRootDir() .. "/classes/?.lua"
+local luaState = __LUA_STATE
+local includeDir = luaState:getModuleDir()
+package.path = includeDir .. "/classes/?.lua;" .. luaState:getRootDir() .. "/classes/?.lua"
 
 table.insert(package.searchers, 3, function(module)
-    return luaThread:loadPackagedFile("classes/" .. module .. ".lua")
+    return luaState:loadPackagedFile("classes/" .. module .. ".lua")
 end)
 
 local _dofile = dofile

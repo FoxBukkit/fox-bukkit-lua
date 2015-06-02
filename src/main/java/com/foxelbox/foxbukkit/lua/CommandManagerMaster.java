@@ -16,7 +16,6 @@
  */
 package com.foxelbox.foxbukkit.lua;
 
-import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -38,65 +37,52 @@ import static org.luaj.vm2.lib.jse.CoerceJavaToLua.coerce;
 
 public class CommandManagerMaster implements Listener {
     private final PluginManager pluginManager;
-    private final HashMap<String, LuaCommandInvoker> commandHandlers = new HashMap<>();
+    private final HashMap<String, LuaCommandHandler> commandHandlers = new HashMap<>();
+
+    private static final Pattern ARGUMENT_PATTERN = Pattern.compile("([^\"]\\S*|\".+?\")\\s*");
 
     public CommandManagerMaster() {
         pluginManager = FoxBukkitLua.instance.getServer().getPluginManager();
         pluginManager.registerEvents(this, FoxBukkitLua.instance);
     }
 
-    public void register(String command, String permission, LuaThread thread, LuaValue handler) {
+    public void register(String command, String permission, LuaState thread, LuaValue handler) {
         synchronized (commandHandlers) {
-            commandHandlers.put(command.trim().toLowerCase(), new LuaCommandInvoker(command, permission, thread, handler));
+            commandHandlers.put(command.trim().toLowerCase(), new LuaCommandHandler(permission, thread, handler));
         }
     }
 
-    public void unregister(String command, LuaThread luaThread) {
+    public void unregister(String command, LuaState luaState) {
         command = command.trim().toLowerCase();
         synchronized (commandHandlers) {
-            LuaCommandInvoker invoker = commandHandlers.get(command);
-            if(invoker.luaThread == luaThread) {
+            LuaCommandHandler invoker = commandHandlers.get(command);
+            if(invoker.luaState == luaState) {
                 commandHandlers.remove(command);
             }
         }
     }
 
-    public void unregisterAll(LuaThread luaThread) {
+    public void unregisterAll(LuaState luaState) {
         synchronized (commandHandlers) {
-            Iterator<LuaCommandInvoker> iterator = commandHandlers.values().iterator();
+            Iterator<LuaCommandHandler> iterator = commandHandlers.values().iterator();
             while(iterator.hasNext()) {
-                LuaCommandInvoker invoker = iterator.next();
-                if(invoker.luaThread == luaThread) {
+                LuaCommandHandler invoker = iterator.next();
+                if(invoker.luaState == luaState) {
                     iterator.remove();
                 }
             }
         }
     }
 
-    private class LuaCommandInvoker {
+    private class LuaCommandHandler {
         private final LuaValue function;
-        private final String command;
         private final String permission;
-        private final LuaThread luaThread;
+        private final LuaState luaState;
 
-        public LuaCommandInvoker(String command, String permission, LuaThread luaThread, LuaValue function) {
-            this.luaThread = luaThread;
+        public LuaCommandHandler(String permission, LuaState luaState, LuaValue function) {
+            this.luaState = luaState;
             this.function = function;
-            this.command = command;
             this.permission = permission;
-        }
-
-        public LuaValue invoke(ParsedCommandLine commandLine) {
-            Varargs varargs = LuaValue.varargsOf(new LuaValue[]{
-                coerce(commandLine.getSource()),
-                coerce(commandLine.getCommand()),
-                commandLine.getArguments(),
-                coerce(commandLine.getArgumentString()),
-                coerce(commandLine.getFlagsString())
-            });
-            synchronized (luaThread.luaLock) {
-                return function.invoke(varargs).arg1();
-            }
         }
     }
 
@@ -125,7 +111,7 @@ public class CommandManagerMaster implements Listener {
 
         cmdStr = cmdStr.trim().toLowerCase();
 
-        final LuaCommandInvoker invoker;
+        final LuaCommandHandler invoker;
         synchronized (commandHandlers) {
             invoker = commandHandlers.get(cmdStr);
         }
@@ -134,90 +120,63 @@ public class CommandManagerMaster implements Listener {
             return;
         }
 
-
-        final LuaValue ret = invoker.invoke(new ParsedCommandLine(source, cmdStr, argStr));
-        // Return true/nonboolean for handled, false for unhandled (fallthrough)
-        if(ret == null || !ret.isboolean() || ((LuaBoolean)ret).booleanValue()) {
-            event.setCancelled(true);
+        final LuaTable parsedArguments;
+        final String flagStr;
+        //Parse CMDLine
+        parsedArguments = new LuaTable();
+        if(argStr.isEmpty()) {
+            flagStr = "";
+            return;
         }
-    }
 
-    public static class ParsedCommandLine {
-        private final LuaTable parsedArguments;
-        private final String flagStr;
-        private final String rawArguments;
-        private final String command;
-        private final CommandSender source;
-
-        private static final Pattern ARGUMENT_PATTERN = Pattern.compile("([^\"]\\S*|\".+?\")\\s*");
-
-        public ParsedCommandLine(CommandSender source, String command, String rawArguments) {
-            this.rawArguments = rawArguments;
-            this.command = command;
-            this.source = source;
-
-            this.parsedArguments = new LuaTable();
-            if(rawArguments.isEmpty()) {
-                flagStr = "";
-                return;
-            }
-
-            String myArgStr = rawArguments;
-            if(myArgStr.length() > 1 && myArgStr.charAt(0) == '-') {
-                char firstFlag = myArgStr.charAt(1);
-                if((firstFlag >= 'a' && firstFlag <= 'z') || (firstFlag >= 'A' && firstFlag <= 'Z')) {
-                    int spacePos = myArgStr.indexOf(' ');
-                    if (spacePos > 0) {
-                        flagStr = myArgStr.substring(1, spacePos).toLowerCase();
-                        myArgStr = myArgStr.substring(spacePos + 1).trim();
-                    } else {
-                        flagStr = myArgStr.toLowerCase();
-                        return;
-                    }
+        String myArgStr = argStr;
+        if(myArgStr.length() > 1 && myArgStr.charAt(0) == '-') {
+            char firstFlag = myArgStr.charAt(1);
+            if((firstFlag >= 'a' && firstFlag <= 'z') || (firstFlag >= 'A' && firstFlag <= 'Z')) {
+                int spacePos = myArgStr.indexOf(' ');
+                if (spacePos > 0) {
+                    flagStr = myArgStr.substring(1, spacePos).toLowerCase();
+                    myArgStr = myArgStr.substring(spacePos + 1).trim();
                 } else {
-                    flagStr = "";
+                    flagStr = myArgStr.toLowerCase();
+                    return;
                 }
             } else {
                 flagStr = "";
             }
+        } else {
+            flagStr = "";
+        }
 
-            if(myArgStr.isEmpty()) {
-                return;
+        if(myArgStr.isEmpty()) {
+            return;
+        }
+
+        ArrayList<String> arguments = new ArrayList<>();
+        Matcher m = ARGUMENT_PATTERN.matcher(myArgStr);
+        while(m.find()) {
+            String str = m.group(1);
+            if(str.charAt(0) == '"') {
+                str = str.substring(1, str.length() - 1);
             }
-
-            ArrayList<String> arguments = new ArrayList<>();
-            Matcher m = ARGUMENT_PATTERN.matcher(myArgStr);
-            while(m.find()) {
-                String str = m.group(1);
-                if(str.charAt(0) == '"') {
-                    str = str.substring(1, str.length() - 1);
-                }
-                parsedArguments.insert(0, coerce(str));
-            }
+            parsedArguments.insert(0, coerce(str));
         }
+        //END parse
 
-        public LuaTable getArguments() {
-            return parsedArguments;
+        Varargs varargs = LuaValue.varargsOf(new LuaValue[]{
+                coerce(source),
+                coerce(cmdStr),
+                parsedArguments,
+                coerce(argStr),
+                coerce(flagStr)
+        });
+        final LuaValue ret;
+        synchronized (invoker.luaState.luaLock) {
+            ret = invoker.function.invoke(varargs).arg1();
         }
-
-        public String getArgumentString() {
-            return rawArguments;
-        }
-
-        public boolean hasFlag(char flag) {
-            return flagStr.indexOf(flag) >= 0;
-        }
-
-        public String getFlagsString() {
-            return flagStr;
-        }
-
-        public CommandSender getSource() {
-            return source;
-        }
-
-        public String getCommand() {
-            return command;
+        // Return true/nonboolean for handled, false for unhandled (fallthrough)
+        if(ret == null || !ret.isboolean() || ((LuaBoolean)ret).booleanValue()) {
+            event.setCancelled(true);
         }
     }
 }
