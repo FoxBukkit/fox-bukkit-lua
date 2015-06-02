@@ -53,6 +53,14 @@ local _entity_mt = {
 		end
 		rawget(tbl, "storage")[idx] = value
 	end,
+	__eq = function(o1, o2)
+		local e1 = rawget(o1, "entity")
+		local e2 = rawget(o2, "entity")
+		if e1.Equals then
+			return e1:Equals(e2)
+		end
+		return e1 == e2
+	end,
 	__metatable = false
 }
 

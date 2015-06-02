@@ -32,15 +32,19 @@ local playerStorage = require("Storage"):create("getUniqueId", {
 	end,
 
 	compareImmunityLevel = function(self, other)
-		return Permissions:compareImmunityLevel(self, other)
+		return Permission:compareImmunityLevel(self, other)
+	end,
+
+	fitsImmunityRequirement = function(self, other, requirement)
+		return Permission:fitsImmunityRequirement(self, other, requirement)
 	end,
 
 	getImmunityLevel = function(self)
-		return Permissions:getImmunityLevel(self)
+		return Permission:getImmunityLevel(self)
 	end,
 
 	getGroup = function(self)
-		return Permissions:getGroup(self)
+		return Permission:getGroup(self)
 	end
 })
 
@@ -54,15 +58,15 @@ return {
 
 	getAll = function(self)
 		local players = {}
-		local iter = bukkitServer:getOnlinePlayers():iterator()
-		while iter:hasNext() do
-			table.insert(players, playerStorage(iter:next()))
+		local iter = bukkitServer:getOnlinePlayers()
+		for i = 1, #iter do
+			table.insert(players, playerStorage(iter[i]))
 		end
 		return players
 	end,
 
-	findSingle = function(self, match, nomatch, immunitydelta)
-		local matches = self:find(match, nomatch, immunitydelta)
+	findSingle = function(self, match, nomatch, immunitydelta, immunityply)
+		local matches = self:find(match, nomatch, immunitydelta, immunityply)
 		if #matches ~= 1 then
 			return nil
 		end
@@ -70,11 +74,12 @@ return {
 	end,
 
 	find = function(self, match, nomatch, immunitydelta, immunityply)
+		match = match:lower()
 		local matches = {}
 		for _, ply in next, self:getAll() do
 			if ply ~= nomatch and
-				(not immunitydelta or immunityply:compareImmunityLevel(ply) == immunitydelta) and
-				(ply:getName():find(match, 1, true) or ply:getDisplayName():find(match, 1, true))
+				(not immunitydelta or ply == immunityply or immunityply:fitsImmunityRequirement(ply, immunitydelta)) and
+				(ply:getName():lower():find(match, 1, true) or ply:getDisplayName():lower():find(match, 1, true))
 			then
 				table.insert(matches, ply)
 			end

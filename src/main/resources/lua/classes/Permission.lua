@@ -44,25 +44,49 @@ local function fixPlyOrUUID(ply_or_uuid)
     return ply_or_uuid
 end
 
+local immunity = {
+    GREATER = 1,
+    LESS = -1,
+    EQUAL = 0,
+    GREATER_OR_EQUAL = 2,
+    LESS_OR_EQUAL = -2
+}
+
 return {
-    getImmunityLevel = function(ply_or_uuid)
+    immunity = immunity,
+
+    getImmunityLevel = function(self, ply_or_uuid)
         return permissionsAPI:getImmunityLevel(fixPlyOrUUID(ply_or_uuid))
     end,
-    getGroup = function(ply_or_uuid)
+
+    getGroup = function(self, ply_or_uuid)
         return permissionsAPI:getGroup(fixPlyOrUUID(ply_or_uuid))
     end,
+
     isAvailable = function(self)
         return permissionsAPI:isAvailable()
     end,
-    compareImmunityLevel = function(ply_or_uuid1, ply_or_uuid2)
+
+    fitsImmunityRequirement = function(self, ply_or_uuid1, ply_or_uuid2, requirement)
+        local diff = self:compareImmunityLevel(ply_or_uuid1, ply_or_uuid2)
+        if requirement == immunity.GREATER_OR_EQUAL then
+            return diff == immunity.EQUAL or diff == immunity.GREATER
+        elseif requirement == immunity.LESS_OR_EQUAL then
+            return diff == immunity.EQUAL or diff == immunity.LESS
+        else
+            return requirement == diff
+        end
+    end,
+
+    compareImmunityLevel = function(self, ply_or_uuid1, ply_or_uuid2)
         local level1 = self:getImmunityLevel(ply_or_uuid1)
         local level2 = self:getImmunityLevel(ply_or_uuid2)
         if level1 > level2 then
-            return 1
+            return immunity.GREATER
         elseif level1 < level2 then
-            return -1
+            return immunity.LESS
         else
-            return 0
+            return immunity.EQUAL
         end
     end
 }

@@ -72,11 +72,35 @@ local parsers = {
     number = function(self, arg)
         return tonumber(arg)
     end,
-    player = function(self, arg, ply)
-        return Player:findSingle(arg, self.noMatchSelf and ply or nil, makeArgMaxImmunity(self, ply), ply)
+    player = function(self, arg, ply, cmd)
+        local ret = Player:findSingle(arg, self.noMatchSelf and ply or nil, makeArgMaxImmunity(self, ply), ply)
+
+        if ret ~= ply and cmd.permissionOther and not ply:hasPermission(cmd.permissionOther) then
+            return
+        end
+
+        return ret
     end,
-    players = function(self, arg)
-        return Player:find(arg, self.noMatchSelf and ply or nil, makeArgMaxImmunity(self, ply), ply)
+    players = function(self, arg, cmd)
+        local ret = Player:find(arg, self.noMatchSelf and ply or nil, makeArgMaxImmunity(self, ply), ply)
+
+        if cmd.permissionOther and not ply:hasPermission(cmd.permissionOther) then
+            local found = false
+            for _, v in next, ret do
+                if v == ply then
+                    found = true
+                    break
+                end
+            end
+
+            if found then
+                return {ply}
+            else
+                return {}
+            end
+        end
+
+        return ret
     end,
     enum = function(self, arg)
         return self.enum[arg:upper()]
@@ -87,17 +111,25 @@ local defaults = {
     string = "",
     number = 0,
     player = function(self, arg, ply)
-        return ply
+        if self.defaultSelf then
+            return ply
+        end
     end,
     players = function(self, arg, ply)
-        return {ply}
+        if self.defaultSelf then
+            return {ply}
+        else
+            return {}
+        end
     end
 }
 
 return {
     register = function(self, cmd)
         cmd.permission = cmd.permission or self:getSubPermission(cmd.name)
-        cmd.permissionOther = cmd.permissionOther or (cmd.permission .. ".other")
+        if cmd.permissionOther == true then
+            cmd.permissionOther = cmd.permission .. ".other"
+        end
 
         if cmd.arguments then
             cmd.lastRequiredArgument = 0
@@ -136,7 +168,7 @@ return {
                     local fits = tryArg:validator(v)
                     if fits or not tryArg.required then
                         if fits then
-                            v = tryArg:parser(v, ply, cmdStr)
+                            v = tryArg:parser(v, ply, cmd)
                             if v == nil then
                                 ply:sendReply("Could not find match for argument \"" .. tryArg.name .. "\"")
                                 return
@@ -144,7 +176,7 @@ return {
                             parsedArgs[tryArg.name] = v
                         else
                             if type(tryArg.default) == "function" then
-                                parsedArgs[tryArg.name] = tryArg:default(v, ply, cmdStr)
+                                parsedArgs[tryArg.name] = tryArg:default(v, ply, cmd)
                             else
                                 parsedArgs[tryArg.name] = tryArg.default
                             end
@@ -163,7 +195,7 @@ return {
                 for i = currentFitArg, #cmd.arguments do
                     tryArg = cmd.arguments[i]
                     if type(tryArg.default) == "function" then
-                        parsedArgs[tryArg.name] = tryArg:default(v, ply, cmdStr)
+                        parsedArgs[tryArg.name] = tryArg:default(v, ply, cmd)
                     else
                         parsedArgs[tryArg.name] = tryArg.default
                     end
@@ -194,7 +226,7 @@ return {
             end
         else
             for _, v in pairs(cmd) do
-                self:unregister(v)
+                self:unregister(cmd)
             end
         end
     end,
