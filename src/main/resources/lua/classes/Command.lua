@@ -52,14 +52,17 @@ local validators = {
     end,
     players = function(self, arg)
         return true
+    end,
+    enum = function(self, arg)
+        return self.enum[arg:upper()] ~= nil
     end
 }
 
 local function makeArgMaxImmunity(self, ply)
-    if not ply or not self.ImmunityRequirement or not Permission:isAvailable() then
+    if not ply or not self.immunityRequirement or not Permission:isAvailable() then
         return
     end
-    return self.ImmunityRequirement
+    return self.immunityRequirement
 end
 
 local parsers = {
@@ -70,11 +73,14 @@ local parsers = {
         return tonumber(arg)
     end,
     player = function(self, arg, ply)
-        return Player:findSingle(arg, self.NoMatchSelf and ply or nil, makeArgMaxImmunity(self, ply), ply)
+        return Player:findSingle(arg, self.noMatchSelf and ply or nil, makeArgMaxImmunity(self, ply), ply)
     end,
     players = function(self, arg)
-        return Player:find(arg, self.NoMatchSelf and ply or nil, makeArgMaxImmunity(self, ply), ply)
-    end    
+        return Player:find(arg, self.noMatchSelf and ply or nil, makeArgMaxImmunity(self, ply), ply)
+    end,
+    enum = function(self, arg)
+        return self.enum[arg:upper()]
+    end
 }
 
 local defaults = {
@@ -145,6 +151,9 @@ return {
                         end
                         currentFitArg = currentFitArg + 1
                         tryArg = cmd.arguments[currentFitArg]
+                    else
+                        ply:sendReply("Unfitting argument for \"" .. tryArg.name .."\"")
+                        return
                     end
                 end
                 if currentFitArg <= cmd.lastRequiredArgument then
