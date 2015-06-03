@@ -108,7 +108,7 @@ public class FoxBukkitLua extends JavaPlugin {
     private Collection<String> listLuaModules() {
         LinkedList<String> luaModules = new LinkedList<>();
         for(File module : getLuaModulesFolder().listFiles()) {
-            if(module.canRead() && module.isDirectory()) {
+            if(module.canRead() && module.isDirectory() && module.getName().charAt(0) != '.') {
                 luaModules.add(module.getName());
             } else {
                 System.err.println("Invalid Lua module " + module.getName() + " (not a directory or unreadable)");
