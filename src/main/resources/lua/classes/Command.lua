@@ -29,18 +29,6 @@ local tonumber = tonumber
 
 local basePermission = "foxbukkit." .. moduleName
 
-local _flags_mt = {
-    __index = {
-        has = function(self, flag)
-            return self.str:find(flag, 1, true) ~= nil
-        end
-    },
-    __newindex = function()
-        error("Readonly")
-    end,
-    __metatable = false
-}
-
 local function makeArgMaxImmunity(self, ply)
     if not ply or not self.immunityRequirement or not Permission:isAvailable() then
         return
@@ -110,10 +98,16 @@ local argTypes = {
     enum = {
         parser = function(self, arg)
             local argNumber = tonumber(arg)
+            local enum = self.enum
             if argNumber ~= nil then
-                return self.enum:values()[argNumber + 1]
+                local func = self.enumIdFunction or enum.values
+                return func(enum)[argNumber + 1]
             end
-            return self.enum[arg:upper()]
+            local func = self.enumNameFunction
+            if func then
+                return func(enum, arg)
+            end
+            return enum[arg:upper()]
         end
     }
 }
@@ -130,6 +124,13 @@ local _command_mt = {
         end,
         getSubPermission = function(self, sub)
             return self.permission .. "." .. sub
+        end,
+        referTo = function(self, ply, target, withSelf)
+            if ply == target then
+                return withSelf and "yourself" or "you"
+            else
+                return ply:getName()
+            end
         end
     },
     __newindex = function()
@@ -166,10 +167,6 @@ class = {
         end
 
         local executor = function(ply, cmdStr, args, argStr, flagStr)
-            flagStr = setmetatable({
-                str = flagStr
-            }, _flags_mt)
-
             if ply and ply.getUniqueId then
                 ply = Player:extend(ply)
             end

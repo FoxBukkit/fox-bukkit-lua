@@ -160,15 +160,34 @@ public class LuaState implements Listener, Runnable {
         }
     }
 
+    private static boolean initialized = false;
+    private synchronized void initialize() {
+        if(initialized) {
+            return;
+        }
+        initialized = true;
+
+        File overrideInit = new File(getRootDir(), "boot.lua");
+        if(overrideInit.exists()) {
+            g.loadfile(overrideInit.getAbsolutePath()).call();
+        } else {
+            loadPackagedFile("boot.lua").call();
+        }
+    }
+
     @Override
     public void run() {
         synchronized (luaLock) {
             g = JsePlatform.standardGlobals();
+
             try {
                 LuaJC.install(g, plugin.getDataFolder().getCanonicalPath());
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
+
+            initialize();
+
             g.set("__LUA_STATE", CoerceJavaToLua.coerce(this));
             File overrideInit = new File(getRootDir(), "init.lua");
             if(overrideInit.exists()) {
