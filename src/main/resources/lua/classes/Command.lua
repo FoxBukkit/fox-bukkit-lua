@@ -48,63 +48,74 @@ local function makeArgMaxImmunity(self, ply)
     return self.immunityRequirement
 end
 
-local parsers = {
-    string = function(self, arg)
-        return arg
-    end,
-    number = function(self, arg)
-        return tonumber(arg)
-    end,
-    player = function(self, arg, ply, cmd)
-        local ret = Player:findSingle(arg, self.noMatchSelf and ply or nil, makeArgMaxImmunity(self, ply), ply)
+local argTypes = {
+    string = {
+        parser = function(self, arg)
+            return arg
+        end,
+        default = ""
+    },
+    number = {
+        parser = function(self, arg)
+            return tonumber(arg)
+        end,
+        default = 0
+    },
+    player = {
+        parser = function(self, arg, ply, cmd)
+            local ret = Player:findSingle(arg, self.noMatchSelf and ply or nil, makeArgMaxImmunity(self, ply), ply)
 
-        if ret ~= ply and cmd.permissionOther and not ply:hasPermission(cmd.permissionOther) then
-            return
+            if ret ~= ply and cmd.permissionOther and not ply:hasPermission(cmd.permissionOther) then
+                return
+            end
+
+            return ret
+        end,
+        default = function(self, ply)
+            if self.defaultSelf then
+                return ply
+            end
         end
+    },
+    players = {
+        parser = function(self, arg, cmd)
+            local ret = Player:find(arg, self.noMatchSelf and ply or nil, makeArgMaxImmunity(self, ply), ply)
 
-        return ret
-    end,
-    players = function(self, arg, cmd)
-        local ret = Player:find(arg, self.noMatchSelf and ply or nil, makeArgMaxImmunity(self, ply), ply)
+            if cmd.permissionOther and not ply:hasPermission(cmd.permissionOther) then
+                local found = false
+                for _, v in next, ret do
+                    if v == ply then
+                        found = true
+                        break
+                    end
+                end
 
-        if cmd.permissionOther and not ply:hasPermission(cmd.permissionOther) then
-            local found = false
-            for _, v in next, ret do
-                if v == ply then
-                    found = true
-                    break
+                if found then
+                    return {ply}
+                else
+                    return {}
                 end
             end
 
-            if found then
+            return ret
+        end,
+        default = function(self, ply)
+            if self.defaultSelf then
                 return {ply}
             else
                 return {}
             end
         end
-
-        return ret
-    end,
-    enum = function(self, arg)
-        return self.enum[arg:upper()]
-    end
-}
-
-local defaults = {
-    string = "",
-    number = 0,
-    player = function(self, arg, ply)
-        if self.defaultSelf then
-            return ply
+    },
+    enum = {
+        parser = function(self, arg)
+            local argNumber = tonumber(arg)
+            if argNumber ~= nil then
+                return self.enum:values()[argNumber + 1]
+            end
+            return self.enum[arg:upper()]
         end
-    end,
-    players = function(self, arg, ply)
-        if self.defaultSelf then
-            return {ply}
-        else
-            return {}
-        end
-    end
+    }
 }
 
 local class
@@ -129,26 +140,28 @@ local _command_mt = {
 
 class = {
     register = function(self, cmd)
-        if not cmd.__fullySetUp then
+        if not cmd.__info then
+            cmd.__info = {}
             cmd.permission = cmd.permission or (basePermission .. "." .. cmd.name)
             if cmd.permissionOther == nil or cmd.permissionOther == true then
                 cmd.permissionOther = cmd.permission .. ".other"
             end
 
             if cmd.arguments then
-                cmd.lastRequiredArgument = 0
+                cmd.__info.lastRequiredArgument = 0
                 for k, options in pairs(cmd.arguments) do
                     options.required = (options.required ~= false)
                     options.type = (options.type or "string"):lower()
-                    options.parser = options.parser or parsers[options.type] or parsers.string
-                    options.default = options.default or defaults[options.type]
+                    local argType = argTypes[options.type] or argTypes.string
+                    options.parser = options.parser or argType.parser
+                    options.default = options.default or argType.default
+                    options.aliases = options.aliases or argType.aliases or {}
                     if options.required then
-                        cmd.lastRequiredArgument = k
+                        cmd.__info.lastRequiredArgument = k
                     end
                     cmd.arguments[k] = options
                 end
             end
-            cmd.__fullySetUp = true
             cmd = setmetatable(cmd, _command_mt)
         end
 
@@ -166,28 +179,33 @@ class = {
                 parsedArgs = {}
                 local currentFitArg = 1
                 local tryArg = cmd.arguments[currentFitArg]
-                for _, v in next, args do
+                for _, arg in next, args do
                     if not tryArg then
-                        ply:sendReply("Too many arguments (or unfitting optionals)")
+                        ply:sendReply("Too many arguments")
                         return
                     end
-                    v = tryArg:parser(v, ply, cmd)
-                    if v == nil then
+                    local argAlias = tryArg.aliases[arg]
+                    if argAlias ~= nil then
+                        arg = argAlias
+                    else
+                        arg = tryArg:parser(arg, ply, cmd)
+                    end
+                    if arg == nil then
                         ply:sendReply("Could not find match for argument \"" .. tryArg.name .. "\"")
                         return
                     end
-                    parsedArgs[tryArg.name] = v
+                    parsedArgs[tryArg.name] = arg
                     currentFitArg = currentFitArg + 1
                     tryArg = cmd.arguments[currentFitArg]
                 end
-                if currentFitArg <= cmd.lastRequiredArgument then
+                if currentFitArg <= cmd.__info.lastRequiredArgument then
                     ply:sendReply("Not enough arguments")
                     return
                 end
                 for i = currentFitArg, #cmd.arguments do
                     tryArg = cmd.arguments[i]
                     if type(tryArg.default) == "function" then
-                        parsedArgs[tryArg.name] = tryArg:default(v, ply, cmd)
+                        parsedArgs[tryArg.name] = tryArg:default(ply, cmd)
                     else
                         parsedArgs[tryArg.name] = tryArg.default
                     end
