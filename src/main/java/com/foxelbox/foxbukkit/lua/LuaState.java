@@ -163,7 +163,7 @@ public class LuaState implements Listener, Runnable {
     @Override
     public void run() {
         synchronized (luaLock) {
-            g = JsePlatform.debugGlobals();
+            g = JsePlatform.standardGlobals();
             try {
                 LuaJC.install(g, plugin.getDataFolder().getCanonicalPath());
             } catch (IOException e) {
