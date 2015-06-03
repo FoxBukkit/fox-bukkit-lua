@@ -43,23 +43,37 @@ import org.luaj.vm2.LuaValue;
 import org.luaj.vm2.Prototype;
 
 import java.io.IOException;
+import java.util.HashMap;
 
 public class LuaJC implements Globals.Loader {
-
-    public static final LuaJC instance = new LuaJC();
-
     private static final ClassLoader parentClassLoader = LuaJC.class.getClassLoader();
 
-    public static void install(Globals G) {
-        G.loader = instance;
+    private static final HashMap<String, LuaJC> compilers = new HashMap<>();
+
+    private String root;
+    private int rootLen;
+
+    public static synchronized void install(Globals G, String root) {
+        LuaJC compiler = compilers.get(root);
+        if(compiler == null) {
+            compiler = new LuaJC(root);
+            compilers.put(root, compiler);
+        }
+        G.loader = compiler;
     }
 
-    protected LuaJC() { }
+    protected LuaJC(String root) {
+        this.root = root;
+        this.rootLen = root.length();
+    }
 
     @Override
     public LuaFunction load(Prototype p, String name, LuaValue globals) throws IOException {
         String luaname = toStandardLuaFileName(name);
-        String classname = toStandardJavaClassName(luaname);
+        if(luaname.startsWith(root)) {
+            luaname = luaname.substring(rootLen + 1);
+        }
+        String classname = "lua." + toStandardJavaClassName(luaname);
         JavaLoader loader = new JavaLoader(parentClassLoader);
         return loader.load(p, classname, luaname, globals);
     }

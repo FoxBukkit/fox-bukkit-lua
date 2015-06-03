@@ -131,11 +131,19 @@ public class LuaState implements Listener, Runnable {
     }
 
     public String getRootDir() {
-        return plugin.getLuaFolder().getAbsolutePath();
+        try {
+            return plugin.getLuaFolder().getCanonicalPath();
+        } catch (IOException e) {
+            return null;
+        }
     }
 
     public String getModuleDir() {
-        return new File(plugin.getLuaModulesFolder(), module).getAbsolutePath();
+        try {
+            return new File(plugin.getLuaModulesFolder(), module).getCanonicalPath();
+        } catch (IOException e) {
+            return null;
+        }
     }
 
     public LuaValue loadPackagedFile(String name) {
@@ -156,7 +164,11 @@ public class LuaState implements Listener, Runnable {
     public void run() {
         synchronized (luaLock) {
             g = JsePlatform.debugGlobals();
-            LuaJC.install(g);
+            try {
+                LuaJC.install(g, plugin.getDataFolder().getCanonicalPath());
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
             g.set("__LUA_STATE", CoerceJavaToLua.coerce(this));
             File overrideInit = new File(getRootDir(), "init.lua");
             if(overrideInit.exists()) {
