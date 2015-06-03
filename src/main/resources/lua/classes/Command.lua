@@ -100,8 +100,11 @@ local argTypes = {
             local argNumber = tonumber(arg)
             local enum = self.enum
             if argNumber ~= nil then
-                local func = self.enumIdFunction or enum.values
-                return func(enum)[argNumber + 1]
+                local func = self.enumIdFunction
+                if func then
+                    return func(enum, argNumber)
+                end
+                return enum:values()[argNumber + 1]
             end
             local func = self.enumNameFunction
             if func then
