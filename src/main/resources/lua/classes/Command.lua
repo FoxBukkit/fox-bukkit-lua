@@ -140,7 +140,9 @@ local _command_mt = {
                  isProperty = self.action.isProperty
             end
 
-            if ply == target then
+            if not target then
+                ply:sendReply(format:format("You", ...))
+            elseif ply == target then
                 ply:sendReply(format:format("You", isProperty and "your own" or "yourself", ...))
             else
                 ply:sendReply(format:format("You", isProperty and (target:getName() .. "'s") or target:getName(), ...))
@@ -163,9 +165,16 @@ local _command_mt = {
                     players = Player:getAll()
                 end
 
+                local string
+                if target then
+                    string = format:format(ply:getName(), isProperty and (target:getName() .. "'s") or target:getName(), ...)
+                else
+                    string = format:format(ply:getName(), ...)
+                end
+
                 for _, otherply in next, players do
                     if otherply ~= ply and otherply ~= target then
-                        otherply:sendReply(format:format(ply:getName(), isProperty and (target:getName() .. "'s") or target:getName(), ...))                     
+                        otherply:sendReply(string)
                     end
                 end
             end
