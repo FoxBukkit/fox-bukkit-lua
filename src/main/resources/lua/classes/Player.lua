@@ -68,15 +68,15 @@ return {
 		return players
 	end,
 
-	findSingle = function(self, match, nomatch, immunitydelta, immunityply)
-		local matches = self:find(match, nomatch, immunitydelta, immunityply)
+	findSingle = function(self, match, nomatch, immunitydelta, immunityply, permission)
+		local matches = self:find(match, nomatch, immunitydelta, immunityply, permission)
 		if #matches ~= 1 then
 			return nil
 		end
 		return matches[1]
 	end,
 
-	find = function(self, match, nomatch, immunitydelta, immunityply)
+	find = function(self, match, nomatch, immunitydelta, immunityply, permission)
 		match = match:lower()
 
 		local ignoreName = false
@@ -92,7 +92,8 @@ return {
 		for _, ply in next, availablePlayers do
 			if ply ~= nomatch and
 				(not immunitydelta or ply == immunityply or immunityply:fitsImmunityRequirement(ply, immunitydelta)) and
-				(ignoreName or ply:getName():lower():find(match, 1, true) or ply:getDisplayName():lower():find(match, 1, true))
+				(ignoreName or ply:getName():lower():find(match, 1, true) or ply:getDisplayName():lower():find(match, 1, true)) and
+				(not permission or ply:hasPermission(permission))
 			then
 				table_insert(matches, ply)
 			end
