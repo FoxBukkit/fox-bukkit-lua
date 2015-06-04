@@ -122,21 +122,49 @@ local _command_mt = {
         register = function(self)
             return class:register(self)
         end,
+
         unregister = function(self)
             return class:unregister(self)
         end,
+
         getSubPermission = function(self, sub)
             return self.permission .. "." .. sub
         end,
-        sendActionReply = function(self, ply, target, ...)
-            local format = self.actionFormat
-            local isProperty = self.actionIsProperty
+
+        sendActionReply = function(self, ply, target, overrides, ...)
+            overrides = overrides or {}
+            
+            local format = overrides.format or self.action.format
+            local isProperty = overrides.isProperty
+            if isProperty == nil then
+                 isProperty = self.action.isProperty
+            end
+
             if ply == target then
                 ply:sendReply(format:format("You", isProperty and "your own" or "yourself", ...))
                 return
             end
             ply:sendReply(format:format("You", isProperty and (target:getName() .. "'s") or target:getName(), ...))
             target:sendReply(format:format(ply:getName(), isProperty and "your" or "you", ...))
+
+            local broadcast = overrides.broadcast
+            if broadcast == nil then
+                broadcast = self.action.broadcast
+            end
+            if broadcast then
+                local players
+                if type(broadcast) == "string" then
+                    players = Player:getAll(nil, nil, nil, broadcast)
+                else
+                    players = Player:getAll()
+                end
+
+                for _, otherply in next, players do
+                    if otherply ~= ply and otherply ~= target then
+                        otherply:sendReply(format:format(ply:getName(), isProperty and (target:getName() .. "'s") or target:getName(), ...))                     
+                    end
+                end
+            end
         end
     },
     __newindex = function()
