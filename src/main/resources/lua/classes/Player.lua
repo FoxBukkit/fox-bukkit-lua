@@ -78,11 +78,21 @@ return {
 
 	find = function(self, match, nomatch, immunitydelta, immunityply)
 		match = match:lower()
+
+		local ignoreName = false
+		local availablePlayers
+		if match:sub(1,1) == "@" then
+			availablePlayers = {playerStorage(bukkitServer:getPlayerExact(match:sub(2)))}
+			ignoreName = true
+		else
+			availablePlayers = self:getAll()
+		end
+
 		local matches = {}
-		for _, ply in next, self:getAll() do
+		for _, ply in next, availablePlayers do
 			if ply ~= nomatch and
 				(not immunitydelta or ply == immunityply or immunityply:fitsImmunityRequirement(ply, immunitydelta)) and
-				(ply:getName():lower():find(match, 1, true) or ply:getDisplayName():lower():find(match, 1, true))
+				(ignoreName or ply:getName():lower():find(match, 1, true) or ply:getDisplayName():lower():find(match, 1, true))
 			then
 				table_insert(matches, ply)
 			end
