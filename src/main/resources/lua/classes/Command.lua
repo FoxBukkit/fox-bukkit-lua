@@ -140,13 +140,52 @@ local _command_mt = {
                  isProperty = self.action.isProperty
             end
 
+            local containsSelf = false
+            local function referToTarget(target, sendTo)
+                if ply == target then
+                    if containsSelf then
+                        if sendTo == target then
+                            return isProperty and "your own" or "yourself"
+                        else
+                            return isProperty and "their own" or "themselves"
+                        end
+                    else
+                        containsSelf = true
+                        if sendTo == target then
+                            return "you"
+                        else
+                            return target:getName()
+                        end
+                    end
+                elseif sendTo == target then
+                    return isProperty and "your" or "you"
+                else
+                    return isProperty and (target:getName() .. "'s") or target:getName()
+                end
+            end
+            local function doFormat(sendTo, ...)
+                containsSelf = false
+                local args = {...}
+                for k, v in next, args do
+                    local arg = args[k]
+                    if type(arg) == "table" and arg.__entity then
+                        arg = referToTarget(arg, sendTo)
+                        if arg == "you" and k == 1 then
+                            arg = arg:ucfirst()
+                        end
+                    end
+                    args[k] = arg
+                end
+                sendTo:sendReply(format:format(table.unpack(args)))
+            end
+
             if not target then
-                ply:sendReply(format:format("You", ...))
-            elseif ply == target then
-                ply:sendReply(format:format("You", isProperty and "your own" or "yourself", ...))
+                doFormat(ply, ply, ...)
             else
-                ply:sendReply(format:format("You", isProperty and (target:getName() .. "'s") or target:getName(), ...))
-                target:sendReply(format:format(ply:getName(), isProperty and "your" or "you", ...))
+                doFormat(ply, ply, target, ...)
+                if ply ~= target and not overrides.silentToTarget  then
+                    doFormat(target, ply, target, ...)
+                end
             end
 
             local broadcast = overrides.broadcast
@@ -165,16 +204,13 @@ local _command_mt = {
                     players = Player:getAll()
                 end
 
-                local string
-                if target then
-                    string = format:format(ply:getName(), isProperty and (target:getName() .. "'s") or target:getName(), ...)
-                else
-                    string = format:format(ply:getName(), ...)
-                end
-
                 for _, otherply in next, players do
                     if otherply ~= ply and otherply ~= target then
-                        otherply:sendReply(string)
+                        if target then
+                            doFormat(otherply, ply, target, ...)
+                        else
+                            doFormat(otherply, ply, ...)
+                        end
                     end
                 end
             end
@@ -215,7 +251,9 @@ class = {
                     options.type = (options.type or "string"):lower()
                     local argType = argTypes[options.type] or argTypes.string
                     options.parser = options.parser or argType.parser
-                    options.default = options.default or argType.default
+                    if options.default == nil then
+                        options.default = argType.default
+                    end
                     options.aliases = options.aliases or argType.aliases or {}
                     if options.required then
                         cmd.__info.lastRequiredArgument = k
@@ -234,13 +272,34 @@ class = {
             local parsedArgs
             if cmd.arguments then
                 parsedArgs = {}
+
+                local function pushArg(arg, value)
+                    parsedArgs[arg.name] = value
+                end
+
+                local function argApplicable(arg)
+                    if arg.flagsRequired and not flagStr:contains(arg.flagsRequired) then
+                        return false
+                    end
+                    if arg.flagsForbidden and flagStr:contains(arg.flagsForbidden) then
+                        return false
+                    end
+                    return true
+                end
+
                 local currentFitArg = 1
                 local tryArg = cmd.arguments[currentFitArg]
                 for _, arg in next, args do
+                    while tryArg and not argApplicable(tryArg) do
+                        currentFitArg = currentFitArg + 1
+                        tryArg = cmd.arguments[currentFitArg]
+                    end
+
                     if not tryArg then
                         ply:sendReply("Too many arguments")
                         return
                     end
+
                     local argAlias = tryArg.aliases[arg]
                     if argAlias ~= nil then
                         arg = argAlias
@@ -251,20 +310,23 @@ class = {
                         ply:sendReply("Could not find match for argument \"" .. tryArg.name .. "\"")
                         return
                     end
-                    parsedArgs[tryArg.name] = arg
+
+                    pushArg(tryArg, arg)
+
                     currentFitArg = currentFitArg + 1
                     tryArg = cmd.arguments[currentFitArg]
                 end
-                if currentFitArg <= cmd.__info.lastRequiredArgument then
-                    ply:sendReply("Not enough arguments")
-                    return
-                end
                 for i = currentFitArg, #cmd.arguments do
                     tryArg = cmd.arguments[i]
-                    if type(tryArg.default) == "function" then
-                        parsedArgs[tryArg.name] = tryArg:default(ply, cmd)
-                    else
-                        parsedArgs[tryArg.name] = tryArg.default
+                    if argApplicable(tryArg) then
+                        if tryArg.required then
+                            ply:sendReply("Not enough arguments")
+                            return
+                        elseif type(tryArg.default) == "function" then
+                            pushArg(tryArg, tryArg:default(ply, cmd))
+                        else
+                            pushArg(tryArg, tryArg.default)
+                        end
                     end
                 end
             else
