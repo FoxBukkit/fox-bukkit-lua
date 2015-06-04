@@ -128,12 +128,15 @@ local _command_mt = {
         getSubPermission = function(self, sub)
             return self.permission .. "." .. sub
         end,
-        referTo = function(self, ply, target, withSelf)
+        sendActionReply = function(self, ply, target, ...)
+            local format = self.actionFormat
+            local isProperty = self.actionIsProperty
             if ply == target then
-                return withSelf and "yourself" or "you"
-            else
-                return ply:getName()
+                ply:sendReply(format:format("You", isProperty and "your own" or "yourself", ...))
+                return
             end
+            ply:sendReply(format:format("You", isProperty and (target:getName() .. "'s") or target:getName(), ...))
+            target:sendReply(format:format(ply:getName(), isProperty and "your" or "you", ...))
         end
     },
     __newindex = function()
