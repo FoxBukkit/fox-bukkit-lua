@@ -77,14 +77,19 @@ return {
 	end,
 
 	find = function(self, match, nomatch, immunitydelta, immunityply, permission)
-		match = match:lower()
-
 		local ignoreName = false
 		local availablePlayers
-		if match:sub(1,1) == "@" then
-			availablePlayers = {playerStorage(bukkitServer:getPlayerExact(match:sub(2)))}
-			ignoreName = true
+		if match then
+			match = match:lower()
+			if match:sub(1,1) == "@" then
+				availablePlayers = {playerStorage(bukkitServer:getPlayerExact(match:sub(2)))}
+				ignoreName = true
+			end
 		else
+			ignoreName = true
+		end
+
+		if not availablePlayers then
 			availablePlayers = self:getAll()
 		end
 

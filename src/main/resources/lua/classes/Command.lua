@@ -133,7 +133,7 @@ local _command_mt = {
 
         sendActionReply = function(self, ply, target, overrides, ...)
             overrides = overrides or {}
-            
+
             local format = overrides.format or self.action.format
             local isProperty = overrides.isProperty
             if isProperty == nil then
@@ -142,19 +142,23 @@ local _command_mt = {
 
             if ply == target then
                 ply:sendReply(format:format("You", isProperty and "your own" or "yourself", ...))
-                return
+            else
+                ply:sendReply(format:format("You", isProperty and (target:getName() .. "'s") or target:getName(), ...))
+                target:sendReply(format:format(ply:getName(), isProperty and "your" or "you", ...))
             end
-            ply:sendReply(format:format("You", isProperty and (target:getName() .. "'s") or target:getName(), ...))
-            target:sendReply(format:format(ply:getName(), isProperty and "your" or "you", ...))
 
             local broadcast = overrides.broadcast
             if broadcast == nil then
                 broadcast = self.action.broadcast
             end
             if broadcast then
+                if broadcast == true then
+                    broadcast = overrides.silent and self.action.broadcastSilentPermission or self.action.broadcastPermission
+                end
+
                 local players
                 if type(broadcast) == "string" then
-                    players = Player:getAll(nil, nil, nil, broadcast)
+                    players = Player:find(nil, nil, nil, nil, broadcast)
                 else
                     players = Player:getAll()
                 end
@@ -180,6 +184,19 @@ class = {
             cmd.permission = cmd.permission or (basePermission .. "." .. cmd.name)
             if cmd.permissionOther == nil or cmd.permissionOther == true then
                 cmd.permissionOther = cmd.permission .. ".other"
+            end
+
+            if cmd.action then
+                cmd.action.isProperty = cmd.action.isProperty or false
+                cmd.action.broadcast = cmd.action.broadcast or false
+                if cmd.action.broadcastPermission == nil or cmd.action.broadcastPermission == true then
+                    cmd.action.broadcastPermission = cmd.permission .. ".broadcast"
+                end
+                if cmd.action.broadcastPermission == false then
+                    cmd.action.broadcastSilentPermission = cmd.permission .. ".broadcast.silent"
+                elseif cmd.action.broadcastSilentPermission == nil or cmd.action.broadcastSilentPermission == true then
+                    cmd.action.broadcastSilentPermission = cmd.action.broadcastPermission .. ".silent"
+                end
             end
 
             if cmd.arguments then
