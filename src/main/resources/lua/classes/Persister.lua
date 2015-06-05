@@ -123,7 +123,8 @@ local function serialize(stream, v, indent)
         for k, kv in next, v do
             if __SERIALIZABLE[type(k)] and __SERIALIZABLE[type(kv)] and
                 (type(kv) ~= "table" or next(kv)) and
-                (type(k) ~= "table" or next(k))
+                (type(k) ~= "table" or next(k)) and
+                (type(k) ~= "string" or k:sub(1,1) ~= "_")
             then
                 if isFirst then
                     isFirst = false
