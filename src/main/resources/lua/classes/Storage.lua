@@ -17,6 +17,8 @@
 
 ]]
 
+local Persister = require("Persister")
+
 local rawget = rawget
 local type = type
 
@@ -96,9 +98,10 @@ local _storage_mt = {
 _storage_mt.__index = _storage_mt
 
 return {
-	create = function(self, idFunction, extensions)
+	create = function(self, idFunction, persisthash, extensions)
+		local storageTbl = persisthash and Persister:get(persisthash) or {}
 		return setmetatable({
-			storage = {},
+			storage = storageTbl,
 			extensions = extensions or {},
 			idFunction = idFunction
 		}, _storage_mt)

@@ -24,7 +24,7 @@ local table_insert = table.insert
 
 local playerExt = {}
 
-local playerStorage = require("Storage"):create("getUniqueId", playerExt)
+local playerStorage = require("Storage"):create("getUniqueId", "player", playerExt)
 
 return {
 	getByUUID = function(self, uuid)
