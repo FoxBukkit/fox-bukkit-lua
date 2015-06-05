@@ -19,9 +19,35 @@
 
 local permissionsAPI = __LUA_STATE:getEnhancedPermissionManager()
 
+local Player = require("Player")
+local Permission
+
+local tostring = tostring
+
+Player:addExtensions{
+    compareImmunityLevel = function(self, other)
+        return Permission:compareImmunityLevel(self, other)
+    end,
+
+    fitsImmunityRequirement = function(self, other, requirement)
+        return Permission:fitsImmunityRequirement(self, other, requirement)
+    end,
+
+    getImmunityLevel = function(self)
+        return Permission:getImmunityLevel(self)
+    end,
+
+    getGroup = function(self)
+        return Permission:getGroup(self)
+    end
+}
+
 if not permissionsAPI then
-    return {
+    Permission = {
         getImmunityLevel = function(ply_or_uuid)
+            return 0
+        end,
+        getGroupImmunityLevel = function(ply_or_uuid)
             return 0
         end,
         getGroup = function(ply_or_uuid)
@@ -31,6 +57,7 @@ if not permissionsAPI then
             return false
         end
     }
+    return Permission
 end
 
 local UUID = luajava.bindClass("java.util.UUID")
@@ -52,11 +79,15 @@ local immunity = {
     LESS_OR_EQUAL = -2
 }
 
-return {
+Permission = {
     immunity = immunity,
 
     getImmunityLevel = function(self, ply_or_uuid)
         return permissionsAPI:getImmunityLevel(fixPlyOrUUID(ply_or_uuid))
+    end,
+
+    getGroupImmunityLevel = function(self, group)
+        return permissionsAPI:getImmunityLevel(tostring(group))
     end,
 
     getGroup = function(self, ply_or_uuid)
@@ -90,3 +121,5 @@ return {
         end
     end
 }
+
+return Permission

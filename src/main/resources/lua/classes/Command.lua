@@ -20,6 +20,7 @@
 local cmdManager = __LUA_STATE:getCommandManager()
 local moduleName = __LUA_STATE:getModule()
 
+require("Chat")
 local Player = require("Player")
 local Server = require("Server")
 local Permission = require("Permission")
@@ -140,7 +141,7 @@ local _command_mt = {
         sendActionReply = function(self, ply, target, overrides, ...)
             overrides = overrides or {}
 
-            if target.__entity then
+            if target and target.__entity then
                 target = {target}
             end
 

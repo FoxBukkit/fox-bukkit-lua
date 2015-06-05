@@ -45,24 +45,26 @@ function loadfile(file)
     return _loadfile(includeDir .. '/' .. file)
 end
 
-local function _scandir(dir, cb, recursive, rootDirLen)
+local function _scandir(dir, cb, recursive, ignore, rootDirLen)
     local iter = dir:listFiles()
     for i = 1, #iter do
         local v = iter[i]
-        if recursive and v:isDirectory() then
-            _scandir(v, cb, recursive, rootDir)
-        else
-            cb(v:getAbsolutePath():sub(rootDirLen))
+        if v ~= ignore then
+            if recursive and v:isDirectory() then
+                _scandir(v, cb, recursive, nil, rootDirLen)
+            else
+                cb(v:getAbsolutePath():sub(rootDirLen))
+            end
         end
     end
 end
-function scandir(dir, cb, recursive)
+function scandir(dir, cb, recursive, ignore)
     if type(dir) == "string" then
         dir = luajava.new(File, includeDir .. '/' .. dir)
     end
-    _scandir(dir, cb, recursive, dir:getAbsolutePath():len() + 2)
+    _scandir(dir, cb, recursive, ignore, dir:getAbsolutePath():len() + 2)
 end
 
-scandir('autorun', function(file)
-    dofile('autorun/' .. file)
-end, true)
+scandir('', function(file)
+    dofile(file)
+end, true, 'classes')

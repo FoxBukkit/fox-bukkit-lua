@@ -36,4 +36,21 @@ if not chatAPI then
     }
 end
 
-return chatAPI
+local Player = require("Player")
+local Chat = chatAPI
+
+Player:addExtensions{
+    sendXML = function(self, message)
+        return Chat:sendLocalToPlayer(message, self.__entity)
+    end,
+
+    sendReply = function(self, message)
+        return self:sendXML("<color name=\"dark_purple\">[FB]</color> " .. message)
+    end,
+
+    sendError = function(self, message)
+        return self:sendXML("<color name=\"dark_red\">[FB]</color> " .. message)
+    end,
+}
+
+return Chat

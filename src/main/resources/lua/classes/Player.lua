@@ -20,36 +20,11 @@
 local bukkitServer = require("Server"):getBukkitServer()
 local UUID = luajava.bindClass("java.util.UUID")
 
-local Chat = require("Chat")
-local Permission = require("Permission")
-
 local table_insert = table.insert
 
-local playerStorage = require("Storage"):create("getUniqueId", {
-	sendXML = function(self, message)
-		return Chat:sendLocalToPlayer(message, self.__entity)
-	end,
+local playerExt = {}
 
-	sendReply = function(self, message)
-		return self:sendXML("<color name=\"dark_purple\">[FB]</color> " .. message)
-	end,
-
-	compareImmunityLevel = function(self, other)
-		return Permission:compareImmunityLevel(self, other)
-	end,
-
-	fitsImmunityRequirement = function(self, other, requirement)
-		return Permission:fitsImmunityRequirement(self, other, requirement)
-	end,
-
-	getImmunityLevel = function(self)
-		return Permission:getImmunityLevel(self)
-	end,
-
-	getGroup = function(self)
-		return Permission:getGroup(self)
-	end
-})
+local playerStorage = require("Storage"):create("getUniqueId", playerExt)
 
 return {
 	getByUUID = function(self, uuid)
@@ -62,8 +37,15 @@ return {
 	getAll = function(self)
 		local players = {}
 		local iter = bukkitServer:getOnlinePlayers()
-		for i = 1, #iter do
-			table_insert(players, playerStorage(iter[i]))
+		if not iter.length then
+			iter = iter:iterator()
+			while iter:hasNext() do
+				table_insert(players, playerStorage(iter:next()))
+			end
+		else
+			for i = 1, #iter do
+				table_insert(players, playerStorage(iter[i]))
+			end
 		end
 		return players
 	end,
@@ -124,5 +106,11 @@ return {
 
 	extend = function(self, player)
 		return playerStorage(player)
+	end,
+
+	addExtensions = function(self, extensions)
+		for k, v in pairs(extensions) do
+			playerExt[k] = v
+		end
 	end
 }
