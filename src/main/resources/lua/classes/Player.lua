@@ -91,6 +91,10 @@ return {
 			elseif matchFirst == "$" then
 				return {self:getByUUID(match:sub(2))}
 			end
+
+			if match:len() < 1 then
+				ignoreName = true
+			end
 		else
 			ignoreName = true
 		end
