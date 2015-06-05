@@ -26,6 +26,12 @@ local Permission = require("Permission")
 
 local next = next
 local tonumber = tonumber
+local type = type
+
+local table_insert = table.insert
+local table_concat = table.concat
+local table_unpack = table.unpack
+local table_contains = table.contains
 
 local basePermission = "foxbukkit." .. moduleName
 
@@ -67,7 +73,7 @@ local argTypes = {
     },
     players = {
         parser = function(self, arg, cmd)
-            local ret = Player:find(arg, self.noMatchSelf and ply or nil, makeArgMaxImmunity(self, ply), ply)
+            local ret = Player:find(arg, self.noMatchSelf and ply or nil, makeArgMaxImmunity(self, ply), ply, nil, true)
 
             if cmd.permissionOther and not ply:hasPermission(cmd.permissionOther) then
                 local found = false
@@ -134,6 +140,10 @@ local _command_mt = {
         sendActionReply = function(self, ply, target, overrides, ...)
             overrides = overrides or {}
 
+            if target.__entity then
+                target = {target}
+            end
+
             local format = overrides.format or self.action.format
             local isProperty = overrides.isProperty
             if isProperty == nil then
@@ -142,9 +152,9 @@ local _command_mt = {
 
             local containsSelf = false
             local function referToTarget(target, sendTo)
-                if ply == target then
+                if target == ply then
                     if containsSelf then
-                        if sendTo == target then
+                        if sendTo == ply then
                             return isProperty and "your own" or "yourself"
                         else
                             return isProperty and "their own" or "themselves"
@@ -163,28 +173,48 @@ local _command_mt = {
                     return isProperty and (target:getName() .. "'s") or target:getName()
                 end
             end
+            local function referToTargets(targets, sendTo)
+                local str = {}
+                local oldCS = containsSelf
+                local newCS = containsSelf
+                for _, target in next, targets do
+                    containsSelf = oldCS
+                    table_insert(str, referToTarget(target, sendTo))
+                    newCS = newCS or containsSelf
+                end
+                containsSelf = containsSelf or newCS
+                return table_concat(str, ", ")
+            end
             local function doFormat(sendTo, ...)
                 containsSelf = false
                 local args = {...}
                 for k, v in next, args do
                     local arg = args[k]
-                    if type(arg) == "table" and arg.__entity then
-                        arg = referToTarget(arg, sendTo)
-                        if arg == "you" and k == 1 then
-                            arg = arg:ucfirst()
+                    if type(arg) == "table" then
+                        if arg.__entity then
+                            arg = referToTarget(arg, sendTo)
+                        else
+                            arg = referToTargets(arg, sendTo)
+                        end
+                        if (arg == "you" or arg:sub(1, 4) == "you,") and k == 1 then
+                            arg = "Y" .. arg:sub(2)
                         end
                     end
                     args[k] = arg
                 end
-                sendTo:sendReply(format:format(table.unpack(args)))
+                sendTo:sendReply(format:format(table_unpack(args)))
             end
 
             if not target then
                 doFormat(ply, ply, ...)
             else
                 doFormat(ply, ply, target, ...)
-                if ply ~= target and not overrides.silentToTarget  then
-                    doFormat(target, ply, target, ...)
+                if not overrides.silentToTarget  then
+                    for _, targetPly in next, target do
+                        if targetPly ~= ply then
+                            doFormat(targetPly, ply, target, ...)
+                        end
+                    end
                 end
             end
 
@@ -205,7 +235,7 @@ local _command_mt = {
                 end
 
                 for _, otherply in next, players do
-                    if otherply ~= ply and otherply ~= target then
+                    if otherply ~= ply and not table_contains(target, otherply) then
                         if target then
                             doFormat(otherply, ply, target, ...)
                         else
@@ -306,7 +336,7 @@ class = {
                     else
                         arg = tryArg:parser(arg, ply, cmd)
                     end
-                    if arg == nil then
+                    if arg == nil or (type(arg) == "table" and next(arg) == nil) then
                         ply:sendReply("Could not find match for argument \"" .. tryArg.name .. "\"")
                         return
                     end

@@ -69,14 +69,14 @@ return {
 	end,
 
 	findSingle = function(self, match, nomatch, immunitydelta, immunityply, permission)
-		local matches = self:find(match, nomatch, immunitydelta, immunityply, permission)
+		local matches = self:find(match, nomatch, immunitydelta, immunityply, permission, true)
 		if #matches ~= 1 then
 			return nil
 		end
 		return matches[1]
 	end,
 
-	find = function(self, match, nomatch, immunitydelta, immunityply, permission)
+	find = function(self, match, nomatch, immunitydelta, immunityply, permission, forbidMultiple)
 		local ignoreName = false
 		local availablePlayers
 		if match then
@@ -84,6 +84,9 @@ return {
 			if match:sub(1,1) == "@" then
 				availablePlayers = {playerStorage(bukkitServer:getPlayerExact(match:sub(2)))}
 				ignoreName = true
+			elseif match:sub(1,1) == "*" then
+				forbidMultiple = false
+				match = match:sub(2)
 			end
 		else
 			ignoreName = true
@@ -103,6 +106,11 @@ return {
 				table_insert(matches, ply)
 			end
 		end
+
+		if forbidMultiple and #matches ~= 1 then
+			return {}
+		end
+
 		return matches
 	end,
 

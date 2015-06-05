@@ -23,6 +23,15 @@ local File = luajava.bindClass("java.io.File")
 
 package.path = includeDir .. "/classes/?.lua;" .. luaState:getRootDir() .. "/classes/?.lua"
 
+table.contains = table.contains or function(tbl, value)
+	for _, v in next, tbl do
+		if v == value then
+			return true
+		end
+	end
+	return false
+end
+
 table.insert(package.searchers, 3, function(module)
     return luaState:loadPackagedFile("classes/" .. module .. ".lua")
 end)
