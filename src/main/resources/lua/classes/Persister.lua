@@ -51,11 +51,16 @@ local serializers = {
                 x = v:getX(),
                 y = v:getY(),
                 z = v:getZ(),
+                yaw = v:getYaw(),
+                pitch = v:getPitch(),
                 world = v:getWorld():getName()
             }
         end,
         unserialize = function(v)
-            return luajava.new(Location, bukkitServer:getWorld(v.world), v.x, v.y, v.z)
+            local c = luajava.new(Location, bukkitServer:getWorld(v.world), v.x, v.y, v.z)
+            c:setYaw(v.yaw)
+            c:setPitch(v.pitch)
+            return c
         end
     }
 }
@@ -116,7 +121,10 @@ local function serialize(stream, v, indent)
         stream:write(indent)
         local isFirst = true
         for k, kv in next, v do
-            if __SERIALIZABLE[type(k)] and __SERIALIZABLE[type(kv)] then
+            if __SERIALIZABLE[type(k)] and __SERIALIZABLE[type(kv)] and
+                (type(kv) ~= "table" or next(kv)) and
+                (type(k) ~= "table" or next(k))
+            then
                 if isFirst then
                     isFirst = false
                 else
@@ -150,7 +158,14 @@ local function savePersist(hash, tbl)
 end
 
 local function loadPersist(hash)
-    return {} or dofile(getPersistFile(hash))
+    local stream = io.open(getPersistFile(hash), "r")
+    if not stream then
+        return {}
+    end
+    local contents = stream:read("*a")
+    stream:close()
+    contents = load(contents)
+    return contents and contents() or {}
 end
 
 local _persist_mt = {
