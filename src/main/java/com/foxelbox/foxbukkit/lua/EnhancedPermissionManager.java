@@ -44,6 +44,10 @@ public class EnhancedPermissionManager {
         return handler.getImmunityLevel(uuid);
     }
 
+    public int getImmunityLevel(String group) {
+        return handler.getImmunityLevel(group);
+    }
+
     public String getGroup(Player ply) {
         return handler.getGroup(ply);
     }
