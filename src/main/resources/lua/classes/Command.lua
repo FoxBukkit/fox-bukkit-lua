@@ -275,7 +275,6 @@ class = {
             end
 
             if cmd.arguments then
-                cmd.__info.lastRequiredArgument = 0
                 for k, options in pairs(cmd.arguments) do
                     options.required = (options.required ~= false)
                     options.type = (options.type or "string"):lower()
@@ -285,9 +284,6 @@ class = {
                         options.default = argType.default
                     end
                     options.aliases = options.aliases or argType.aliases or {}
-                    if options.required then
-                        cmd.__info.lastRequiredArgument = k
-                    end
                     cmd.arguments[k] = options
                 end
             end
