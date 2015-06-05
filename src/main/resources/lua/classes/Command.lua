@@ -236,9 +236,11 @@ local _command_mt = {
                 end
 
                 for _, otherply in next, players do
-                    if otherply ~= ply and not table_contains(target, otherply) then
+                    if otherply ~= ply then
                         if target then
-                            doFormat(otherply, ply, target, ...)
+                            if not table_contains(target, otherply) then
+                                doFormat(otherply, ply, target, ...)
+                            end
                         else
                             doFormat(otherply, ply, ...)
                         end

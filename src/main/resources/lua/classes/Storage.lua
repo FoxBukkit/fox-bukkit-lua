@@ -57,7 +57,9 @@ local _entity_mt = {
 			entity[idx] = value
 			return
 		end
+		local storage = rawget(tbl, "storage")
 		rawget(tbl, "storage")[idx] = value
+		rawget(tbl, "save")(tbl)
 	end,
 	__eq = function(o1, o2)
 		local e1 = rawget(o1, "entity")
@@ -86,6 +88,9 @@ local _storage_mt = {
 		return setmetatable({
 			entity = entity,
 			storage = storage,
+			save = function()
+				self.storage:__save()
+			end,
 			extensions = self.extensions
 		}, _entity_mt)
 	end,
