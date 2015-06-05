@@ -81,12 +81,15 @@ return {
 		local availablePlayers
 		if match then
 			match = match:lower()
-			if match:sub(1,1) == "@" then
+			local matchFirst = match:sub(1,1)
+			if matchFirst == "@" then
 				availablePlayers = {playerStorage(bukkitServer:getPlayerExact(match:sub(2)))}
 				ignoreName = true
-			elseif match:sub(1,1) == "*" then
+			elseif matchFirst == "*" then
 				forbidMultiple = false
 				match = match:sub(2)
+			elseif matchFirst == "$" then
+				return {self:getByUUID(match:sub(2))}
 			end
 		else
 			ignoreName = true
