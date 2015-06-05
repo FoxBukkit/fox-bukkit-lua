@@ -89,7 +89,8 @@ return {
 				forbidMultiple = false
 				match = match:sub(2)
 			elseif matchFirst == "$" then
-				return {self:getByUUID(match:sub(2))}
+				availablePlayers = {self:getByUUID(match:sub(2))}
+				ignoreName = true
 			end
 
 			if match:len() < 1 then
