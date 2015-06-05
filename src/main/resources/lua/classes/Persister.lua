@@ -111,14 +111,9 @@ local function serialize(stream, v, indent)
             stream:write(")")
         end
     elseif t == "table" then
-        if not next(v) then
-            return
-        end
-
         local result = {}
         local newIndent = indent .. __INDENT
-        stream:write("{\n")
-        stream:write(indent)
+
         local isFirst = true
         for k, kv in next, v do
             if __SERIALIZABLE[type(k)] and __SERIALIZABLE[type(kv)] and
@@ -128,16 +123,22 @@ local function serialize(stream, v, indent)
             then
                 if isFirst then
                     isFirst = false
+                    stream:write("{\n")
                 else
                     stream:write(",\n")
-                    stream:write(indent)
                 end
+                stream:write(indent)
                 stream:write("[")
                 serialize(stream, k, newIndent)
                 stream:write("] = ")
                 serialize(stream, kv, newIndent)
             end
         end
+
+        if isFirst then
+            return
+        end
+
         stream:write("\n")
         stream:write(indent:sub(2))
         stream:write("}")
