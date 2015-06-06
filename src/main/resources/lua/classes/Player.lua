@@ -21,6 +21,7 @@ local bukkitServer = require("Server"):getBukkitServer()
 local UUID = luajava.bindClass("java.util.UUID")
 
 local table_insert = table.insert
+local type = type
 
 local playerExt = {}
 
@@ -109,7 +110,7 @@ return {
 	end,
 
 	addExtensions = function(self, extensions)
-		for k, v in pairs(extensions) do
+		for k, v in next, extensions do
 			playerExt[k] = v
 		end
 	end

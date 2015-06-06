@@ -17,13 +17,13 @@
 
 ]]
 
-local cmdManager = __LUA_STATE:getCommandManager()
-local moduleName = __LUA_STATE:getModule()
-
-require("Chat")
 local Player = require("Player")
 local Server = require("Server")
 local Permission = require("Permission")
+require("Chat")
+
+local cmdManager = __LUA_STATE:getCommandManager()
+local moduleName = __LUA_STATE:getModule()
 
 local next = next
 local tonumber = tonumber
@@ -278,7 +278,7 @@ class = {
             end
 
             if cmd.arguments then
-                for k, options in pairs(cmd.arguments) do
+                for k, options in next, cmd.arguments do
                     options.required = (options.required ~= false)
                     options.type = (options.type or "string"):lower()
                     local argType = argTypes[options.type] or argTypes.string
@@ -367,7 +367,7 @@ class = {
 
         cmdManager:register(cmd.name, cmd.permission, executor)
         if cmd.aliases then
-            for _, cmdAlias in pairs(cmd.aliases) do
+            for _, cmdAlias in next, cmd.aliases do
                 cmdManager:register(cmdAlias, cmd.permission, executor)
             end
         end
@@ -380,12 +380,12 @@ class = {
         elseif cmd.name then
             cmdManager:unregister(cmd.name)
             if cmd.aliases then
-                for _, cmdAlias in pairs(cmd.aliases) do
+                for _, cmdAlias in next, cmd.aliases do
                     cmdManager:unregister(cmdAlias)
                 end
             end
         else
-            for _, v in pairs(cmd) do
+            for _, v in next, cmd do
                 self:unregister(cmd)
             end
         end

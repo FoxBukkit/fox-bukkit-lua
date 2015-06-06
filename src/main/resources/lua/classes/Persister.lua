@@ -19,6 +19,7 @@
 
 local next = next
 local type = type
+local rawget = rawget
 
 local bukkitServer = require("Server"):getBukkitServer()
 
@@ -104,7 +105,7 @@ local function serialize(stream, v, indent)
         t = v:getClass()
         local serializer = findSerializer(t)
         if serializer then
-            stream:write("Persister.__findSerializer(")
+            stream:write("findSerializer(")
             serialize(stream, getClassName(t), indent)
             stream:write(").unserialize(")
             serialize(stream, serializer.serialize(v), indent)
@@ -116,10 +117,12 @@ local function serialize(stream, v, indent)
 
         local isFirst = true
         for k, kv in next, v do
-            if __SERIALIZABLE[type(k)] and __SERIALIZABLE[type(kv)] and
-                (type(kv) ~= "table" or next(kv)) and
-                (type(k) ~= "table" or next(k)) and
-                (type(k) ~= "string" or k:sub(1,1) ~= "_")
+            local tk = type(k)
+            local tkv = type(kv)
+            if __SERIALIZABLE[tk] and __SERIALIZABLE[tkv] and
+                (tkv ~= "table" or next(kv)) and
+                (tk ~= "table" or next(k)) and
+                (tk ~= "string" or k:sub(1,1) ~= "_")
             then
                 if isFirst then
                     isFirst = false
@@ -154,7 +157,7 @@ end
 
 local function savePersist(hash, tbl)
     local stream = io.open(getPersistFile(hash), "w")
-    stream:write("local Persister = require(\"Persister\")\nreturn ")
+    stream:write("local findSerializer = require(\"Persister\").__findSerializer\nreturn ")
     serialize(stream, tbl, __INDENT)
     stream:close()
 end

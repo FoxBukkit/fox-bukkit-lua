@@ -20,8 +20,6 @@
 local eventManager = __LUA_STATE:getEventManager()
 local eventPriority = luajava.bindClass("org.bukkit.event.EventPriority")
 
-local type = type
-
 local class
 
 local _event_mt = {

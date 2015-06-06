@@ -23,6 +23,7 @@ local Player = require("Player")
 local Permission
 
 local tostring = tostring
+local type = type
 
 Player:addExtensions{
     compareImmunityLevel = function(self, other)
