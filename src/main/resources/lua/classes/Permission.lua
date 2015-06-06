@@ -81,7 +81,7 @@ local immunity = {
 }
 
 Permission = {
-    immunity = immunity,
+    Immunity = immunity,
 
     getImmunityLevel = function(self, ply_or_uuid)
         return permissionsAPI:getImmunityLevel(fixPlyOrUUID(ply_or_uuid))
