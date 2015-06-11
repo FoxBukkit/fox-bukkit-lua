@@ -43,17 +43,41 @@ local function makeArgMaxImmunity(self, ply)
     return self.immunityRequirement
 end
 
+local BOOL_VALUES = {
+    ["false"] = false,
+    ["0"] = false,
+    ["no"] = false,
+    ["n"] = false,
+    ["off"] = false,
+    ["disabled"] = false,
+    ["disable"] = false,
+
+    ["true"] = true,
+    ["1"] = true,
+    ["yes"] = true,
+    ["y"] = true,
+    ["on"] = true,
+    ["enabled"] = true,
+    ["enable"] = true,
+
+    [""] = false
+}
+
 local argTypes = {
     string = {
         parser = function(self, arg)
             return arg
         end
     },
+    boolean = {
+        parser = function(self, arg)
+            return BOOL_VALUES[arg]
+        end
+    },
     number = {
         parser = function(self, arg)
             return tonumber(arg)
-        end,
-        default = 0
+        end
     },
     player = {
         parser = function(self, arg, ply, cmd)
@@ -96,8 +120,6 @@ local argTypes = {
         default = function(self, ply)
             if self.defaultSelf then
                 return {ply}
-            else
-                return {}
             end
         end
     },
