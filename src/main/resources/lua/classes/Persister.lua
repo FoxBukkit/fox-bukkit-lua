@@ -26,6 +26,7 @@ local bukkitServer = require("Server"):getBukkitServer()
 local Location = bindClass("org.bukkit.Location")
 local UUID = bindClass("java.util.UUID")
 
+local RandomAccessFile = bindClass("java.io.RandomAccessFile")
 local Class = bindClass("java.lang.Class")
 local isAssignableFrom = Class.isAssignableFrom
 
@@ -97,9 +98,9 @@ local function serialize(stream, v, indent)
         t = v:getClass()
         local serializer = findSerializer(t)
         if serializer then
-            stream:write("findSerializer(")
+            stream:write("u(")
             serialize(stream, getClassName(t), indent)
-            stream:write(").unserialize(")
+            stream:write(",")
             serialize(stream, serializer.serialize(v), indent)
             stream:write(")")
         end
@@ -122,16 +123,19 @@ local function serialize(stream, v, indent)
                 else
                     stream:write(",\n")
                 end
+                local pos = stream:getFilePointer()
                 stream:write(indent)
                 stream:write("[")
                 serialize(stream, k, newIndent)
                 stream:write("] = ")
-                serialize(stream, kv, newIndent)
+                if serialize(stream, kv, newIndent) == false then
+                    stream:seek(pos)
+                end
             end
         end
 
         if isFirst then
-            return
+            return false
         end
 
         stream:write("\n")
@@ -148,9 +152,9 @@ local function getPersistFile(hash)
 end
 
 local function savePersist(hash, tbl)
-    local stream = io.open(getPersistFile(hash), "w")
-    stream:write("local findSerializer = require(\"Persister\").__findSerializer\nreturn ")
+    local stream = luajava.new(RandomAccessFile, getPersistFile(hash), "rw")
     serialize(stream, tbl, __INDENT)
+    stream:setLength(stream:getFilePointer())
     stream:close()
 end
 
@@ -161,7 +165,7 @@ local function loadPersist(hash)
     end
     local contents = stream:read("*a")
     stream:close()
-    local contents, err = load(contents)
+    local contents, err = load("local u = require(\"Persister\").__unserialize\nreturn " .. contents)
     if not contents then
         print("ERROR", err)
     end
@@ -193,5 +197,7 @@ return {
         if loader then loader(tbl) end
         return setmetatable(tbl, _persist_mt)
     end,
-    __findSerializer = findSerializer
+    __unserialize = function(class, data)
+        return findSerializer(class).unserialize(data)
+    end
 }
