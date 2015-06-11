@@ -18,7 +18,7 @@
 ]]
 
 local bukkitServer = require("Server"):getBukkitServer()
-local UUID = luajava.bindClass("java.util.UUID")
+local UUID = bindClass("java.util.UUID")
 
 local table_insert = table.insert
 local type = type

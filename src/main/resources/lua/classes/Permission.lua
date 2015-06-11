@@ -61,7 +61,7 @@ if not permissionsAPI then
     return Permission
 end
 
-local UUID = luajava.bindClass("java.util.UUID")
+local UUID = bindClass("java.util.UUID")
 
 local function fixPlyOrUUID(ply_or_uuid)
     if type(ply_or_uuid) == "string" then

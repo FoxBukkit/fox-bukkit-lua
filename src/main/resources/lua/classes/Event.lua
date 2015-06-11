@@ -18,17 +18,21 @@
 ]]
 
 local eventManager = __LUA_STATE:getEventManager()
-local eventPriority = luajava.bindClass("org.bukkit.event.EventPriority")
+local eventPriority = bindClass("org.bukkit.event.EventPriority")
 
-local class
+local Player = require("Player")
+
+local next = next
+
+local Event
 
 local _event_mt = {
     __index = {
         register = function(self)
-            return class:register(self)
+            return Event:register(self)
         end,
         unregister = function(self)
-            return class:unregister(self)
+            return Event:unregister(self)
         end
     },
     __newindex = function()
@@ -37,12 +41,14 @@ local _event_mt = {
     __metatable = false
 }
 
-class = {
-	register = function(self, event, priority, callback, ignoreCancelled)
+local readOnlyPlayerJoinCallbacks = {}
+
+Event = {
+	register = function(self, event)
 		if not event.__info then
 			event.__info = {}
 			if type(event.class) == "string" then
-				event.class = luajava.bindClass(event.class)
+				event.class = bindClass(event.class)
 			end
 			event.priority = event.priority or eventPriority.NORMAL
 			if type(event.priority) == "string" then
@@ -57,6 +63,10 @@ class = {
 		return event
 	end,
 
+	registerReadOnlyPlayerJoin = function(self, callback)
+		table.insert(readOnlyPlayerJoinCallbacks, callback)
+	end,
+
 	unregister = function(self, event)
 		if event.__info.listener then
 			eventManager:unregister(event.__info.listener)
@@ -67,4 +77,16 @@ class = {
 	Priority = eventPriority
 }
 
-return class
+Event:register{
+	class = "org.bukkit.event.player.PlayerJoinEvent",
+	priority = Event.Priority.MONITOR,
+	ignoreCancelled = true,
+	run = function(self, event)
+		local ply = Player:extend(event:getPlayer())
+		for _, cb in next, readOnlyPlayerJoinCallbacks do
+			cb(ply, event)
+		end
+	end
+}
+
+return Event

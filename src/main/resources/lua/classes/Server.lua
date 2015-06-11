@@ -18,7 +18,7 @@
 ]]
 
 local luaState = __LUA_STATE
-local bukkitServer = luajava.bindClass("org.bukkit.Bukkit")
+local bukkitServer = bindClass("org.bukkit.Bukkit")
 local scheduler = bukkitServer:getScheduler()
 local plugin = luaState:getFoxBukkitLua()
 
@@ -26,8 +26,15 @@ return {
 	getBukkitServer = function(self)
 		return bukkitServer
 	end,
-	runOnMainThread = function(self, func)
-	    scheduler:scheduleSyncDelayedTask(
+	runOnMainThread = function(self, func, delay)
+        if delay then
+            return scheduler:scheduleSyncDelayedTask(
+                plugin,
+                luaState:createLuaValueRunnable(func),
+                delay
+            )
+        end
+	    return scheduler:scheduleSyncDelayedTask(
 	        plugin,
 	        luaState:createLuaValueRunnable(func)
 	    )
