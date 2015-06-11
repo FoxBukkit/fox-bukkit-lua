@@ -128,9 +128,9 @@ public class FoxBukkitLua extends JavaPlugin {
     @Override
     public void onDisable() {
         terminateAllLuaStates();
-        configuration = null;
-        redisManager = null;
-        commandManagerMaster = null;
+
+        redisManager.stop();
+
         LuaState.unload();
     }
 
