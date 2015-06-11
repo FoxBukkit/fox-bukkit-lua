@@ -30,14 +30,6 @@ local Class = bindClass("java.lang.Class")
 local isAssignableFrom = Class.isAssignableFrom
 
 local serializers = {
-    [bindClass("org.bukkit.entity.Player")] = {
-        serialize = function(v)
-            return v:getUniqueId()
-        end,
-        unserialize = function(v)
-            return bukkitServer:getPlayer(v)
-        end
-    },
     [UUID] = {
         serialize = function(v)
             return v:toString()
@@ -169,14 +161,17 @@ local function loadPersist(hash)
     end
     local contents = stream:read("*a")
     stream:close()
-    contents = load(contents)
+    local contents, err = load(contents)
+    if not contents then
+        print("ERROR", err)
+    end
     return contents and contents() or {}
 end
 
 local _persist_mt = {
     __index = function(tbl, index)
-        if index == "__save" then
-            return rawget(tbl, "save")
+        if type(index) == "string" and index:sub(1,2) == "__" then
+            return rawget(tbl, index:sub(3))
         end
         return rawget(tbl, "value")[index]
     end,
@@ -188,13 +183,14 @@ local _persist_mt = {
 }
 
 return {
-    get = function(self, hash)
+    get = function(self, hash, loader)
         local tbl = {
             value = loadPersist(hash),
             save = function(tbl)
                 return savePersist(hash, rawget(tbl, "value"))
             end
         }
+        if loader then loader(tbl) end
         return setmetatable(tbl, _persist_mt)
     end,
     __findSerializer = findSerializer

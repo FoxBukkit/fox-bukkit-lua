@@ -30,10 +30,12 @@ import java.util.UUID;
 public class EnhancedChatMessageManager {
     private final RedisHandler redisHandler;
     private final LuaState luaState;
+    private final FBChatComponent fbChatComponent;
 
     public EnhancedChatMessageManager(LuaState luaState, Plugin enhancedChatPlugin) {
         try {
-            redisHandler = ((FBChatComponent)enhancedChatPlugin).getRedisHandler();
+            fbChatComponent = (FBChatComponent)enhancedChatPlugin;
+            redisHandler = fbChatComponent.getRedisHandler();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -45,10 +47,10 @@ public class EnhancedChatMessageManager {
     }
 
     public void sendGlobal(CommandSender source, String type, String content) {
-        ChatMessageIn chatMessageIn = new ChatMessageIn(source);
+        ChatMessageIn chatMessageIn = new ChatMessageIn(fbChatComponent, source);
         chatMessageIn.contents = content;
         chatMessageIn.type = type;
-        RedisHandler.sendMessage(chatMessageIn);
+        redisHandler.sendMessage(chatMessageIn);
     }
 
     public void broadcastLocal(CommandSender source, String content) {

@@ -31,7 +31,12 @@ function bindClass(cls)
 end
 
 function getClassName(cls)
-    return classBounds[cls]
+    local name = classBounds[cls]
+    if not name then
+        name = tostring(cls):sub(7)
+        bindClass(name)
+    end
+    return name
 end
 
 local luaState = __LUA_STATE

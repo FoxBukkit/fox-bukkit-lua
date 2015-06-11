@@ -47,8 +47,7 @@ local argTypes = {
     string = {
         parser = function(self, arg)
             return arg
-        end,
-        default = ""
+        end
     },
     number = {
         parser = function(self, arg)
