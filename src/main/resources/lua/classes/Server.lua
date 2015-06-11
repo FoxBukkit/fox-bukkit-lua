@@ -26,6 +26,9 @@ return {
 	getBukkitServer = function(self)
 		return bukkitServer
 	end,
+    runConsoleCommand = function(self, cmd)
+        bukkitServer:dispatchCommand(bukkitServer:getConsoleSender(), cmd)
+    end,
 	runOnMainThread = function(self, func, delay)
         if delay then
             return scheduler:scheduleSyncDelayedTask(
