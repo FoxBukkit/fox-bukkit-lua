@@ -1,7 +1,7 @@
 name: FoxBukkitLua
 main: com.foxelbox.foxbukkit.lua.FoxBukkitLua
 version: 1.0.0
-softdepend: [FoxBukkitChatComponent, FoxBukkitPermissions]
+softdepend: [FoxBukkitChat, FoxBukkitPermissions]
 commands:
   fbl:
     description: Runs any FoxBukkit Lua command (used for console)

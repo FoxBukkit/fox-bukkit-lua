@@ -157,7 +157,7 @@
         </dependency>
         <dependency>
             <groupId>com.foxelbox</groupId>
-            <artifactId>FoxBukkitChatComponent</artifactId>
+            <artifactId>FoxBukkitChat</artifactId>
             <version>1.3.0-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>

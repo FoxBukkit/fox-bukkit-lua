@@ -16,12 +16,12 @@
  */
 package com.foxelbox.foxbukkit.lua;
 
-import com.foxelbox.foxbukkit.chatcomponent.FBChatComponent;
-import com.foxelbox.foxbukkit.chatcomponent.RedisHandler;
-import com.foxelbox.foxbukkit.chatcomponent.json.ChatMessageIn;
-import com.foxelbox.foxbukkit.chatcomponent.json.ChatMessageOut;
-import com.foxelbox.foxbukkit.chatcomponent.json.MessageTarget;
-import com.foxelbox.foxbukkit.chatcomponent.json.UserInfo;
+import com.foxelbox.foxbukkit.chat.FoxBukkitChat;
+import com.foxelbox.foxbukkit.chat.RedisHandler;
+import com.foxelbox.foxbukkit.chat.json.ChatMessageIn;
+import com.foxelbox.foxbukkit.chat.json.ChatMessageOut;
+import com.foxelbox.foxbukkit.chat.json.MessageTarget;
+import com.foxelbox.foxbukkit.chat.json.UserInfo;
 import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.Plugin;
 
@@ -30,12 +30,12 @@ import java.util.UUID;
 public class EnhancedChatMessageManager {
     private final RedisHandler redisHandler;
     private final LuaState luaState;
-    private final FBChatComponent fbChatComponent;
+    private final FoxBukkitChat chatPlugin;
 
     public EnhancedChatMessageManager(LuaState luaState, Plugin enhancedChatPlugin) {
         try {
-            fbChatComponent = (FBChatComponent)enhancedChatPlugin;
-            redisHandler = fbChatComponent.getRedisHandler();
+            chatPlugin = (FoxBukkitChat)enhancedChatPlugin;
+            redisHandler = chatPlugin.getRedisHandler();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -47,7 +47,7 @@ public class EnhancedChatMessageManager {
     }
 
     public void sendGlobal(CommandSender source, String type, String content) {
-        ChatMessageIn chatMessageIn = new ChatMessageIn(fbChatComponent, source);
+        ChatMessageIn chatMessageIn = new ChatMessageIn(chatPlugin, source);
         chatMessageIn.contents = content;
         chatMessageIn.type = type;
         redisHandler.sendMessage(chatMessageIn);
