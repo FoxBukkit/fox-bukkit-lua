@@ -19,6 +19,7 @@ package com.foxelbox.foxbukkit.lua;
 import com.foxelbox.foxbukkit.lua.compiler.LuaJC;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.Plugin;
+import org.bukkit.scheduler.BukkitRunnable;
 import org.luaj.vm2.Globals;
 import org.luaj.vm2.LuaValue;
 import org.luaj.vm2.lib.jse.CoerceJavaToLua;
@@ -116,7 +117,7 @@ public class LuaState implements Listener, Runnable {
     }
 
     public Runnable createLuaValueRunnable(final LuaValue function) {
-        return new Runnable() {
+        return new BukkitRunnable() {
             @Override
             public void run() {
                 synchronized (luaLock) {
