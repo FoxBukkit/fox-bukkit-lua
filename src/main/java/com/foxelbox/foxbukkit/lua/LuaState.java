@@ -51,13 +51,13 @@ public class LuaState implements Listener, Runnable {
         }
         loaded = true;
 
-        enhancedChatPlugin = plugin.getServer().getPluginManager().getPlugin("FoxBukkitChatComponent");
+        enhancedChatPlugin = plugin.getServer().getPluginManager().getPlugin("FoxBukkitChat");
         enhancedPermissionPlugin = plugin.getServer().getPluginManager().getPlugin("FoxBukkitPermissions");
 
         if(enhancedChatPlugin == null) {
-            System.err.println("Could not find FoxBukkitChatComponent. Disabling enhanced chat API.");
+            System.err.println("Could not find FoxBukkitChat. Disabling enhanced chat API.");
         } else {
-            System.out.println("Hooked FoxBukkitChatComponent. Enabled enhanced chat API.");
+            System.out.println("Hooked FoxBukkitChat. Enabled enhanced chat API.");
         }
 
         if(enhancedPermissionPlugin == null) {
