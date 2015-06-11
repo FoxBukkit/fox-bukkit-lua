@@ -21,6 +21,8 @@ local next = next
 local type = type
 local rawget = rawget
 
+local _HUMAN_READABLE = true
+
 local bukkitServer = require("Server"):getBukkitServer()
 
 local Location = bindClass("org.bukkit.Location")
@@ -117,19 +119,24 @@ local function serialize(stream, v, indent)
                 (tk ~= "table" or next(k)) and
                 (tk ~= "string" or k:sub(1,1) ~= "_")
             then
+                local pos = stream:getFilePointer()
+                local wasFirst = isFirst
                 if isFirst then
                     isFirst = false
-                    stream:write("{\n")
+                    stream:write("{")
                 else
-                    stream:write(",\n")
+                    stream:write(",")
                 end
-                local pos = stream:getFilePointer()
-                stream:write(indent)
+                if _HUMAN_READABLE then
+                    stream:write("\n")
+                    stream:write(indent)
+                end
                 stream:write("[")
                 serialize(stream, k, newIndent)
-                stream:write("] = ")
+                stream:write("]=")
                 if serialize(stream, kv, newIndent) == false then
                     stream:seek(pos)
+                    isFirst = wasFirst
                 end
             end
         end
@@ -138,8 +145,11 @@ local function serialize(stream, v, indent)
             return false
         end
 
-        stream:write("\n")
-        stream:write(indent:sub(2))
+        if _HUMAN_READABLE then
+            stream:write("\n")
+            stream:write(indent:sub(2))
+        end
+        
         stream:write("}")
     end
 end
