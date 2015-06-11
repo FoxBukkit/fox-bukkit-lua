@@ -144,6 +144,7 @@ local function serialize(stream, v, indent)
     end
 end
 
+local moduleName = __LUA_STATE:getModule()
 local persistDir = __LUA_STATE:getModuleDir() .. "/storage/"
 luajava.new(bindClass("java.io.File"), persistDir):mkdirs()
 
@@ -158,6 +159,12 @@ local function savePersist(hash, tbl)
     stream:close()
 end
 
+local loaderEnv = {
+    u = function(class, data)
+        return findSerializer(class).unserialize(data)
+    end
+}
+
 local function loadPersist(hash)
     local stream = io.open(getPersistFile(hash), "r")
     if not stream then
@@ -165,9 +172,11 @@ local function loadPersist(hash)
     end
     local contents = stream:read("*a")
     stream:close()
-    local contents, err = load("local u = require(\"Persister\").__unserialize\nreturn " .. contents)
+
+    local contents, err = load("return " .. contents, "__persister_temp." .. moduleName .. "." .. hash, "bt", loaderEnv)
     if not contents then
         print("ERROR", err)
+        return
     end
     return contents and contents() or {}
 end
@@ -196,8 +205,5 @@ return {
         }
         if loader then loader(tbl) end
         return setmetatable(tbl, _persist_mt)
-    end,
-    __unserialize = function(class, data)
-        return findSerializer(class).unserialize(data)
     end
 }
