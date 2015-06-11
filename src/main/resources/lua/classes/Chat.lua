@@ -53,4 +53,14 @@ Player:addExtensions{
     end,
 }
 
+Player:addConsoleExtensions{
+    sendReply = function(self, message)
+        return self:sendMessage("[FB] " .. message)
+    end,
+
+    sendError = function(self, message)
+        return self:sendMessage("[FB] [ERROR] " .. message)
+    end   
+}
+
 return Chat

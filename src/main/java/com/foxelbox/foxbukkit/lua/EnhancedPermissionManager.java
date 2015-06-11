@@ -18,6 +18,7 @@ package com.foxelbox.foxbukkit.lua;
 
 import com.foxelbox.foxbukkit.permissions.FoxBukkitPermissionHandler;
 import com.foxelbox.foxbukkit.permissions.FoxBukkitPermissions;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 
@@ -39,6 +40,8 @@ public class EnhancedPermissionManager {
     public int getImmunityLevel(Player ply) {
         return handler.getImmunityLevel(ply);
     }
+
+    public int getImmunityLevel(CommandSender commandSender) { return 9999; }
 
     public int getImmunityLevel(UUID uuid) {
         return handler.getImmunityLevel(uuid);

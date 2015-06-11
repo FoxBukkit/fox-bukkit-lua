@@ -16,6 +16,9 @@
  */
 package com.foxelbox.foxbukkit.lua;
 
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandExecutor;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -43,6 +46,14 @@ public class CommandManagerMaster implements Listener {
     public CommandManagerMaster(FoxBukkitLua plugin) {
         pluginManager = plugin.getServer().getPluginManager();
         pluginManager.registerEvents(this, plugin);
+
+        plugin.getServer().getPluginCommand("fbl").setExecutor(new CommandExecutor() {
+            @Override
+            public boolean onCommand(CommandSender commandSender, Command command, String s, String[] strings) {
+                processCommand(commandSender, Utils.concatArray(strings, 0, ""));
+                return true;
+            }
+        });
     }
 
     public void register(String command, String permission, LuaState thread, LuaValue handler) {
@@ -85,17 +96,10 @@ public class CommandManagerMaster implements Listener {
         }
     }
 
-    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
-    public void onPlayerCommandPreprocess(PlayerCommandPreprocessEvent event) {
-        String message = event.getMessage();
-        if(message.length() < 2) {
-            return;
-        }
-        message = message.substring(1);
-
+    public boolean processCommand(CommandSender source, String message) {
         int splitter = message.indexOf(' ');
         if(splitter == 0) {
-            return;
+            return false;
         }
 
         String cmdStr, argStr;
@@ -114,9 +118,9 @@ public class CommandManagerMaster implements Listener {
         synchronized (commandHandlers) {
             invoker = commandHandlers.get(cmdStr);
         }
-        Player source = event.getPlayer();
+        //Player source = event.getPlayer();
         if(invoker == null || !source.hasPermission(invoker.permission)) {
-            return;
+            return false;
         }
 
         final LuaTable parsedArguments;
@@ -173,12 +177,23 @@ public class CommandManagerMaster implements Listener {
             }
             // Return true/nonboolean for handled, false for unhandled (fallthrough)
             if (ret == null || !ret.isboolean() || ((LuaBoolean) ret).booleanValue()) {
-                event.setCancelled(true);
+                return true;
             }
         } catch (Exception e) {
             e.printStackTrace();
             source.sendMessage(FoxBukkitLua.makeMessageBuilder().append("Internal error running command").toString());
-            event.setCancelled(true);
+            return true;
         }
+
+        return false;
+    }
+
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    public void onPlayerCommandPreprocess(PlayerCommandPreprocessEvent event) {
+        String message = event.getMessage();
+        if(message.length() < 2) {
+            return;
+        }
+        event.setCancelled(processCommand(event.getPlayer(), message.substring(1)));
     }
 }

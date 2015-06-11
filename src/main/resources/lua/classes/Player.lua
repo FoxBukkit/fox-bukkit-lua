@@ -18,6 +18,7 @@
 ]]
 
 local bukkitServer = require("Server"):getBukkitServer()
+local Permission
 local UUID = bindClass("java.util.UUID")
 
 local table_insert = table.insert
@@ -26,6 +27,20 @@ local type = type
 local playerExt = {}
 
 local playerStorage = require("Storage"):create("getUniqueId", "player", playerExt)
+
+local consoleCommandSender = bukkitServer:getConsoleSender()
+
+local consolePlayer = {
+	getName = function(self)
+		return "[CONSOLE]"
+	end,
+	getDisplayName = function(self)
+		return "[CONSOLE]"
+	end,
+	sendMessage = function(self, msg)
+		return consoleCommandSender:sendMessage(msg)
+	end
+}
 
 return {
 	getByUUID = function(self, uuid)
@@ -107,6 +122,16 @@ return {
 
 	extend = function(self, player)
 		return playerStorage(player)
+	end,
+
+	getConsole = function(self)
+		return consolePlayer
+	end,
+
+	addConsoleExtensions = function(self, extensions)
+		for k, v in next, extensions do
+			consolePlayer[k] = v
+		end
 	end,
 
 	addExtensions = function(self, extensions)

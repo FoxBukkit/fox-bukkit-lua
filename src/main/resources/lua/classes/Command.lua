@@ -212,8 +212,9 @@ local _command_mt = {
                 local args = {...}
                 for k, v in next, args do
                     local arg = args[k]
-                    if type(arg) == "table" then
-                        if arg.__entity then
+                    local targ = type(arg)
+                    if targ == "table" or targ == "userdata" then
+                        if arg.getName then
                             arg = referToTarget(arg, sendTo)
                         else
                             arg = referToTargets(arg, sendTo)
@@ -317,6 +318,8 @@ class = {
         local executor = function(ply, cmdStr, args, argStr, flagStr)
             if ply and ply.getUniqueId then
                 ply = Player:extend(ply)
+            else
+                ply = Player:getConsole()
             end
 
             local parsedArgs
