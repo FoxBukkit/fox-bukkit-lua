@@ -37,7 +37,7 @@ public class FoxBukkitLua extends JavaPlugin {
     public CommandManagerMaster commandManagerMaster;
 
     public File getLuaFolder() {
-        return getDataFolder();
+        return new File(getDataFolder(), "base");
     }
 
     public File getLuaModulesFolder() {
