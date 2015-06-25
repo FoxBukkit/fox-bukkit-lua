@@ -149,11 +149,11 @@ public class LuaState implements Listener, Runnable {
 
     public LuaValue loadPackagedFile(String name) {
         synchronized (luaLock) {
-            InputStream inputStream = LuaState.class.getResourceAsStream("/lua/" + name);
+            InputStream inputStream = LuaState.class.getResourceAsStream("/" + name);
             if(inputStream == null) {
                 return Globals.error("open "+name+": File not found");
             }
-            LuaValue loaded = g.load(inputStream, name, "bt", g);
+            LuaValue loaded = g.load(inputStream, name, "b", g);
             try {
                 inputStream.close();
             } catch (IOException e) { }
@@ -172,7 +172,7 @@ public class LuaState implements Listener, Runnable {
         if(overrideInit.exists()) {
             g.loadfile(overrideInit.getAbsolutePath()).call();
         } else {
-            loadPackagedFile("boot.lua").call();
+            loadPackagedFile("boot.luac").call();
         }
     }
 
@@ -194,7 +194,7 @@ public class LuaState implements Listener, Runnable {
             if(overrideInit.exists()) {
                 g.loadfile(overrideInit.getAbsolutePath()).call();
             } else {
-                loadPackagedFile("init.lua").call();
+                loadPackagedFile("init.luac").call();
             }
         }
     }
