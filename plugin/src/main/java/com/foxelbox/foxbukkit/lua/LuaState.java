@@ -21,13 +21,13 @@ import org.bukkit.event.Listener;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.luaj.vm2.Globals;
+import org.luaj.vm2.LuaFunction;
 import org.luaj.vm2.LuaValue;
 import org.luaj.vm2.lib.jse.CoerceJavaToLua;
 import org.luaj.vm2.lib.jse.JsePlatform;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 
 public class LuaState implements Listener, Runnable {
     final Object luaLock = new Object();
@@ -149,15 +149,15 @@ public class LuaState implements Listener, Runnable {
 
     public LuaValue loadPackagedFile(String name) {
         synchronized (luaLock) {
-            InputStream inputStream = LuaState.class.getResourceAsStream("/" + name);
-            if(inputStream == null) {
-                return Globals.error("open "+name+": File not found");
-            }
-            LuaValue loaded = g.load(inputStream, name, "b", g);
             try {
-                inputStream.close();
-            } catch (IOException e) { }
-            return loaded;
+                String className = LuaJC.toStandardJavaClassName(name);
+                LuaFunction value = (LuaFunction)Class.forName(className).newInstance();
+                value.initupvalue1(g);
+                return value;
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return null;
         }
     }
 
@@ -172,7 +172,7 @@ public class LuaState implements Listener, Runnable {
         if(overrideInit.exists()) {
             g.loadfile(overrideInit.getAbsolutePath()).call();
         } else {
-            loadPackagedFile("boot.luac").call();
+            loadPackagedFile("boot").call();
         }
     }
 
@@ -194,7 +194,7 @@ public class LuaState implements Listener, Runnable {
             if(overrideInit.exists()) {
                 g.loadfile(overrideInit.getAbsolutePath()).call();
             } else {
-                loadPackagedFile("init.luac").call();
+                loadPackagedFile("init").call();
             }
         }
     }

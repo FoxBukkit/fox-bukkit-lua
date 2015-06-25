@@ -55,7 +55,7 @@ table.contains = table.contains or function(tbl, value)
 end
 
 table.insert(package.searchers, 3, function(module)
-    return luaState:loadPackagedFile("classes/" .. module .. ".luac")
+    return luaState:loadPackagedFile("classes/" .. module)
 end)
 
 local _dofile = dofile
