@@ -73,7 +73,7 @@ public class LuaJC implements Globals.Loader {
         if(luaname.startsWith(root)) {
             luaname = luaname.substring(rootLen + 1);
         }
-        String classname = toStandardJavaClassName(luaname);
+        String classname = "luamod." + toStandardJavaClassName(luaname);
         JavaLoader loader = new JavaLoader(parentClassLoader);
         return loader.load(p, classname, luaname, globals);
     }
@@ -85,7 +85,7 @@ public class LuaJC implements Globals.Loader {
             final char c = stub.charAt(i);
             classname.append((((i == 0) && Character.isJavaIdentifierStart(c)) || ((i > 0) && Character.isJavaIdentifierPart(c))) ? c : '_');
         }
-        return "lua." + classname.toString();
+        return classname.toString();
     }
 
     private static String toStandardLuaFileName(String luachunkname) {

@@ -150,7 +150,7 @@ public class LuaState implements Listener, Runnable {
     public LuaValue loadPackagedFile(String name) {
         synchronized (luaLock) {
             try {
-                String className = LuaJC.toStandardJavaClassName(name);
+                String className = "lua." + LuaJC.toStandardJavaClassName(name);
                 LuaFunction value = (LuaFunction)Class.forName(className).newInstance();
                 value.initupvalue1(g);
                 return value;
