@@ -93,11 +93,6 @@
             <scope>provided</scope>
         </dependency>
 		<dependency>
-			<groupId>de.diddiz</groupId>
-			<artifactId>logblock</artifactId>
-			<version>dev-SNAPSHOT</version>
-		</dependency>
-		<dependency>
 			<groupId>org.luaj</groupId>
 			<artifactId>luaj-jse</artifactId>
 			<version>3.0.1</version>
@@ -107,11 +102,6 @@
 			<artifactId>bcel</artifactId>
 			<version>5.2</version>
 		</dependency>
-        <dependency>
-            <groupId>com.mojang</groupId>
-            <artifactId>AccountsClient</artifactId>
-            <version>latest</version>
-        </dependency>
         <dependency>
             <groupId>com.foxelbox</groupId>
             <artifactId>FoxBukkitChat</artifactId>
@@ -127,11 +117,6 @@
         <dependency>
             <groupId>com.foxelbox</groupId>
             <artifactId>ConfigDependency</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
-        </dependency>
-        <dependency>
-            <groupId>com.foxelbox</groupId>
-            <artifactId>RedisDependency</artifactId>
             <version>0.0.1-SNAPSHOT</version>
         </dependency>
 	</dependencies>
