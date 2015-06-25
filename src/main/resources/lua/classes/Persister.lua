@@ -22,15 +22,23 @@ local type = type
 local rawget = rawget
 
 local _HUMAN_READABLE = true
+local _GZIP_COMPRESS = false
 
 local bukkitServer = require("Server"):getBukkitServer()
 
 local Location = bindClass("org.bukkit.Location")
 local UUID = bindClass("java.util.UUID")
 
-local RandomAccessFile = bindClass("java.io.RandomAccessFile")
+local StringBuilder = bindClass("java.lang.StringBuilder")
 local Class = bindClass("java.lang.Class")
 local isAssignableFrom = Class.isAssignableFrom
+
+local Scanner = bindClass("java.util.Scanner")
+local File = bindClass("java.io.File")
+local FileInputStream = bindClass("java.io.FileInputStream")
+local FileOutputStream = bindClass("java.io.FileOutputStream")
+local GZIPInputStream = bindClass("java.util.zip.GZIPInputStream")
+local GZIPOutputStream = bindClass("java.util.zip.GZIPOutputStream")
 
 local serializers = {
     [UUID] = {
@@ -91,20 +99,20 @@ local function serialize(stream, v, indent)
     local t = type(v)
     local ret
     if t == "number" then
-        stream:write(tostring(v))
+        stream:append(tostring(v))
     elseif t == "boolean" then
-        stream:write(v and "true" or "false")
+        stream:append(v and "true" or "false")
     elseif t == "string" then
-        stream:write(string.format("%q", v))
+        stream:append(string.format("%q", v))
     elseif t == "userdata" then
         t = v:getClass()
         local serializer = findSerializer(t)
         if serializer then
-            stream:write("u(")
+            stream:append("u(")
             serialize(stream, getClassName(t), indent)
-            stream:write(",")
+            stream:append(",")
             serialize(stream, serializer.serialize(v), indent)
-            stream:write(")")
+            stream:append(")")
         end
     elseif t == "table" then
         local result = {}
@@ -119,23 +127,23 @@ local function serialize(stream, v, indent)
                 (tk ~= "table" or next(k)) and
                 (tk ~= "string" or k:sub(1,1) ~= "_")
             then
-                local pos = stream:getFilePointer()
+                local pos = stream:length()
                 local wasFirst = isFirst
                 if isFirst then
                     isFirst = false
-                    stream:write("{")
+                    stream:append("{")
                 else
-                    stream:write(",")
+                    stream:append(",")
                 end
                 if _HUMAN_READABLE then
-                    stream:write("\n")
-                    stream:write(indent)
+                    stream:append("\n")
+                    stream:append(indent)
                 end
-                stream:write("[")
+                stream:append("[")
                 serialize(stream, k, newIndent)
-                stream:write("]=")
+                stream:append("]=")
                 if serialize(stream, kv, newIndent) == false then
-                    stream:seek(pos)
+                    stream:setLength(pos)
                     isFirst = wasFirst
                 end
             end
@@ -146,27 +154,34 @@ local function serialize(stream, v, indent)
         end
 
         if _HUMAN_READABLE then
-            stream:write("\n")
-            stream:write(indent:sub(2))
+            stream:append("\n")
+            stream:append(indent:sub(2))
         end
         
-        stream:write("}")
+        stream:append("}")
     end
 end
 
 local moduleName = __LUA_STATE:getModule()
 local persistDir = __LUA_STATE:getModuleDir() .. "/storage/"
-luajava.new(bindClass("java.io.File"), persistDir):mkdirs()
+luajava.new(File, persistDir):mkdirs()
 
 local function getPersistFile(hash)
     return persistDir .. hash .. ".lua"
 end
 
 local function savePersist(hash, tbl)
-    local stream = luajava.new(RandomAccessFile, getPersistFile(hash), "rw")
+    local stream = luajava.new(StringBuilder)
     serialize(stream, tbl, __INDENT)
-    stream:setLength(stream:getFilePointer())
-    stream:close()
+    local file = luajava.new(FileOutputStream, getPersistFile(hash))
+    if _GZIP_COMPRESS then
+        file:write(66)
+        file = luajava.new(GZIPOutputStream, file)
+    else
+        file:write(65)
+    end
+    file:write(stream:toString())
+    file:close()
 end
 
 local loaderEnv = {
@@ -176,19 +191,39 @@ local loaderEnv = {
 }
 
 local function loadPersist(hash)
-    local stream = io.open(getPersistFile(hash), "r")
-    if not stream then
+    local file = luajava.new(File, getPersistFile(hash))
+    if not file:exists() then
         return {}
     end
-    local contents = stream:read("*a")
-    stream:close()
-
-    local contents, err = load("return " .. contents, "__persister_temp." .. moduleName .. "." .. hash, "bt", loaderEnv)
-    if not contents then
-        print("ERROR", err)
-        return
+    local file = luajava.new(FileInputStream, file)
+    local storeType = file:read()
+    if storeType == 65 then
+    elseif storeType == 66 then
+        file = luajava.new(GZIPInputStream, file)
+    elseif storeType < 0 then
+        file:close()
+        return {}
+    else
+        file:close()
+        print("ERROR: Invalid type: " .. moduleName .. "|" .. hash .. "|" .. tostring(storeType))
+        return {}
     end
-    return contents and contents() or {}
+
+    local contents = luajava.new(Scanner, file)
+    contents:useDelimiter("\\A")
+    if not contents:hasNext() then
+        file:close()
+        return {}
+    end
+    contents = contents:next()
+    file:close()
+
+    local loaderFunc, err = load("return " .. contents, "__persister_temp." .. moduleName .. "." .. hash, "bt", loaderEnv)
+    if not loaderFunc then
+        print("ERROR: Load error: " .. moduleName .. "|" .. hash .. "|" .. tostring(err))
+        return {}
+    end
+    return loaderFunc and loaderFunc() or {}
 end
 
 local _persist_mt = {
