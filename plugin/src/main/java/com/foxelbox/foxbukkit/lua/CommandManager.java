@@ -16,7 +16,12 @@
  */
 package com.foxelbox.foxbukkit.lua;
 
+import org.luaj.vm2.LuaTable;
 import org.luaj.vm2.LuaValue;
+import org.luaj.vm2.lib.jse.CoerceLuaToJava;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class CommandManager {
     private final LuaState luaState;
@@ -29,11 +34,26 @@ public class CommandManager {
         luaState.plugin.commandManagerMaster.unregisterAll(luaState);
     }
 
-    public void register(String command, String permission, LuaValue handler) {
-        luaState.plugin.commandManagerMaster.register(command, permission, luaState, handler);
+    public void register(String command, String permission, LuaValue handler, LuaTable luaInfo) {
+        HashMap<String, String> info = new HashMap<>();
+        for(LuaValue key : luaInfo.keys()) {
+            info.put(
+                    (String)CoerceLuaToJava.coerce(key, String.class),
+                    (String)CoerceLuaToJava.coerce(luaInfo.get(key), String.class)
+            );
+        }
+        luaState.plugin.commandManagerMaster.register(command, permission, luaState, handler, info);
     }
 
     public void unregister(String command) {
         luaState.plugin.commandManagerMaster.unregister(command, luaState);
+    }
+
+    public Map<String, String> getInfo(String command) {
+        return luaState.plugin.commandManagerMaster.getInfo(command);
+    }
+
+    public Map<String, Map<String, String>> getCommands() {
+        return luaState.plugin.commandManagerMaster.getCommands();
     }
 }

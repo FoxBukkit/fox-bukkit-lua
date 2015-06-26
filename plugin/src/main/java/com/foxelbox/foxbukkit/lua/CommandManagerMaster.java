@@ -30,8 +30,7 @@ import org.luaj.vm2.LuaTable;
 import org.luaj.vm2.LuaValue;
 import org.luaj.vm2.Varargs;
 
-import java.util.HashMap;
-import java.util.Iterator;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -40,6 +39,7 @@ import static org.luaj.vm2.lib.jse.CoerceJavaToLua.coerce;
 public class CommandManagerMaster implements Listener {
     private final PluginManager pluginManager;
     private final HashMap<String, LuaCommandHandler> commandHandlers = new HashMap<>();
+    private final HashMap<String, Map<String, String>> commandInfo = new HashMap<>();
 
     private static final Pattern ARGUMENT_PATTERN = Pattern.compile("([^\"]\\S*|\".+?\")\\s*");
 
@@ -56,9 +56,11 @@ public class CommandManagerMaster implements Listener {
         });
     }
 
-    public void register(String command, String permission, LuaState thread, LuaValue handler) {
+    public void register(String command, String permission, LuaState thread, LuaValue handler, Map<String, String> info) {
+        command = command.trim().toLowerCase();
         synchronized (commandHandlers) {
-            commandHandlers.put(command.trim().toLowerCase(), new LuaCommandHandler(permission, thread, handler));
+            commandHandlers.put(command, new LuaCommandHandler(permission, thread, handler));
+            commandInfo.put(command, info);
         }
     }
 
@@ -68,19 +70,35 @@ public class CommandManagerMaster implements Listener {
             LuaCommandHandler invoker = commandHandlers.get(command);
             if(invoker.luaState == luaState) {
                 commandHandlers.remove(command);
+                commandInfo.remove(command);
             }
         }
     }
 
     public void unregisterAll(LuaState luaState) {
         synchronized (commandHandlers) {
-            Iterator<LuaCommandHandler> iterator = commandHandlers.values().iterator();
-            while(iterator.hasNext()) {
-                LuaCommandHandler invoker = iterator.next();
-                if(invoker.luaState == luaState) {
-                    iterator.remove();
+            HashSet<String> toUnregister = new HashSet<>();
+            for(Map.Entry<String, LuaCommandHandler> commandHandlerEntry : commandHandlers.entrySet()) {
+                if(commandHandlerEntry.getValue().luaState == luaState) {
+                    toUnregister.add(commandHandlerEntry.getKey());
                 }
             }
+            for(String command : toUnregister) {
+                commandHandlers.remove(command);
+                commandInfo.remove(command);
+            }
+        }
+    }
+
+    public Map<String, String> getInfo(String command) {
+        synchronized (commandHandlers) {
+            return commandInfo.get(command.trim().toLowerCase());
+        }
+    }
+
+    public Map<String, Map<String, String>> getCommands() {
+        synchronized (commandHandlers) {
+            return (Map<String, Map<String, String>>)commandInfo.clone();
         }
     }
 

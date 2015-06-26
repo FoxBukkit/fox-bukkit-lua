@@ -389,10 +389,13 @@ class = {
             return cmd:run(ply, parsedArgs, flagStr, argStr, cmdStr)
         end
 
-        cmdManager:register(cmd.name, cmd.permission, executor)
+        local info = cmd.info or {}
+        info.permission = cmd.permission
+
+        cmdManager:register(cmd.name, cmd.permission, executor, info)
         if cmd.aliases then
             for _, cmdAlias in next, cmd.aliases do
-                cmdManager:register(cmdAlias, cmd.permission, executor)
+                cmdManager:register(cmdAlias, cmd.permission, executor, info)
             end
         end
 
@@ -413,6 +416,12 @@ class = {
                 self:unregister(cmd)
             end
         end
+    end,
+    getCommands = function(self)
+        return cmdManager:getCommands()
+    end,
+    getInfo = function(self, cmd)
+        return cmdManager:getInfo(cmd)
     end
 }
 
