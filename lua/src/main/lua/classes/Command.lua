@@ -446,7 +446,7 @@ class = {
             end
         else
             for _, v in next, cmd do
-                self:unregister(cmd)
+                self:unregister(v)
             end
         end
     end,
