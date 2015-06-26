@@ -169,7 +169,7 @@ local _command_mt = {
             local format = overrides.format or self.action.format
             local isProperty = overrides.isProperty
             if isProperty == nil then
-                 isProperty = self.action.isProperty
+                isProperty = self.action.isProperty
             end
 
             local containsSelf = false
@@ -389,8 +389,41 @@ class = {
             return cmd:run(ply, parsedArgs, flagStr, argStr, cmdStr)
         end
 
-        local info = cmd.info or {}
-        info.permission = cmd.permission
+        local info = {
+            permission = cmd.permission,
+            help = cmd.help,
+            usage = cmd.usage
+        }
+        if not info.usage and cmd.arguments then
+            local mainUsage = {}
+            local availableFlags = {
+                [false] = true
+            }
+            for _, v in next, cmd.arguments do
+                if v.flagsForbidden then
+                    for i = 1, v.flagsForbidden:len() do
+                        availableFlags[v.flagsForbidden:sub(i,i)] = true
+                    end
+                elseif v.flagsRequired then
+                    for i = 1, v.flagsRequired:len() do
+                        availableFlags[v.flagsRequired:sub(i,i)] = true
+                    end
+                end
+            end
+            for flag, _ in next, availableFlags do
+                local usage = {"/" .. cmd.name .. (flag and (" -" .. flag) or "")}
+                for _, v in next, cmd.arguments do
+                    if
+                    (not v.flagsForbidden or not flag or not v.flagsForbidden:contains(flag)) and
+                            (not v.flagsRequired or (flag and v.flagsRequired:contains(flag)))
+                    then
+                        table_insert(usage, (v.required and "&lt;" or "[") .. v.name .. (v.required and "&gt;" or "]"))
+                    end
+                end
+                table_insert(mainUsage, table_concat(usage, " "))
+            end
+            info.usage = table_concat(mainUsage, "\n")
+        end
 
         cmdManager:register(cmd.name, cmd.permission, executor, info)
         if cmd.aliases then
