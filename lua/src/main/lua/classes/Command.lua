@@ -247,7 +247,7 @@ local _command_mt = {
 
                 local players
                 if type(broadcast) == "string" then
-                    players = Player:find(Player.contraints.permissionRestriction(broadcast))
+                    players = Player:find(Player.constraints.permissionRestriction(broadcast))
                 else
                     players = Player:getAll()
                 end
