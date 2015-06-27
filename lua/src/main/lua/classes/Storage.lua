@@ -28,8 +28,7 @@ local _entity_mt = {
 			return rawget(tbl, idx:sub(3))
 		end
 
-		local storageTbl = rawget(tbl, "storage")
-		local myValue = storageTbl[idx]
+		local myValue = rawget(tbl, "storage")[idx]
 		if myValue ~= nil then
 			return myValue
 		end
@@ -42,12 +41,6 @@ local _entity_mt = {
 		local entity = rawget(tbl, "entity")
 		local entityValue = entity[idx]
 		if entityValue and type(entityValue) == "function" then
-			myValue = function(self, ...)
-				return entityValue(entity, ...)
-			end
-			storageTbl[idx] = myValue
-			return myValue
-		else
 			return entityValue
 		end
 	end,
