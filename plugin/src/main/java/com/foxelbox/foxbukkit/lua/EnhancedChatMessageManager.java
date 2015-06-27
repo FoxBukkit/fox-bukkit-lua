@@ -23,6 +23,7 @@ import com.foxelbox.foxbukkit.chat.json.ChatMessageOut;
 import com.foxelbox.foxbukkit.chat.json.MessageTarget;
 import com.foxelbox.foxbukkit.chat.json.UserInfo;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 
 import java.util.UUID;
@@ -86,6 +87,14 @@ public class EnhancedChatMessageManager {
         chatMessageOut.contents = content;
         chatMessageOut.to = new MessageTarget(chatTarget, targetFilter);
         redisHandler.onMessage(chatMessageOut);
+    }
+
+    public String getPlayerNick(Player ply) {
+        return chatPlugin.getPlayerNick(ply);
+    }
+
+    public String getPlayerNick(UUID uuid) {
+        return chatPlugin.getPlayerNick(uuid);
     }
 
     public boolean isAvailable() {

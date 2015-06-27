@@ -83,7 +83,10 @@ local findConstraints = {
 		end
 
 		return function(ply)
-			return ply:getName():lower():find(match, 1, true) or ply:getDisplayName():lower():find(match, 1, true)
+			return
+				ply:getName():lower():find(match, 1, true) or
+				ply:getDisplayName():lower():find(match, 1, true) or
+				(ply.getNickName and ply:getNickName():lower():find(match, 1, true))
 		end
 	end,
 	immunityRestrictionLevel = function(level, delta)

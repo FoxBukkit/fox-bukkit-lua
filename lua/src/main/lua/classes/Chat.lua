@@ -30,6 +30,7 @@ if not chatAPI then
         sendLocalToPlayer = notImpl,
         sendLocalToPermission = notImpl,
         sendLocal = notImpl,
+        getPlayerNick = notImpl,
         isAvailable = function(self)
             return false
         end
@@ -51,6 +52,10 @@ Player:addExtensions{
     sendError = function(self, message)
         return self:sendXML("<color name=\"dark_red\">[FB]</color> " .. message)
     end,
+
+    getNickName = function(self)
+        return Chat:getPlayerNick(self.__entity)
+    end
 }
 
 Player:addConsoleExtensions{
@@ -60,7 +65,7 @@ Player:addConsoleExtensions{
 
     sendError = function(self, message)
         return self:sendMessage("[FB] [ERROR] " .. message)
-    end   
+    end
 }
 
 return Chat
