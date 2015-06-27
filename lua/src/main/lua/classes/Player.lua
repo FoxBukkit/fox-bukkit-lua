@@ -28,6 +28,18 @@ local playerExt = {}
 
 local playerStorage = require("Storage"):create("getUniqueId", "player", playerExt)
 
+require("Server"):runOnMainThread(function()
+	local Event = require("Event")
+	Event:register{
+		class = "org.bukkit.event.player.PlayerQuitEvent",
+		priority = Event.Priority.MONITOR,
+		ignoreCancelled = true,
+		run = function(self, event)
+			playerStorage.storageCache[event:getPlayer():getUniqueId()] = nil
+		end
+	}
+end)
+
 local consoleCommandSender = bukkitServer:getConsoleSender()
 
 local consolePlayer = {

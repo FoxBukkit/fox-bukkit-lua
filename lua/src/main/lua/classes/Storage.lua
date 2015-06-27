@@ -80,7 +80,11 @@ local _storage_mt = {
 
 		local entityID = entity[self.idFunction](entity)
 
-		local storage = self.persisthash and Persister:get(self.persisthash .. "_" .. tostring(entityID)) or {}
+		local storage = self.storageCache[entityID]
+		if not storage then
+			storage = self.persisthash and Persister:get(self.persisthash .. "_" .. tostring(entityID)) or {}
+			self.storageCache[entityID] = storage
+		end
 		return setmetatable({
 			entity = entity,
 			storage = storage,
@@ -103,6 +107,7 @@ return {
 		return setmetatable({
 			extensions = extensions or {},
 			persisthash = persisthash,
+			storageCache = {},
 			idFunction = idFunction
 		}, _storage_mt)
 	end
