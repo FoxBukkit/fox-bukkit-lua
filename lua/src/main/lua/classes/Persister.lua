@@ -1,19 +1,19 @@
 --[[
 
-    This file is part of FoxBukkitLua.
+    This file is part of FoxBukkitLua-lua.
 
-    FoxBukkitLua is free software: you can redistribute it and/or modify
+    FoxBukkitLua-lua is free software: you can redistribute it and/or modify
     it under the terms of the GNU Lesser General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
 
-    FoxBukkitLua is distributed in the hope that it will be useful,
+    FoxBukkitLua-lua is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU Lesser General Public License for more details.
 
     You should have received a copy of the GNU Lesser General Public License
-    along with FoxBukkitLua.  If not, see <http://www.gnu.org/licenses/>.
+    along with FoxBukkitLua-lua.  If not, see <http://www.gnu.org/licenses/>.
 
 ]]
 
@@ -21,8 +21,10 @@ local next = next
 local type = type
 local rawget = rawget
 
-local _HUMAN_READABLE = true
-local _GZIP_COMPRESS = false
+local Configuration = require("Configuration")
+local devMode = Configuration:get("development", "0")
+local _HUMAN_READABLE = (devMode == "1")
+local _GZIP_COMPRESS = (devMode ~= "1")
 
 local bukkitServer = require("Server"):getBukkitServer()
 
