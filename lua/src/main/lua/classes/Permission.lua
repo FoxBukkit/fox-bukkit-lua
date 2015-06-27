@@ -25,6 +25,14 @@ local Permission
 local tostring = tostring
 local type = type
 
+local immunity = {
+    GREATER = 1,
+    LESS = -1,
+    EQUAL = 0,
+    GREATER_OR_EQUAL = 2,
+    LESS_OR_EQUAL = -2
+}
+
 Player:addExtensions{
     compareImmunityLevel = function(self, other)
         return Permission:compareImmunityLevel(self, other)
@@ -49,7 +57,7 @@ Player:addConsoleExtensions{
     end,
 
     fitsImmunityRequirement = function(self, other, requirement)
-        return true
+        return requirement == immunity.GREATER or requirement == immunity.GREATER_OR_EQUAL
     end,
 
     getImmunityLevel = function(self)
@@ -93,14 +101,6 @@ local function fixPlyOrUUID(ply_or_uuid)
     end
     return ply_or_uuid
 end
-
-local immunity = {
-    GREATER = 1,
-    LESS = -1,
-    EQUAL = 0,
-    GREATER_OR_EQUAL = 2,
-    LESS_OR_EQUAL = -2
-}
 
 Permission = {
     Immunity = immunity,
