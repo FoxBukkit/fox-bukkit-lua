@@ -21,6 +21,10 @@ string.contains = function(self, sub)
 	return self:find(sub, 1, true) ~= nil
 end
 
+string.stripColors = function(self)
+    return self:gsub('\xC2\xA7.', '')
+end
+
 string.ucfirst = function(self)
 	if self:len() < 2 then
 		return self:upper()

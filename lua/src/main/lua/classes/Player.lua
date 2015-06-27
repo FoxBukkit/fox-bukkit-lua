@@ -56,7 +56,9 @@ local consolePlayer = {
 	end
 }
 
-local findConstraints = {
+local findConstraints
+
+findConstraints = {
 	excludePlayer = function(excludeply)
 		return function(ply)
 			return ply ~= excludeply
@@ -82,11 +84,12 @@ local findConstraints = {
 			return
 		end
 
+
 		return function(ply)
+			local nickName = ply.getNickName and ply:getNickName() or ply:getDisplayName()
 			return
 				ply:getName():lower():find(match, 1, true) or
-				ply:getDisplayName():lower():find(match, 1, true) or
-				(ply.getNickName and ply:getNickName():lower():find(match, 1, true))
+				(nickName and nickName:stripColors():lower():find(match, 1, true))
 		end
 	end,
 	immunityRestrictionLevel = function(level, delta)
