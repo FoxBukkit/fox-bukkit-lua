@@ -80,16 +80,12 @@ local _storage_mt = {
 
 		local entityID = entity[self.idFunction](entity)
 
-		local storage = self.storage[entityID]
-		if not storage then
-			storage = {}
-			self.storage[entityID] = storage
-		end
+		local storage = self.persisthash and Persister:get(self.persisthash .. "_" .. tostring(entityID)) or {}
 		return setmetatable({
 			entity = entity,
 			storage = storage,
 			save = function()
-				self.storage:__save()
+				storage:__save()
 			end,
 			extensions = self.extensions
 		}, _entity_mt)
@@ -104,10 +100,9 @@ _storage_mt.__index = _storage_mt
 
 return {
 	create = function(self, idFunction, persisthash, extensions)
-		local storageTbl = persisthash and Persister:get(persisthash) or {}
 		return setmetatable({
-			storage = storageTbl,
 			extensions = extensions or {},
+			persisthash = persisthash,
 			idFunction = idFunction
 		}, _storage_mt)
 	end
