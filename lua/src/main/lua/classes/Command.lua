@@ -317,6 +317,14 @@ class = {
                 ply = Player:getConsole()
             end
 
+            if not cmd.noLogging then
+                local fStr = ""
+                if flagStr ~= "" then
+                    fStr = " -" .. flagStr
+                end
+                print(ply:getName() .. " executed /" .. cmdStr .. fStr .. " " .. argStr)
+            end
+
             local parsedArgs
             if cmd.arguments then
                 parsedArgs = {}
