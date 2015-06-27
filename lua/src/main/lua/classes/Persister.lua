@@ -59,7 +59,7 @@ local serializers = {
                 z = v:getZ(),
                 yaw = v:getYaw(),
                 pitch = v:getPitch(),
-                world = v:getWorld():getName()
+                world = v:getWorld() and v:getWorld():getName() or "world"
             }
         end,
         unserialize = function(v)
