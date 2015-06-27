@@ -63,6 +63,23 @@ local BOOL_VALUES = {
     [""] = false
 }
 
+local function makePlayerFindConstraint(self, arg, ply, cmd)
+    local constraints = {}
+    table_insert(constraints, Player.constraints.matchName(arg))
+    if self.noMatchSelf then
+        table_insert(constraints, Player.constraints.excludePlayer(ply))
+    end
+    local immunityRequirement = makeArgMaxImmunity(self, ply)
+    if immunityRequirement then
+        table_insert(constraints, Player.constraints.immunityRestrictionPlayer(ply, immunityRequirement))
+    end
+    local forbidMultiple = (arg == "" or arg:sub(1, 1) ~= "*")
+    if cmd.permissionOther and not ply:hasPermission(cmd.permissionOther) then
+        table_insert(constraints, Player.constraints.matchPlayer(ply))
+    end
+    return Player.constraints.andConstraint(constraints), forbidMultiple
+end
+
 local argTypes = {
     string = {
         parser = function(self, arg)
@@ -81,13 +98,7 @@ local argTypes = {
     },
     player = {
         parser = function(self, arg, ply, cmd)
-            local ret = Player:findSingle(arg, self.noMatchSelf and ply or nil, makeArgMaxImmunity(self, ply), ply)
-
-            if ret ~= ply and cmd.permissionOther and not ply:hasPermission(cmd.permissionOther) then
-                return
-            end
-
-            return ret
+            return Player:findSingle(makePlayerFindConstraint(self, arg, ply, cmd))
         end,
         default = function(self, ply)
             if self.defaultSelf then
@@ -96,26 +107,8 @@ local argTypes = {
         end
     },
     players = {
-        parser = function(self, arg, cmd)
-            local ret = Player:find(arg, self.noMatchSelf and ply or nil, makeArgMaxImmunity(self, ply), ply, nil, true)
-
-            if cmd.permissionOther and not ply:hasPermission(cmd.permissionOther) then
-                local found = false
-                for _, v in next, ret do
-                    if v == ply then
-                        found = true
-                        break
-                    end
-                end
-
-                if found then
-                    return {ply}
-                else
-                    return {}
-                end
-            end
-
-            return ret
+        parser = function(self, arg, ply, cmd)
+            return Player:find(makePlayerFindConstraint(self, arg, ply, cmd))
         end,
         default = function(self, ply)
             if self.defaultSelf then
@@ -150,6 +143,8 @@ local _command_mt = {
         register = function(self)
             return class:register(self)
         end,
+
+        makePlayerFindConstraint = makePlayerFindConstraint,
 
         unregister = function(self)
             return class:unregister(self)
@@ -252,7 +247,7 @@ local _command_mt = {
 
                 local players
                 if type(broadcast) == "string" then
-                    players = Player:find(nil, nil, nil, nil, broadcast)
+                    players = Player:find(Player.contraints.permissionRestriction(broadcast))
                 else
                     players = Player:getAll()
                 end

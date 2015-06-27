@@ -28,6 +28,8 @@ local playerExt = {}
 
 local playerStorage = require("Storage"):create("getUniqueId", "player", playerExt)
 
+local Player
+
 require("Server"):runOnMainThread(function()
 	local Event = require("Event")
 	Event:register{
@@ -54,13 +56,90 @@ local consolePlayer = {
 	end
 }
 
-return {
+local findConstraints = {
+	excludePlayer = function(excludeply)
+		return function(ply)
+			return ply ~= excludeply
+		end
+	end,
+	matchPlayer = function(matchply)
+		return function(ply)
+			return ply == matchply
+		end
+	end,
+	matchName = function(match)
+		match = match:lower()
+		local matchFirst = match:sub(1,1)
+		if matchFirst == "@" then
+			return findConstraints.matchPlayer(playerStorage(bukkitServer:getPlayerExact(match:sub(2))))
+		elseif matchFirst == "*" then
+			match = match:sub(2)
+		elseif matchFirst == "$" then
+			return findConstraints.matchPlayer(Player:getByUUID(match:sub(2)))
+		end
+
+		if match:len() < 1 then
+			return
+		end
+
+		return function(ply)
+			return ply:getName():lower():find(match, 1, true) or ply:getDisplayName():lower():find(match, 1, true)
+		end
+	end,
+	immunityRestrictionLevel = function(level, delta)
+		return function(ply)
+			return ply:fitsImmunityRequirement(level, delta)
+		end
+	end,
+	immunityRestrictionPlayer = function(compateTo, delta)
+		return function(ply)
+			return ply == compateTo or compateTo:fitsImmunityRequirement(ply, delta)
+		end
+	end,
+	permissionRestriction = function(permission)
+		return function(ply)
+			return ply:hasPermission(permission)
+		end
+	end,
+	andConstraint = function(...)
+		local args = {... }
+		if type(args[1]) == "table" then
+			args = args[1]
+		end
+		return function(ply)
+			for _, constraint in next, args do
+				if not constraint(ply) then
+					return false
+				end
+			end
+			return true
+		end
+	end,
+	orConstraint = function(...)
+		local args = {... }
+		if type(args[1]) == "table" then
+			args = args[1]
+		end
+		return function(ply)
+			for _, constraint in next, args do
+				if constraint(ply) then
+					return true
+				end
+			end
+			return false
+		end
+	end
+}
+
+Player = {
 	getByUUID = function(self, uuid)
 		if type(uuid) == "string" then
 			uuid = UUID:fromString(uuid)
 		end
 		return playerStorage(bukkitServer:getPlayer(uuid))
 	end,
+
+	constraints = findConstraints,
 
 	getAll = function(self)
 		local players = {}
@@ -78,49 +157,20 @@ return {
 		return players
 	end,
 
-	findSingle = function(self, match, nomatch, immunitydelta, immunityply, permission)
-		local matches = self:find(match, nomatch, immunitydelta, immunityply, permission, true)
+	findSingle = function(self, constraint)
+		local matches = self:find(constraint, true)
 		if #matches ~= 1 then
 			return nil
 		end
 		return matches[1]
 	end,
 
-	find = function(self, match, nomatch, immunitydelta, immunityply, permission, forbidMultiple)
-		local ignoreName = false
-		local availablePlayers
-		if match then
-			match = match:lower()
-			local matchFirst = match:sub(1,1)
-			if matchFirst == "@" then
-				availablePlayers = {playerStorage(bukkitServer:getPlayerExact(match:sub(2)))}
-				ignoreName = true
-			elseif matchFirst == "*" then
-				forbidMultiple = false
-				match = match:sub(2)
-			elseif matchFirst == "$" then
-				availablePlayers = {self:getByUUID(match:sub(2))}
-				ignoreName = true
-			end
-
-			if match:len() < 1 then
-				ignoreName = true
-			end
-		else
-			ignoreName = true
-		end
-
-		if not availablePlayers then
-			availablePlayers = self:getAll()
-		end
+	find = function(self, constraint, forbidMultiple)
+		local availablePlayers = self:getAll()
 
 		local matches = {}
 		for _, ply in next, availablePlayers do
-			if ply ~= nomatch and
-				(not immunitydelta or ply == immunityply or immunityply:fitsImmunityRequirement(ply, immunitydelta)) and
-				(ignoreName or ply:getName():lower():find(match, 1, true) or ply:getDisplayName():lower():find(match, 1, true)) and
-				(not permission or ply:hasPermission(permission))
-			then
+			if constraint(ply) then
 				table_insert(matches, ply)
 			end
 		end
@@ -152,3 +202,5 @@ return {
 		end
 	end
 }
+
+return Player
