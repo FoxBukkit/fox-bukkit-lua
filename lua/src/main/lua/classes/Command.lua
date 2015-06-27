@@ -318,11 +318,8 @@ class = {
             end
 
             if not cmd.noLogging then
-                local fStr = ""
-                if flagStr ~= "" then
-                    fStr = " -" .. flagStr
-                end
-                print(ply:getName() .. " executed /" .. cmdStr .. fStr .. " " .. argStr)
+                local str = ply:getName() .. " executed /" .. cmdStr .. " " .. argStr
+                print(str)
             end
 
             local parsedArgs
