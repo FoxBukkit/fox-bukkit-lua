@@ -51,6 +51,9 @@ local consolePlayer = {
 	getDisplayName = function(self)
 		return "[CONSOLE]"
 	end,
+	getUniqueId = function(self)
+		return nil
+	end,
 	sendMessage = function(self, msg)
 		return consoleCommandSender:sendMessage(msg)
 	end
