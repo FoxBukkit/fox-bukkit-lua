@@ -86,16 +86,19 @@ local argTypes = {
             return arg
         end
     },
+    
     boolean = {
         parser = function(self, arg)
             return BOOL_VALUES[arg]
         end
     },
+
     number = {
         parser = function(self, arg)
             return tonumber(arg)
         end
     },
+
     player = {
         parser = function(self, arg, ply, cmd)
             return Player:findSingle(makePlayerFindConstraint(self, arg, ply, cmd))
@@ -106,6 +109,7 @@ local argTypes = {
             end
         end
     },
+
     players = {
         parser = function(self, arg, ply, cmd)
             return Player:find(makePlayerFindConstraint(self, arg, ply, cmd))
@@ -116,6 +120,7 @@ local argTypes = {
             end
         end
     },
+
     enum = {
         parser = function(self, arg)
             local argNumber = tonumber(arg)
@@ -266,9 +271,11 @@ local _command_mt = {
             end
         end
     },
+
     __newindex = function()
         error("Readonly")
     end,
+
     __metatable = false
 }
 
@@ -434,6 +441,7 @@ class = {
 
         return cmd
     end,
+
     unregister = function(self, cmd)
         if type(cmd) == "string" then
             cmdManager:unregister(cmd)
@@ -450,12 +458,16 @@ class = {
             end
         end
     end,
+
     getCommands = function(self)
         return cmdManager:getCommands()
     end,
+
     getInfo = function(self, cmd)
         return cmdManager:getInfo(cmd)
-    end
+    end,
+
+    BOOL_VALUES = BOOL_VALUES
 }
 
 return class
