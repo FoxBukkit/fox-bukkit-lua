@@ -25,6 +25,7 @@ if not chatAPI then
     end
 
     return {
+        getConsole = notImpl,
         sendGlobal = notImpl,
         broadcastLocal = notImpl,
         sendLocalToPlayer = notImpl,
@@ -37,12 +38,53 @@ if not chatAPI then
     }
 end
 
+local function fixPly(ply)
+    if ply and ply.__entity then
+        return ply.__entity
+    end
+    return ply
+end
+
 local Player = require("Player")
-local Chat = chatAPI
+local Chat = {
+    getConsole = function(self)
+        return chatAPI:getConsole()
+    end,
+    sendGlobal = function(self, source, type, content)
+        return chatAPI:sendGlobal(fixPly(source), type, content)
+    end,
+    broadcastLocal = function(self, source, content)
+        return chatAPI:broadcastLocal(fixPly(source), content)
+    end,
+    sendLocalToPlayer = function(self, source, content, target)
+        if target then
+            return chatAPI:sendLocalToPlayer(fixPly(source), content, fixPly(target))
+        else
+            return chatAPI:sendLocalToPlayer(source, fixPly(content))
+        end
+    end,
+    sendLocalToPermissionm = function(self, source, content, target)
+        if target then
+            return chatAPI:sendLocalToPermissionm(fixPly(source), content, target)
+        else
+            return chatAPI:sendLocalToPermissionm(source, content)
+        end
+    end,
+    sendLocal = function(self, source, content, chatTarget, targetFilter)
+        return chatAPI:sendLocal(fixPly(source), content, chatTarget, targetFilter)
+    end,
+    getPlayerNick = function(self, ply_or_uuid)
+        if ply_or_uuid.__entity then
+            return chatAPI:getPlayerNick(ply_or_uuid.__entity)
+        else
+            return chatAPI:getPlayerNick(ply_or_uuid)
+        end
+    end
+}
 
 Player:addExtensions{
     sendXML = function(self, message)
-        return Chat:sendLocalToPlayer(message, self.__entity)
+        return Chat:sendLocalToPlayer(message, self)
     end,
 
     sendReply = function(self, message)
@@ -54,7 +96,7 @@ Player:addExtensions{
     end,
 
     getNickName = function(self)
-        return Chat:getPlayerNick(self.__entity)
+        return Chat:getPlayerNick(self)
     end
 }
 
