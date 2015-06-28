@@ -22,6 +22,7 @@ import com.foxelbox.dependencies.threading.SimpleThreadCreator;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.luaj.vm2.LuaValue;
 
@@ -29,6 +30,7 @@ import java.io.File;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.Scanner;
 
 public class FoxBukkitLua extends JavaPlugin {
     public Configuration configuration;
@@ -125,6 +127,41 @@ public class FoxBukkitLua extends JavaPlugin {
         startAllLuaStates(false);
     }
 
+    private String makeRunLuaPrefix(CommandSender commandSender) {
+        if(commandSender instanceof Player) {
+            return "local Player = require('Player'); local self = Player:getByUUID('" + ((Player) commandSender).getUniqueId().toString() + "'); ";
+        } else {
+            return "local Player = require('Player'); local self = Player:getConsole(); ";
+        }
+    }
+
+    public boolean makeRunLua(CommandSender commandSender, String state, String string) {
+        LuaState luaState;
+        synchronized (luaStates) {
+            luaState = luaStates.get(state);
+        }
+        if(luaState == null) {
+            return false;
+        }
+
+        LuaValue code;
+        try {
+            synchronized (luaState.luaLock) {
+                code = luaState.g.load(makeRunLuaPrefix(commandSender) + string);
+            }
+        } catch (Exception e) {
+            commandSender.sendMessage(makeMessageBuilder().append("Error in Lua code: ").append(e.getMessage()).toString());
+            return true;
+        }
+
+        final LuaValue ret;
+        synchronized (luaState.luaLock) {
+            ret = code.call();
+        }
+        commandSender.sendMessage(makeMessageBuilder().append("Code = ").append(ret).toString());
+        return true;
+    }
+
     @Override
     public void onDisable() {
         terminateAllLuaStates();
@@ -155,7 +192,7 @@ public class FoxBukkitLua extends JavaPlugin {
         getServer().getPluginCommand("lua_reload").setExecutor(new CommandExecutor() {
             @Override
             public boolean onCommand(CommandSender commandSender, Command command, String s, String[] strings) {
-                if(strings.length > 0) {
+                if (strings.length > 0) {
                     startLuaState(strings[0], true);
                     commandSender.sendMessage(makeMessageBuilder().append("Reloaded Lua module ").append(strings[0]).toString());
                     return true;
@@ -199,31 +236,7 @@ public class FoxBukkitLua extends JavaPlugin {
                 if(strings.length < 2) {
                     return false;
                 }
-
-                LuaState luaState;
-                synchronized (luaStates) {
-                    luaState = luaStates.get(strings[0]);
-                }
-                if(luaState == null) {
-                    return false;
-                }
-
-                LuaValue code;
-                try {
-                    synchronized (luaState.luaLock) {
-                        code = luaState.g.load(Utils.concatArray(strings, 1, ""));
-                    }
-                } catch (Exception e) {
-                    commandSender.sendMessage(makeMessageBuilder().append("Error in Lua code: ").append(e.getMessage()).toString());
-                    return true;
-                }
-
-                final LuaValue ret;
-                synchronized (luaState.luaLock) {
-                    ret = code.call();
-                }
-                commandSender.sendMessage(makeMessageBuilder().append("Code = ").append(ret).toString());
-                return true;
+                return makeRunLua(commandSender, strings[0], Utils.concatArray(strings, 1, ""));
             }
         });
 
@@ -233,31 +246,17 @@ public class FoxBukkitLua extends JavaPlugin {
                 if(strings.length < 2) {
                     return false;
                 }
-
-                LuaState luaState;
-                synchronized (luaStates) {
-                    luaState = luaStates.get(strings[0]);
-                }
-                if(luaState == null) {
+                try {
+                    File file = new File(getLuaScriptsFolder(), strings[1]);
+                    Scanner scanner = new Scanner(file);
+                    scanner.useDelimiter("\\A");
+                    String contents = scanner.next();
+                    scanner.close();
+                    return makeRunLua(commandSender, strings[0], contents);
+                } catch (Exception e) {
+                    e.printStackTrace();
                     return false;
                 }
-
-                LuaValue code;
-                try {
-                    synchronized (luaState.luaLock) {
-                        code = luaState.g.loadfile(new File(getLuaScriptsFolder(), strings[1]).getAbsolutePath());
-                    }
-                } catch (Exception e) {
-                    commandSender.sendMessage(makeMessageBuilder().append("Error in Lua file: ").append(e.getMessage()).toString());
-                    return true;
-                }
-
-                final LuaValue ret;
-                synchronized (luaState.luaLock) {
-                    ret = code.call();
-                }
-                commandSender.sendMessage(makeMessageBuilder().append("Code = ").append(ret).toString());
-                return true;
             }
         });
 
