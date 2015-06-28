@@ -46,7 +46,7 @@ local _entity_mt = {
 			return function(self, ...)
 				local args = {... }
 				for k, v in next, args do
-					if v.__entity then
+					if type(v) == "table" and v.__entity then
 						args[k] = v.__entity
 					end
 				end
