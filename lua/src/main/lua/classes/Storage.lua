@@ -41,6 +41,10 @@ local _entity_mt = {
 		local entity = rawget(tbl, "entity")
 		local entityValue = entity[idx]
 		if entityValue and type(entityValue) == "function" then
+			return function(self, ...)
+				return entityValue(entity, ...)
+			end
+		else
 			return entityValue
 		end
 	end,
