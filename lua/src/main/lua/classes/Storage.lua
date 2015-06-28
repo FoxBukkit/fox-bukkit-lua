@@ -21,6 +21,8 @@ local Persister = require("Persister")
 
 local rawget = rawget
 local type = type
+local next = next
+local table_unpack = table.unpack
 
 local _entity_mt = {
 	__index = function(tbl, idx)
@@ -42,7 +44,13 @@ local _entity_mt = {
 		local entityValue = entity[idx]
 		if entityValue and type(entityValue) == "function" then
 			return function(self, ...)
-				return entityValue(entity, ...)
+				local args = {... }
+				for k, v in next, args do
+					if v.__entity then
+						args[k] = v.__entity
+					end
+				end
+				return entityValue(entity, table_unpack(args))
 			end
 		else
 			return entityValue

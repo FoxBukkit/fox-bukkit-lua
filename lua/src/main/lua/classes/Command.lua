@@ -86,7 +86,7 @@ local argTypes = {
             return arg
         end
     },
-    
+
     boolean = {
         parser = function(self, arg)
             return BOOL_VALUES[arg]
