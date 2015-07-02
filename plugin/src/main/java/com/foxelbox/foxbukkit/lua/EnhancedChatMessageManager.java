@@ -97,6 +97,10 @@ public class EnhancedChatMessageManager {
         return chatPlugin.getPlayerNick(uuid);
     }
 
+    public UUID getPlayerUUID(String name) {
+        return UUID.fromString(chatPlugin.playerHelper.playerNameToUUID.get(name));
+    }
+
     public boolean isAvailable() {
         return true;
     }
