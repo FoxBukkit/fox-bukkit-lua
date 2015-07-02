@@ -21,6 +21,14 @@ string.contains = function(self, sub)
 	return self:find(sub, 1, true) ~= nil
 end
 
+string.containsAnyOf = function(self, chars)
+    return self:find("[" .. chars .. "]") ~= nil
+end
+
+string.containsNoneOf = function(self, chars)
+    return not self:containsAnyOf(chars)
+end
+
 string.stripColors = function(self)
     return self:gsub('\xC2\xA7.', '')
 end

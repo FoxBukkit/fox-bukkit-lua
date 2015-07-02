@@ -338,10 +338,10 @@ class = {
                 end
 
                 local function argApplicable(arg)
-                    if arg.flagsRequired and not flagStr:contains(arg.flagsRequired) then
+                    if arg.flagsRequired and flagStr:containsNoneOf(arg.flagsRequired) then
                         return false
                     end
-                    if arg.flagsForbidden and flagStr:contains(arg.flagsForbidden) then
+                    if arg.flagsForbidden and flagStr:containsAnyOf(arg.flagsForbidden) then
                         return false
                     end
                     return true
