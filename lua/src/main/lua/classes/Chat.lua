@@ -32,6 +32,7 @@ if not chatAPI then
         sendLocalToPermission = notImpl,
         sendLocal = notImpl,
         getPlayerNick = notImpl,
+        makeButton = notImpl,
         getPlayerUUID = notImpl,
         isAvailable = function(self)
             return false
@@ -50,6 +51,9 @@ local Player = require("Player")
 local Chat = {
     getConsole = function(self)
         return chatAPI:getConsole()
+    end,
+    makeButton = function(self, command, label, color, run)
+        return chatAPI:makeButton(command, label, color, run)
     end,
     getPlayerUUID  = function(self, name)
         return chatAPI:getPlayerUUID(name)

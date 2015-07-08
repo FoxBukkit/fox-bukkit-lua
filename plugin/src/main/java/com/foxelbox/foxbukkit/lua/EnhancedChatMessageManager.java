@@ -17,6 +17,7 @@
 package com.foxelbox.foxbukkit.lua;
 
 import com.foxelbox.foxbukkit.chat.FoxBukkitChat;
+import com.foxelbox.foxbukkit.chat.MessageHelper;
 import com.foxelbox.foxbukkit.chat.RedisHandler;
 import com.foxelbox.foxbukkit.chat.json.ChatMessageIn;
 import com.foxelbox.foxbukkit.chat.json.ChatMessageOut;
@@ -45,6 +46,10 @@ public class EnhancedChatMessageManager {
 
     private CommandSender getConsole() {
         return luaState.plugin.getServer().getConsoleSender();
+    }
+
+    public String makeButton(String command, String label, String color, boolean run) {
+        return MessageHelper.button(command, label, color, run);
     }
 
     public void sendGlobal(CommandSender source, String type, String content) {
