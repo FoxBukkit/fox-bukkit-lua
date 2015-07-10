@@ -46,6 +46,7 @@ Event:register{
 local COMMAND_NAME = "/__qq__" .. __LUA_STATE:getModule()
 Command:register{
     name = COMMAND_NAME:sub(2),
+    permission = "foxbukkit.lua.questioner",
     arguments = {
         {
             name = "id",
