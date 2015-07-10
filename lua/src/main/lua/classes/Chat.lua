@@ -20,20 +20,7 @@
 local chatAPI = __LUA_STATE:getEnhancedChatMessageManager()
 
 if not chatAPI then
-    local function notImpl()
-        error("Enhanced chat API not available")
-    end
-
     return {
-        getConsole = notImpl,
-        sendGlobal = notImpl,
-        broadcastLocal = notImpl,
-        sendLocalToPlayer = notImpl,
-        sendLocalToPermission = notImpl,
-        sendLocal = notImpl,
-        getPlayerNick = notImpl,
-        makeButton = notImpl,
-        getPlayerUUID = notImpl,
         isAvailable = function(self)
             return false
         end
@@ -49,21 +36,30 @@ end
 
 local Player = require("Player")
 local Chat = {
+    isAvailable = function(self)
+        return chatAPI:isAvailable()
+    end,
+
     getConsole = function(self)
         return chatAPI:getConsole()
     end,
-    makeButton = function(self, command, label, color, run)
-        return chatAPI:makeButton(command, label, color, run)
+
+    makeButton = function(self, command, label, color, run, addHover)
+        return chatAPI:makeButton(command, label, color, run, (addHover ~= false))
     end,
+
     getPlayerUUID  = function(self, name)
         return chatAPI:getPlayerUUID(name)
     end,
+
     sendGlobal = function(self, source, type, content)
         return chatAPI:sendGlobal(fixPly(source), type, content)
     end,
+
     broadcastLocal = function(self, source, content)
         return chatAPI:broadcastLocal(fixPly(source), content)
     end,
+
     sendLocalToPlayer = function(self, source, content, target)
         if target then
             return chatAPI:sendLocalToPlayer(fixPly(source), content, fixPly(target))
@@ -71,6 +67,7 @@ local Chat = {
             return chatAPI:sendLocalToPlayer(source, fixPly(content))
         end
     end,
+
     sendLocalToPermissionm = function(self, source, content, target)
         if target then
             return chatAPI:sendLocalToPermissionm(fixPly(source), content, target)
@@ -78,9 +75,11 @@ local Chat = {
             return chatAPI:sendLocalToPermissionm(source, content)
         end
     end,
+
     sendLocal = function(self, source, content, chatTarget, targetFilter)
         return chatAPI:sendLocal(fixPly(source), content, chatTarget, targetFilter)
     end,
+
     getPlayerNick = function(self, ply_or_uuid)
         if ply_or_uuid.__entity then
             return chatAPI:getPlayerNick(ply_or_uuid.__entity)

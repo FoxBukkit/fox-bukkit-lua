@@ -48,8 +48,8 @@ public class EnhancedChatMessageManager {
         return luaState.plugin.getServer().getConsoleSender();
     }
 
-    public String makeButton(String command, String label, String color, boolean run) {
-        return MessageHelper.button(command, label, color, run);
+    public String makeButton(String command, String label, String color, boolean run, boolean addHover) {
+        return MessageHelper.button(command, label, color, run, addHover);
     }
 
     public void sendGlobal(CommandSender source, String type, String content) {
