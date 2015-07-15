@@ -16,9 +16,9 @@
  */
 package com.foxelbox.foxbukkit.lua;
 
+import com.foxelbox.foxbukkit.chat.ChatQueueHandler;
 import com.foxelbox.foxbukkit.chat.FoxBukkitChat;
 import com.foxelbox.foxbukkit.chat.MessageHelper;
-import com.foxelbox.foxbukkit.chat.RedisHandler;
 import com.foxelbox.foxbukkit.chat.json.ChatMessageIn;
 import com.foxelbox.foxbukkit.chat.json.ChatMessageOut;
 import com.foxelbox.foxbukkit.chat.json.MessageTarget;
@@ -30,14 +30,14 @@ import org.bukkit.plugin.Plugin;
 import java.util.UUID;
 
 public class EnhancedChatMessageManager {
-    private final RedisHandler redisHandler;
+    private final ChatQueueHandler chatQueueHandler;
     private final LuaState luaState;
     private final FoxBukkitChat chatPlugin;
 
     public EnhancedChatMessageManager(LuaState luaState, Plugin enhancedChatPlugin) {
         try {
             chatPlugin = (FoxBukkitChat)enhancedChatPlugin;
-            redisHandler = chatPlugin.getRedisHandler();
+            chatQueueHandler = chatPlugin.getChatQueueHandler();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -56,7 +56,7 @@ public class EnhancedChatMessageManager {
         ChatMessageIn chatMessageIn = new ChatMessageIn(chatPlugin, source);
         chatMessageIn.contents = content;
         chatMessageIn.type = type;
-        redisHandler.sendMessage(chatMessageIn);
+        chatQueueHandler.sendMessage(chatMessageIn);
     }
 
     public void broadcastLocal(CommandSender source, String content) {
@@ -91,7 +91,7 @@ public class EnhancedChatMessageManager {
         chatMessageOut.finalizeContext = true;
         chatMessageOut.contents = content;
         chatMessageOut.to = new MessageTarget(chatTarget, targetFilter);
-        redisHandler.onMessage(chatMessageOut);
+        chatQueueHandler.onMessage(chatMessageOut);
     }
 
     public String getPlayerNick(Player ply) {
