@@ -88,7 +88,7 @@ public class EnhancedChatMessageManager {
         chatMessageOut.server = null;
         chatMessageOut.from = new UserInfo(Utils.getCommandSenderUUID(source), source.getName());
         chatMessageOut.context = UUID.randomUUID();
-        chatMessageOut.finalize_context = true;
+        chatMessageOut.finalizeContext = true;
         chatMessageOut.contents = content;
         chatMessageOut.to = new MessageTarget(chatTarget, targetFilter);
         redisHandler.onMessage(chatMessageOut);
