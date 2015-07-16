@@ -19,6 +19,7 @@ package com.foxelbox.foxbukkit.lua;
 import com.foxelbox.foxbukkit.chat.ChatQueueHandler;
 import com.foxelbox.foxbukkit.chat.FoxBukkitChat;
 import com.foxelbox.foxbukkit.chat.MessageHelper;
+import com.foxelbox.foxbukkit.chat.Messages;
 import com.foxelbox.foxbukkit.chat.json.ChatMessageIn;
 import com.foxelbox.foxbukkit.chat.json.ChatMessageOut;
 import com.foxelbox.foxbukkit.chat.json.MessageTarget;
@@ -55,7 +56,7 @@ public class EnhancedChatMessageManager {
     public void sendGlobal(CommandSender source, String type, String content) {
         ChatMessageIn chatMessageIn = new ChatMessageIn(chatPlugin, source);
         chatMessageIn.contents = content;
-        chatMessageIn.type = type;
+        chatMessageIn.type = Messages.MessageType.valueOf(type.toUpperCase());
         chatQueueHandler.sendMessage(chatMessageIn);
     }
 
@@ -90,7 +91,7 @@ public class EnhancedChatMessageManager {
         chatMessageOut.context = UUID.randomUUID();
         chatMessageOut.finalizeContext = true;
         chatMessageOut.contents = content;
-        chatMessageOut.to = new MessageTarget(chatTarget, targetFilter);
+        chatMessageOut.to = new MessageTarget(Messages.TargetType.valueOf(chatTarget.toUpperCase()), targetFilter);
         chatQueueHandler.onMessage(chatMessageOut);
     }
 
