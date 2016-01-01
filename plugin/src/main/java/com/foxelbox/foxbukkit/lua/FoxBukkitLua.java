@@ -17,8 +17,6 @@
 package com.foxelbox.foxbukkit.lua;
 
 import com.foxelbox.dependencies.config.Configuration;
-import com.foxelbox.dependencies.redis.RedisManager;
-import com.foxelbox.dependencies.threading.SimpleThreadCreator;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -34,7 +32,6 @@ import java.util.Scanner;
 
 public class FoxBukkitLua extends JavaPlugin {
     public Configuration configuration;
-    public RedisManager redisManager;
     private final HashMap<String, LuaState> luaStates = new HashMap<>();
     public CommandManagerMaster commandManagerMaster;
 
@@ -166,8 +163,6 @@ public class FoxBukkitLua extends JavaPlugin {
     public void onDisable() {
         terminateAllLuaStates();
 
-        redisManager.stop();
-
         LuaState.unload();
     }
 
@@ -182,7 +177,6 @@ public class FoxBukkitLua extends JavaPlugin {
         getLuaScriptsFolder().mkdirs();
 
         configuration = new Configuration(getDataFolder());
-        redisManager = new RedisManager(new SimpleThreadCreator(), configuration);
         commandManagerMaster = new CommandManagerMaster(this);
 
         LuaState.load(this);
