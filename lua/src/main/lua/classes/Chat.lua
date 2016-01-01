@@ -58,11 +58,19 @@ if not chatAPI then
         end,
 
         sendLocalToPlayer = function(self, source, content, target)
-            target:sendMessage(content)
+            if target then
+                target:sendMessage(content)
+            else -- content, target
+                content:sendMessage(source)
+            end
         end,
 
         sendLocalToPermission = function(self, source, content, target)
-            bukkitServer:broadcastMessage("$" + target, content)
+            if target then
+                bukkitServer:broadcastMessage("$" + target, content)
+            else -- content, target
+                bukkitServer:broadcastMessage("$" + content, source)
+            end
         end,
 
         sendLocal = function(self, source, content, chatTarget, targetFilter)
@@ -128,13 +136,17 @@ local Chat = {
     end,
 
     sendLocalToPlayer = function(self, source, content, target)
-        return chatAPI:sendLocalToPlayer(fixPly(source), content, fixPly(target))
+        if target then
+            return chatAPI:sendLocalToPlayer(fixPly(source), content, fixPly(target))
+        else -- content, target
+            return chatAPI:sendLocalToPlayer(source, fixPly(content))
+        end
     end,
 
     sendLocalToPermission = function(self, source, content, target)
         if target then
             return chatAPI:sendLocalToPermission(fixPly(source), content, target)
-        else
+        else -- content, target
             return chatAPI:sendLocalToPermission(source, content)
         end
     end,
