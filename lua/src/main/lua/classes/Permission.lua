@@ -75,17 +75,30 @@ Player:addConsoleExtensions{
 
 if not permissionsAPI then
     Permission = {
+        Immunity = immunity,
+
         getImmunityLevel = function(ply_or_uuid)
             return 0
         end,
+
         getGroupImmunityLevel = function(ply_or_uuid)
             return 0
         end,
+
         getGroup = function(ply_or_uuid)
             return "default"
         end,
+
         isAvailable = function(self)
             return false
+        end,
+
+        fitsImmunityRequirement = function(self, ply_or_uuid1, ply_or_uuid2, requirement)
+            return true
+        end,
+
+        compareImmunityLevel = function(self, ply_or_uuid1, ply_or_uuid2)
+            return immunity.EQUAL
         end
     }
     return Permission
