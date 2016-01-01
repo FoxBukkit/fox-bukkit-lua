@@ -19,12 +19,80 @@
 
 local chatAPI = __LUA_STATE:getEnhancedChatMessageManager()
 
+local Player = require("Player")
+
+Player:addConsoleExtensions{
+    sendReply = function(self, message)
+        return self:sendMessage("[FB] " .. message)
+    end,
+
+    sendError = function(self, message)
+        return self:sendMessage("[FB] [ERROR] " .. message)
+    end
+}
+
 if not chatAPI then
-    return {
+    local bukkitServer = require("Server"):getBukkitServer()
+
+    local Chat = {
         isAvailable = function(self)
             return false
+        end,
+
+        getConsole = Player.getConsole,
+
+        makeButton = function(self, command, label, color, run, addHover)
+            return "<BUTTON:" .. command ">" .. label .. "</BUTTON>"
+        end,
+
+        getPlayerUUID = function(self, name)
+            return nil
+        end,
+
+        sendGlobal = function(self, source, type, content)
+            bukkitServer:broadcastMessage(content)
+        end,
+
+        broadcastLocal = function(self, source, content)
+            bukkitServer:broadcastMessage(content)
+        end,
+
+        sendLocalToPlayer = function(self, source, content, target)
+            target:sendMessage(content)
+        end,
+
+        sendLocalToPermission = function(self, source, content, target)
+            bukkitServer:broadcastMessage("$" + target, content)
+        end,
+
+        sendLocal = function(self, source, content, chatTarget, targetFilter)
+            bukkitServer:broadcastMessage("!" .. tostring(targetFilter) .. "!" .. tostring(chatTarget), content)
+        end,
+
+        getPlayerNick = function(self, ply_or_uuid)
+            return ply_or_uuid:getDisplayName()
+        end,
+    }
+
+    Player:addExtensions{
+        sendXML = function(self, message)
+            return Chat:sendLocalToPlayer(message, self)
+        end,
+
+        sendReply = function(self, message)
+            return self:sendXML("[FB] " .. message)
+        end,
+
+        sendError = function(self, message)
+            return self:sendXML("[FB] [ERROR] " .. message)
+        end,
+
+        getNickName = function(self)
+            return self:getDisplayName()
         end
     }
+
+    return Chat
 end
 
 local function fixPly(ply)
@@ -34,7 +102,6 @@ local function fixPly(ply)
     return ply
 end
 
-local Player = require("Player")
 local Chat = {
     isAvailable = function(self)
         return chatAPI:isAvailable()
@@ -61,18 +128,14 @@ local Chat = {
     end,
 
     sendLocalToPlayer = function(self, source, content, target)
-        if target then
-            return chatAPI:sendLocalToPlayer(fixPly(source), content, fixPly(target))
-        else
-            return chatAPI:sendLocalToPlayer(source, fixPly(content))
-        end
+        return chatAPI:sendLocalToPlayer(fixPly(source), content, fixPly(target))
     end,
 
-    sendLocalToPermissionm = function(self, source, content, target)
+    sendLocalToPermission = function(self, source, content, target)
         if target then
-            return chatAPI:sendLocalToPermissionm(fixPly(source), content, target)
+            return chatAPI:sendLocalToPermission(fixPly(source), content, target)
         else
-            return chatAPI:sendLocalToPermissionm(source, content)
+            return chatAPI:sendLocalToPermission(source, content)
         end
     end,
 
@@ -104,16 +167,6 @@ Player:addExtensions{
 
     getNickName = function(self)
         return Chat:getPlayerNick(self)
-    end
-}
-
-Player:addConsoleExtensions{
-    sendReply = function(self, message)
-        return self:sendMessage("[FB] " .. message)
-    end,
-
-    sendError = function(self, message)
-        return self:sendMessage("[FB] [ERROR] " .. message)
     end
 }
 
