@@ -32,14 +32,14 @@
     <repositories>
         <repository>
             <id>foxelbox-repo</id>
-            <url>http://repo.foxelbox.com</url>
+            <url>https://maven.doridian.net/repository/maven-snapshots</url>
         </repository>
     </repositories>
 
     <pluginRepositories>
         <pluginRepository>
             <id>foxelbox-repo-plugin</id>
-            <url>http://repo.foxelbox.com</url>
+            <url>https://maven.doridian.net/repository/maven-snapshots</url>
         </pluginRepository>
     </pluginRepositories>
 </project>
