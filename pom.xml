@@ -31,6 +31,10 @@
 
     <repositories>
         <repository>
+            <id>spigot-repo</id>
+            <url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
+        </repository>
+        <repository>
             <id>foxelbox-repo</id>
             <url>https://maven.doridian.net/repository/maven-snapshots</url>
         </repository>

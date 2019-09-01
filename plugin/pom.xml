@@ -33,17 +33,17 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.1</version>
+				<version>3.8.1</version>
 				<configuration>
-					<source>1.7</source>
-					<target>1.7</target>
+					<source>1.10</source>
+					<target>1.10</target>
 				</configuration>
 			</plugin>
 			<!-- Dependency addition plugin -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-shade-plugin</artifactId>
-				<version>2.3</version>
+				<version>3.2.1</version>
 				<executions>
 					<execution>
 						<configuration>
@@ -96,7 +96,7 @@
         <dependency>
             <groupId>org.spigotmc</groupId>
             <artifactId>spigot-api</artifactId>
-            <version>1.10.2-R0.1-SNAPSHOT</version>
+            <version>1.14.4-R0.1-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
 		<dependency>
@@ -107,24 +107,17 @@
 		<dependency>
 			<groupId>org.apache.bcel</groupId>
 			<artifactId>bcel</artifactId>
-			<version>5.2</version>
+			<version>6.3.1</version>
 		</dependency>
-        <dependency>
-            <groupId>com.foxelbox</groupId>
-            <artifactId>FoxBukkitChat</artifactId>
-            <version>1.4.0-SNAPSHOT</version>
-            <scope>provided</scope>
-        </dependency>
+		<dependency>
+			<groupId>com.foxelbox</groupId>
+			<artifactId>ConfigDependency</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
 		<dependency>
 			<groupId>com.foxelbox</groupId>
 			<artifactId>FoxBukkitPermissions</artifactId>
 			<version>1.1.0-SNAPSHOT</version>
-			<scope>provided</scope>
 		</dependency>
-        <dependency>
-            <groupId>com.foxelbox</groupId>
-            <artifactId>ConfigDependency</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
-        </dependency>
 	</dependencies>
 </project>
