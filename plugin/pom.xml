@@ -118,6 +118,13 @@
 			<groupId>com.foxelbox</groupId>
 			<artifactId>FoxBukkitPermissions</artifactId>
 			<version>1.1.0-SNAPSHOT</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.foxelbox</groupId>
+			<artifactId>FoxBukkitChat</artifactId>
+			<version>1.4.0-SNAPSHOT</version>
+			<scope>provided</scope>
 		</dependency>
 	</dependencies>
 </project>

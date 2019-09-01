@@ -37,10 +37,12 @@ public class LuaState implements Listener, Runnable {
 
     final FoxBukkitLua plugin;
 
+    private final EnhancedChatMessageManager enhancedChatMessageManager;
     private final EnhancedPermissionManager enhancedPermissionManager;
     private final EventManager eventManager = new EventManager(this);
     private final CommandManager commandManager = new CommandManager(this);
 
+    private static Plugin enhancedChatPlugin = null;
     private static Plugin enhancedPermissionPlugin = null;
     private static boolean loaded = false;
 
@@ -50,7 +52,14 @@ public class LuaState implements Listener, Runnable {
         }
         loaded = true;
 
+        enhancedChatPlugin = plugin.getServer().getPluginManager().getPlugin("FoxBukkitChat");
         enhancedPermissionPlugin = plugin.getServer().getPluginManager().getPlugin("FoxBukkitPermissions");
+
+        if(enhancedChatPlugin == null) {
+            System.err.println("Could not find FoxBukkitChat. Disabling enhanced chat API.");
+        } else {
+            System.out.println("Hooked FoxBukkitChat. Enabled enhanced chat API.");
+        }
 
         if(enhancedPermissionPlugin == null) {
             System.err.println("Could not find FoxBukkitPermissions. Disabling enhanced permissions API.");
@@ -60,12 +69,19 @@ public class LuaState implements Listener, Runnable {
     }
 
     public static synchronized void unload() {
+        enhancedChatPlugin = null;
         enhancedPermissionPlugin = null;
         loaded = false;
     }
 
     public LuaState(String module, FoxBukkitLua plugin) {
         this.plugin = plugin;
+
+        if(enhancedChatPlugin != null) {
+            enhancedChatMessageManager = new EnhancedChatMessageManager(this, enhancedChatPlugin);
+        } else {
+            enhancedChatMessageManager = null;
+        }
 
         if(enhancedPermissionPlugin != null) {
             enhancedPermissionManager = new EnhancedPermissionManager(this, enhancedPermissionPlugin);
@@ -86,6 +102,10 @@ public class LuaState implements Listener, Runnable {
 
     public EventManager getEventManager() {
         return eventManager;
+    }
+
+    public EnhancedChatMessageManager getEnhancedChatMessageManager() {
+        return enhancedChatMessageManager;
     }
 
     public EnhancedPermissionManager getEnhancedPermissionManager() {
