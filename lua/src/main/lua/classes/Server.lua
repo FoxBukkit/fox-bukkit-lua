@@ -18,9 +18,9 @@
 ]]
 
 local luaState = __LUA_STATE
-local bukkitServer = bindClass("org.bukkit.Bukkit")
-local scheduler = bukkitServer:getScheduler()
 local plugin = luaState:getFoxBukkitLua()
+local bukkitServer = plugin:getServer()
+local scheduler = bukkitServer:getScheduler()
 
 return {
 	getBukkitServer = function(self)

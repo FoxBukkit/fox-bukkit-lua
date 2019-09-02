@@ -26,8 +26,8 @@ import org.luaj.vm2.LuaValue;
 import org.luaj.vm2.lib.jse.CoerceJavaToLua;
 import org.luaj.vm2.lib.jse.JsePlatform;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
+import java.util.Scanner;
 
 public class LuaState implements Listener, Runnable {
     final Object luaLock = new Object();
@@ -129,6 +129,12 @@ public class LuaState implements Listener, Runnable {
 
     public FoxBukkitLua getFoxBukkitLua() {
         return plugin;
+    }
+
+    public String readStream(InputStream stream) {
+        try (Scanner scanner = new Scanner(stream)) {
+            return scanner.useDelimiter("\\A").next();
+        }
     }
 
     public String getRootDir() {

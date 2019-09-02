@@ -18,7 +18,6 @@
 ]]
 
 local Player = require("Player")
-local Server = require("Server")
 local Permission = require("Permission")
 require("Chat")
 
