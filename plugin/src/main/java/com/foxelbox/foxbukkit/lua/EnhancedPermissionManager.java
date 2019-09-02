@@ -37,6 +37,14 @@ public class EnhancedPermissionManager {
         //this.luaState = luaState;
     }
 
+    public void setGroup(Player ply, String group) {
+        setGroup(ply.getUniqueId(), group);
+    }
+
+    public void setGroup(UUID uuid, String group) {
+        handler.setGroup(uuid, group);
+    }
+
     public int getImmunityLevel(Player ply) {
         return handler.getImmunityLevel(ply);
     }
