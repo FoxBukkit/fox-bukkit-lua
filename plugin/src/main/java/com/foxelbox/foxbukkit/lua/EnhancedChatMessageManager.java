@@ -50,10 +50,10 @@ public class EnhancedChatMessageManager {
     }
 
     public void sendGlobal(CommandSender source, String type, String content) {
-        ChatMessageIn chatMessageIn = new ChatMessageIn(chatPlugin, source);
-        chatMessageIn.contents = content;
-        chatMessageIn.type = MessageType.valueOf(type.toUpperCase());
-        chatHelper.sendMessage(chatMessageIn);
+        ChatMessageOut chatMessageOut = new ChatMessageOut(chatPlugin, new UserInfo(chatPlugin, source));
+        chatMessageOut.contents = content;
+        chatMessageOut.type = MessageType.valueOf(type.toUpperCase());
+        chatHelper.sendMessage(chatMessageOut);
     }
 
     public void broadcastLocal(CommandSender source, String content) {
@@ -90,15 +90,15 @@ public class EnhancedChatMessageManager {
     }
 
     public String getPlayerNick(Player ply) {
-        return chatPlugin.getPlayerNick(ply);
+        return chatPlugin.playerHelper.getPlayerNick(ply);
     }
 
     public String getPlayerNick(UUID uuid) {
-        return chatPlugin.getPlayerNick(uuid);
+        return chatPlugin.playerHelper.getPlayerNick(uuid);
     }
 
     public UUID getPlayerUUID(String name) {
-        return UUID.fromString(chatPlugin.playerHelper.playerNameToUUID.get(name));
+        return chatPlugin.playerHelper.getUUIDByName(name);
     }
 
     public boolean isAvailable() {
