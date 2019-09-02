@@ -89,6 +89,8 @@ if not permissionsAPI then
             return "default"
         end,
 
+        setGroup = function() end,
+
         isAvailable = function(self)
             return false
         end,
@@ -128,6 +130,10 @@ Permission = {
 
     getGroup = function(self, ply_or_uuid)
         return permissionsAPI:getGroup(fixPlyOrUUID(ply_or_uuid))
+    end,
+
+    setGroup = function(self, ply_or_uuid, group)
+        return permissionsAPI:setGroup(fixPlyOrUUID(ply_or_uuid), group)
     end,
 
     isAvailable = function(self)
