@@ -20,7 +20,7 @@
 local luaState = __LUA_STATE
 local URL = bindClass("java.net.URL")
 
-HTTP = {
+return {
     openConnection = function(self, url)
         return luajava.new(URL, url):openConnection()
     end,
@@ -36,5 +36,3 @@ HTTP = {
         return self:runReqeust(conn, options)
     end
 }
-
-return HTTP
