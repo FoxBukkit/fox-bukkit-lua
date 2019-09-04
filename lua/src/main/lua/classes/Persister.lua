@@ -99,7 +99,6 @@ local __INDENT = "\t"
 
 local function serialize(stream, v, indent)
     local t = type(v)
-    local ret
     if t == "number" then
         stream:append(tostring(v))
     elseif t == "boolean" then
@@ -117,7 +116,6 @@ local function serialize(stream, v, indent)
             stream:append(")")
         end
     elseif t == "table" then
-        local result = {}
         local newIndent = indent .. __INDENT
 
         local isFirst = true
@@ -220,7 +218,7 @@ local function loadPersist(hash)
     contents = contents:next()
     file:close()
 
-    local loaderFunc, err = load("return " .. contents, "__persister_temp." .. moduleName .. "." .. hash, "bt", loaderEnv)
+    local loaderFunc, err = load("return " .. contents, "__persister_temp." .. moduleName .. "." .. hash, "t", loaderEnv)
     if not loaderFunc then
         print("ERROR: Load error: " .. moduleName .. "|" .. hash .. "|" .. tostring(err))
         return {}
