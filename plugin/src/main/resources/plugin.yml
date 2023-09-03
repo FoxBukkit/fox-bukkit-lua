@@ -1,5 +1,5 @@
 name: FoxBukkitLua
-main: com.foxelbox.foxbukkit.lua.FoxBukkitLua
+main: net.doridian.foxbukkit.lua.FoxBukkitLua
 version: 1.0.0
 softdepend: [FoxBukkitChat, FoxBukkitPermissions]
 commands:

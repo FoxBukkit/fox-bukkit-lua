@@ -1,5 +1,24 @@
 <!--
 
+    foxbukkit-lua-plugin - ${project.description}
+    Copyright © ${year} Doridian (git@doridian.net)
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    You should have received a copy of the GNU Lesser General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+-->
+<!--
+
     This file is part of FoxBukkitLua-plugin.
 
     FoxBukkitLua-plugin is free software: you can redistribute it and/or modify
@@ -22,7 +41,7 @@
     <version>1.0.0-SNAPSHOT</version>
 
     <parent>
-        <groupId>com.foxelbox</groupId>
+        <groupId>net.doridian.foxbukkit</groupId>
         <artifactId>foxbukkit-lua-parent</artifactId>
         <version>1.0.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
@@ -73,8 +92,8 @@
                 <configuration>
                     <header>com/mycila/maven/plugin/license/templates/LGPL-3.txt</header>
                     <properties>
-                        <owner>Mark Dietzer</owner>
-                        <email>mriq91@gmail.com</email>
+                        <owner>Doridian</owner>
+                        <email>git@doridian.net</email>
                     </properties>
                     <excludes>
                         <exclude>**/README</exclude>
@@ -94,30 +113,25 @@
     </build>
     <dependencies>
         <dependency>
-            <groupId>org.spigotmc</groupId>
-            <artifactId>spigot-api</artifactId>
-            <version>1.14.4-R0.1-SNAPSHOT</version>
+            <groupId>io.papermc.paper</groupId>
+            <artifactId>paper-api</artifactId>
+            <version>1.19.4-R0.1-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>com.foxelbox</groupId>
-            <artifactId>LuaJ</artifactId>
-            <version>3.0.3-SNAPSHOT</version>
-        </dependency>
-        <dependency>
-            <groupId>com.foxelbox</groupId>
-            <artifactId>ConfigDependency</artifactId>
+            <groupId>net.doridian.foxbukkit</groupId>
+            <artifactId>config-dependency</artifactId>
             <version>0.0.1-SNAPSHOT</version>
         </dependency>
         <dependency>
-            <groupId>com.foxelbox</groupId>
-            <artifactId>FoxBukkitPermissions</artifactId>
+            <groupId>net.doridian.foxbukkit</groupId>
+            <artifactId>foxbukkit-permissions</artifactId>
             <version>1.1.0-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>com.foxelbox</groupId>
-            <artifactId>FoxBukkitChat</artifactId>
+            <groupId>net.doridian.foxbukkit</groupId>
+            <artifactId>foxbukkit-chat</artifactId>
             <version>1.4.0-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
