@@ -136,9 +136,9 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>net.doridian.foxbukkit</groupId>
-            <artifactId>luaj</artifactId>
-            <version>3.0.3-SNAPSHOT</version>
+            <groupId>org.luaj</groupId>
+            <artifactId>luaj-jse</artifactId>
+            <version>3.0.1</version>
         </dependency>
         <dependency>
             <groupId>org.apache.bcel</groupId>
