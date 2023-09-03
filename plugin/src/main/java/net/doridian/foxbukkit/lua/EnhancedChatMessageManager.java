@@ -17,10 +17,10 @@
  */
 package net.doridian.foxbukkit.lua;
 
-import com.foxelbox.foxbukkit.chat.ChatHelper;
-import com.foxelbox.foxbukkit.chat.FoxBukkitChat;
-import com.foxelbox.foxbukkit.chat.MessageHelper;
-import com.foxelbox.foxbukkit.chat.json.*;
+import net.doridian.foxbukkit.chat.ChatHelper;
+import net.doridian.foxbukkit.chat.FoxBukkitChat;
+import net.doridian.foxbukkit.chat.MessageHelper;
+import net.doridian.foxbukkit.chat.json.*;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;

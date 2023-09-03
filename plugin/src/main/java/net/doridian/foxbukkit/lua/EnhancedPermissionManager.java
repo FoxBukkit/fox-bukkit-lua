@@ -17,8 +17,8 @@
  */
 package net.doridian.foxbukkit.lua;
 
-import com.foxelbox.foxbukkit.permissions.FoxBukkitPermissionHandler;
-import com.foxelbox.foxbukkit.permissions.FoxBukkitPermissions;
+import net.doridian.foxbukkit.permissions.FoxBukkitPermissionHandler;
+import net.doridian.foxbukkit.permissions.FoxBukkitPermissions;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;

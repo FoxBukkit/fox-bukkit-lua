@@ -17,7 +17,7 @@
  */
 package net.doridian.foxbukkit.lua;
 
-import com.foxelbox.dependencies.config.Configuration;
+import net.doridian.foxbukkit.dependencies.config.Configuration;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
