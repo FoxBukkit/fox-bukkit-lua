@@ -57,6 +57,7 @@ Command:register{
             type = "string"
         }
     },
+    hidden = true,
     run = function(self, ply, args)
         local myQuestions = ply._questions
         if not myQuestions then
