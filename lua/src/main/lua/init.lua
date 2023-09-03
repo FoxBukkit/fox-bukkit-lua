@@ -17,13 +17,16 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 ]]
+
+local luaState = __LUA_STATE
+
 local boundClasses = {}
 local classBounds = {}
 
 function bindClass(cls)
     local clsB = boundClasses[cls]
     if not clsB then
-        clsB = luajava.bindClass(cls)
+        clsB = luaState:bindClass(cls)
         boundClasses[cls] = clsB
         classBounds[clsB] = cls
     end
@@ -39,7 +42,6 @@ function getClassName(cls)
     return name
 end
 
-local luaState = __LUA_STATE
 local includeDir = luaState:getModuleDir()
 local File = bindClass("java.io.File")
 

@@ -30,6 +30,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Scanner;
+import java.util.logging.Level;
 
 public class FoxBukkitLua extends JavaPlugin {
     public Configuration configuration;
@@ -92,7 +93,7 @@ public class FoxBukkitLua extends JavaPlugin {
                 luaState.run();
             }
         } catch (Exception e) {
-            System.err.println("Error starting Lua state " + module);
+            getLogger().log(Level.SEVERE, "Error starting Lua state " + module);
             e.printStackTrace();
         }
     }
@@ -114,7 +115,7 @@ public class FoxBukkitLua extends JavaPlugin {
             if(module.canRead() && module.isDirectory()) {
                 luaModules.add(module.getName());
             } else {
-                System.err.println("Invalid Lua module " + module.getName() + " (not a directory or unreadable)");
+                getLogger().log(Level.SEVERE, "Invalid Lua module " + module.getName() + " (not a directory or unreadable)");
             }
         }
         return luaModules;

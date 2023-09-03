@@ -29,6 +29,7 @@ import org.luaj.vm2.lib.jse.JsePlatform;
 
 import java.io.*;
 import java.util.Scanner;
+import java.util.logging.Level;
 
 public class LuaState implements Listener, Runnable {
     final Object luaLock = new Object();
@@ -57,15 +58,15 @@ public class LuaState implements Listener, Runnable {
         enhancedPermissionPlugin = plugin.getServer().getPluginManager().getPlugin("FoxBukkitPermissions");
 
         if(enhancedChatPlugin == null) {
-            System.err.println("Could not find FoxBukkitChat. Disabling enhanced chat API.");
+            plugin.getLogger().log(Level.WARNING, "Could not find FoxBukkitChat. Disabling enhanced chat API.");
         } else {
-            System.out.println("Hooked FoxBukkitChat. Enabled enhanced chat API.");
+            plugin.getLogger().log(Level.INFO, "Hooked FoxBukkitChat. Enabled enhanced chat API.");
         }
 
         if(enhancedPermissionPlugin == null) {
-            System.err.println("Could not find FoxBukkitPermissions. Disabling enhanced permissions API.");
+            plugin.getLogger().log(Level.WARNING, "Could not find FoxBukkitPermissions. Disabling enhanced permissions API.");
         } else {
-            System.out.println("Hooked FoxBukkitPermissions. Enabled enhanced permissions API.");
+            plugin.getLogger().log(Level.INFO, "Hooked FoxBukkitPermissions. Enabled enhanced permissions API.");
         }
     }
 
@@ -181,6 +182,10 @@ public class LuaState implements Listener, Runnable {
         } else {
             loadPackagedFile("boot").call();
         }
+    }
+
+    public Class<?> bindClass(String clazz) throws ClassNotFoundException {
+        return Class.forName(clazz);
     }
 
     @Override
