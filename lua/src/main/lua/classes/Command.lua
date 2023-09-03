@@ -399,7 +399,7 @@ class = {
             permission = cmd.permission,
             help = cmd.help,
             usage = cmd.usage,
-            hidden = cmd.hidden or false,
+            hidden = cmd.hidden and "true" or "false",
         }
         if not info.usage and cmd.arguments then
             local mainUsage = {}
