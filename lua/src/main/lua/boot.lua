@@ -39,3 +39,12 @@ string.ucfirst = function(self)
 	end
 	return self:sub(1, 1):upper() .. self:sub(2):lower()
 end
+
+table.contains = function(tbl, value)
+	for _, v in next, tbl do
+		if v == value then
+			return true
+		end
+	end
+	return false
+end

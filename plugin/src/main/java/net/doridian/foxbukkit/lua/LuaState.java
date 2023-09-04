@@ -176,9 +176,9 @@ public class LuaState implements Listener, Runnable {
         }
         initialized = true;
 
-        File overrideInit = new File(getRootDir(), "boot.lua");
-        if(overrideInit.exists()) {
-            g.loadfile(overrideInit.getAbsolutePath()).call();
+        File overrideBoot = new File(getRootDir(), "boot.lua");
+        if(overrideBoot.exists()) {
+            g.loadfile(overrideBoot.getAbsolutePath()).call();
         } else {
             loadPackagedFile("boot").call();
         }

@@ -19,6 +19,13 @@
 ]]
 
 local luaState = __LUA_STATE
+local dofile = dofile
+
+rawset(_G, 'dofile', nil)
+rawset(_G, 'loadfile', nil)
+rawset(_G, 'dostring', nil)
+rawset(_G, 'loadstring', nil)
+rawset(os, 'execute', nil)
 
 local boundClasses = {}
 local classBounds = {}
@@ -45,23 +52,7 @@ end
 local includeDir = luaState:getModuleDir()
 local File = bindClass('java.io.File')
 
-local dofile = dofile
-rawset(_G, 'dofile', nil)
-rawset(_G, 'loadfile', nil)
-rawset(_G, 'dostring', nil)
-rawset(_G, 'loadstring', nil)
-rawset(os, 'execute', nil)
-
 package.path = includeDir .. '/classes/?.lua;' .. luaState:getRootDir() .. '/classes/?.lua'
-
-table.contains = table.contains or function(tbl, value)
-	for _, v in next, tbl do
-		if v == value then
-			return true
-		end
-	end
-	return false
-end
 
 table.insert(package.searchers, 3, function(module)
 	return luaState:loadPackagedFile('classes/' .. module)
