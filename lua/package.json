@@ -1,0 +1,14 @@
+{
+    "name": "foxbukkit-lua-lua",
+    "version": "0.1.0",
+    "scripts": {
+        "lint:prettier": "prettier --check \"**/*.lua\"",
+        "fmt:prettier": "prettier --write \"**/*.lua\"",
+        "lint": "npm run lint:prettier && luacheck .",
+        "fmt": "npm run fmt:prettier && luacheck ."
+    },
+    "devDependencies": {
+        "@prettier/plugin-lua": "^0.0.3",
+        "prettier": "^3.0.0"
+    }
+}
