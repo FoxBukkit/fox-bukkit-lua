@@ -45,6 +45,13 @@ end
 local includeDir = luaState:getModuleDir()
 local File = bindClass('java.io.File')
 
+local dofile = dofile
+rawset(_G, 'dofile', nil)
+rawset(_G, 'loadfile', nil)
+rawset(_G, 'dostring', nil)
+rawset(_G, 'loadstring', nil)
+rawset(os, 'execute', nil)
+
 package.path = includeDir .. '/classes/?.lua;' .. luaState:getRootDir() .. '/classes/?.lua'
 
 table.contains = table.contains or function(tbl, value)
@@ -60,15 +67,6 @@ table.insert(package.searchers, 3, function(module)
 	return luaState:loadPackagedFile('classes/' .. module)
 end)
 
-local _dofile = dofile
-local _loadfile = loadfile
-function dofile(file)
-	return _dofile(includeDir .. '/' .. file)
-end
-function loadfile(file)
-	return _loadfile(includeDir .. '/' .. file)
-end
-
 local function _scandir(dir, cb, recursive, ignore, rootDirLen)
 	local iter = dir:listFiles()
 	for i = 1, #iter do
@@ -82,7 +80,7 @@ local function _scandir(dir, cb, recursive, ignore, rootDirLen)
 		end
 	end
 end
-function scandir(dir, cb, recursive, ignore)
+local function scandir(dir, cb, recursive, ignore)
 	local ignoreTbl = {}
 	if type(ignore) == 'table' then
 		for _, v in next, ignore do
@@ -100,7 +98,7 @@ end
 scandir(
 	'',
 	function(file)
-		dofile(file)
+		dofile(includeDir .. '/' .. file)
 	end,
 	true,
 	{ 'classes', 'storage' }
