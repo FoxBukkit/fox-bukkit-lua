@@ -19,149 +19,128 @@
 ]]
 local permissionsAPI = __LUA_STATE:getEnhancedPermissionManager()
 
-local Player = require("Player")
+local Player = require('Player')
 local Permission
 
 local tostring = tostring
 local type = type
 
 local immunity = {
-    GREATER = 1,
-    LESS = -1,
-    EQUAL = 0,
-    GREATER_OR_EQUAL = 2,
-    LESS_OR_EQUAL = -2
+	GREATER = 1,
+	LESS = -1,
+	EQUAL = 0,
+	GREATER_OR_EQUAL = 2,
+	LESS_OR_EQUAL = -2,
 }
 
 Player:addExtensions{
-    compareImmunityLevel = function(self, other)
-        return Permission:compareImmunityLevel(self, other)
-    end,
-
-    fitsImmunityRequirement = function(self, other, requirement)
-        return Permission:fitsImmunityRequirement(self, other, requirement)
-    end,
-
-    getImmunityLevel = function(self)
-        return Permission:getImmunityLevel(self)
-    end,
-
-    getGroup = function(self)
-        return Permission:getGroup(self)
-    end
+	compareImmunityLevel = function(self, other)
+		return Permission:compareImmunityLevel(self, other)
+	end,
+	fitsImmunityRequirement = function(self, other, requirement)
+		return Permission:fitsImmunityRequirement(self, other, requirement)
+	end,
+	getImmunityLevel = function(self)
+		return Permission:getImmunityLevel(self)
+	end,
+	getGroup = function(self)
+		return Permission:getGroup(self)
+	end,
 }
 
 Player:addConsoleExtensions{
-    compareImmunityLevel = function(self, other)
-        return Permission.Immunity.GREATER
-    end,
-
-    fitsImmunityRequirement = function(self, other, requirement)
-        return requirement == immunity.GREATER or requirement == immunity.GREATER_OR_EQUAL
-    end,
-
-    getImmunityLevel = function(self)
-        return 9999
-    end,
-
-    getGroup = function(self)
-        return "console"
-    end,
-
-    hasPermission = function(self)
-        return true
-    end
+	compareImmunityLevel = function(self, other)
+		return Permission.Immunity.GREATER
+	end,
+	fitsImmunityRequirement = function(self, other, requirement)
+		return requirement == immunity.GREATER or requirement == immunity.GREATER_OR_EQUAL
+	end,
+	getImmunityLevel = function(self)
+		return 9999
+	end,
+	getGroup = function(self)
+		return 'console'
+	end,
+	hasPermission = function(self)
+		return true
+	end,
 }
 
 if not permissionsAPI then
-    Permission = {
-        Immunity = immunity,
-
-        getImmunityLevel = function(ply_or_uuid)
-            return 0
-        end,
-
-        getGroupImmunityLevel = function(ply_or_uuid)
-            return 0
-        end,
-
-        getGroup = function(ply_or_uuid)
-            return "default"
-        end,
-
-        setGroup = function() end,
-
-        isAvailable = function(self)
-            return false
-        end,
-
-        fitsImmunityRequirement = function(self, ply_or_uuid1, ply_or_uuid2, requirement)
-            return true
-        end,
-
-        compareImmunityLevel = function(self, ply_or_uuid1, ply_or_uuid2)
-            return immunity.EQUAL
-        end
-    }
-    return Permission
+	Permission = {
+		Immunity = immunity,
+		getImmunityLevel = function(ply_or_uuid)
+			return 0
+		end,
+		getGroupImmunityLevel = function(ply_or_uuid)
+			return 0
+		end,
+		getGroup = function(ply_or_uuid)
+			return 'default'
+		end,
+		setGroup = function() end,
+		isAvailable = function(self)
+			return false
+		end,
+		fitsImmunityRequirement = function(self, ply_or_uuid1, ply_or_uuid2, requirement)
+			return true
+		end,
+		compareImmunityLevel = function(self, ply_or_uuid1, ply_or_uuid2)
+			return immunity.EQUAL
+		end,
+	}
+	return Permission
 end
 
-local UUID = bindClass("java.util.UUID")
+local UUID = bindClass('java.util.UUID')
 
 local function fixPlyOrUUID(ply_or_uuid)
-    if type(ply_or_uuid) == "string" then
-        return UUID:fromString(ply_or_uuid)
-    elseif ply_or_uuid.__entity then
-        return ply_or_uuid.__entity
-    end
-    return ply_or_uuid
+	if type(ply_or_uuid) == 'string' then
+		return UUID:fromString(ply_or_uuid)
+	elseif ply_or_uuid.__entity then
+		return ply_or_uuid.__entity
+	end
+	return ply_or_uuid
 end
 
 Permission = {
-    Immunity = immunity,
-
-    getImmunityLevel = function(self, ply_or_uuid)
-        return permissionsAPI:getImmunityLevel(fixPlyOrUUID(ply_or_uuid))
-    end,
-
-    getGroupImmunityLevel = function(self, group)
-        return permissionsAPI:getImmunityLevel(tostring(group))
-    end,
-
-    getGroup = function(self, ply_or_uuid)
-        return permissionsAPI:getGroup(fixPlyOrUUID(ply_or_uuid))
-    end,
-
-    setGroup = function(self, ply_or_uuid, group)
-        return permissionsAPI:setGroup(fixPlyOrUUID(ply_or_uuid), group)
-    end,
-
-    isAvailable = function(self)
-        return permissionsAPI:isAvailable()
-    end,
-
-    fitsImmunityRequirement = function(self, ply_or_uuid1, ply_or_uuid2, requirement)
-        local diff = self:compareImmunityLevel(ply_or_uuid1, ply_or_uuid2)
-        if requirement == immunity.GREATER_OR_EQUAL then
-            return diff == immunity.EQUAL or diff == immunity.GREATER
-        elseif requirement == immunity.LESS_OR_EQUAL then
-            return diff == immunity.EQUAL or diff == immunity.LESS
-        else
-            return requirement == diff
-        end
-    end,
-
-    compareImmunityLevel = function(self, ply_or_uuid1, ply_or_uuid2)
-        local level1 = self:getImmunityLevel(ply_or_uuid1)
-        local level2 = self:getImmunityLevel(ply_or_uuid2)
-        if level1 > level2 then
-            return immunity.GREATER
-        elseif level1 < level2 then
-            return immunity.LESS
-        else
-            return immunity.EQUAL
-        end
-    end
+	Immunity = immunity,
+	getImmunityLevel = function(self, ply_or_uuid)
+		return permissionsAPI:getImmunityLevel(fixPlyOrUUID(ply_or_uuid))
+	end,
+	getGroupImmunityLevel = function(self, group)
+		return permissionsAPI:getImmunityLevel(tostring(group))
+	end,
+	getGroup = function(self, ply_or_uuid)
+		return permissionsAPI:getGroup(fixPlyOrUUID(ply_or_uuid))
+	end,
+	setGroup = function(self, ply_or_uuid, group)
+		return permissionsAPI:setGroup(fixPlyOrUUID(ply_or_uuid), group)
+	end,
+	isAvailable = function(self)
+		return permissionsAPI:isAvailable()
+	end,
+	fitsImmunityRequirement = function(self, ply_or_uuid1, ply_or_uuid2, requirement)
+		local diff = self:compareImmunityLevel(ply_or_uuid1, ply_or_uuid2)
+		if requirement == immunity.GREATER_OR_EQUAL then
+			return diff == immunity.EQUAL or diff == immunity.GREATER
+		elseif requirement == immunity.LESS_OR_EQUAL then
+			return diff == immunity.EQUAL or diff == immunity.LESS
+		else
+			return requirement == diff
+		end
+	end,
+	compareImmunityLevel = function(self, ply_or_uuid1, ply_or_uuid2)
+		local level1 = self:getImmunityLevel(ply_or_uuid1)
+		local level2 = self:getImmunityLevel(ply_or_uuid2)
+		if level1 > level2 then
+			return immunity.GREATER
+		elseif level1 < level2 then
+			return immunity.LESS
+		else
+			return immunity.EQUAL
+		end
+	end,
 }
 
 return Permission

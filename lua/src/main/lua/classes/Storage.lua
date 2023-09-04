@@ -17,7 +17,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 ]]
-local Persister = require("Persister")
+local Persister = require('Persister')
 
 local rawget = rawget
 local type = type
@@ -26,27 +26,27 @@ local table_unpack = table.unpack
 
 local _entity_mt = {
 	__index = function(tbl, idx)
-		if type(idx) == "string" and idx:sub(1,2) == "__" then
+		if type(idx) == 'string' and idx:sub(1, 2) == '__' then
 			return rawget(tbl, idx:sub(3))
 		end
 
-		local myValue = rawget(tbl, "storage")[idx]
+		local myValue = rawget(tbl, 'storage')[idx]
 		if myValue ~= nil then
 			return myValue
 		end
 
-		myValue = rawget(tbl, "extensions")[idx]
+		myValue = rawget(tbl, 'extensions')[idx]
 		if myValue ~= nil then
 			return myValue
 		end
 
-		local entity = rawget(tbl, "entity")
+		local entity = rawget(tbl, 'entity')
 		local entityValue = entity[idx]
-		if entityValue and type(entityValue) == "function" then
+		if entityValue and type(entityValue) == 'function' then
 			return function(self, ...)
-				local args = {... }
+				local args = { ... }
 				for k, v in next, args do
-					if type(v) == "table" and v.__entity then
+					if type(v) == 'table' and v.__entity then
 						args[k] = v.__entity
 					end
 				end
@@ -57,28 +57,28 @@ local _entity_mt = {
 		end
 	end,
 	__newindex = function(tbl, idx, value)
-		local entity = rawget(tbl, "entity")
+		local entity = rawget(tbl, 'entity')
 		if entity[idx] ~= nil then
 			entity[idx] = value
 			return
 		end
-		local storage = rawget(tbl, "storage")
-		rawget(tbl, "storage")[idx] = value
-		rawget(tbl, "save")(tbl)
+		local storage = rawget(tbl, 'storage')
+		rawget(tbl, 'storage')[idx] = value
+		rawget(tbl, 'save')(tbl)
 	end,
 	__eq = function(o1, o2)
-		local e1 = rawget(o1, "entity")
-		local e2 = rawget(o2, "entity")
+		local e1 = rawget(o1, 'entity')
+		local e2 = rawget(o2, 'entity')
 		if e1.Equals then
 			return e1:Equals(e2)
 		end
 		return e1 == e2
 	end,
-	__metatable = false
+	__metatable = false,
 }
 
 local _storage_mt = {
-	__call = function (self, entity)
+	__call = function(self, entity)
 		if not entity then
 			return nil
 		end
@@ -87,33 +87,37 @@ local _storage_mt = {
 
 		local storage = self.storageCache[entityID]
 		if not storage then
-			storage = self.persisthash and Persister:get(self.persisthash .. "_" .. tostring(entityID)) or {}
+			storage = self.persisthash and Persister:get(self.persisthash .. '_' .. tostring(entityID)) or {}
 			self.storageCache[entityID] = storage
 		end
-		return setmetatable({
-			entity = entity,
-			storage = storage,
-			save = function()
-				storage:__save()
-			end,
-			extensions = self.extensions
-		}, _entity_mt)
+		return setmetatable(
+			{
+				entity = entity,
+				storage = storage,
+				save = function()
+					storage:__save()
+				end,
+				extensions = self.extensions,
+			},
+			_entity_mt
+		)
 	end,
 	__newindex = function()
-		error("Readonly")
+		error('Readonly')
 	end,
-	__metatable = false
+	__metatable = false,
 }
 
 _storage_mt.__index = _storage_mt
 
-return {
-	create = function(self, idFunction, persisthash, extensions)
-		return setmetatable({
+return { create = function(self, idFunction, persisthash, extensions)
+	return setmetatable(
+		{
 			extensions = extensions or {},
 			persisthash = persisthash,
 			storageCache = {},
-			idFunction = idFunction
-		}, _storage_mt)
-	end
-}
+			idFunction = idFunction,
+		},
+		_storage_mt
+	)
+end }

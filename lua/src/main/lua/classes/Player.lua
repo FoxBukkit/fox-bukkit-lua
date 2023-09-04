@@ -17,16 +17,16 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 ]]
-local bukkitServer = require("Server"):getBukkitServer()
+local bukkitServer = require('Server'):getBukkitServer()
 local Permission
-local UUID = bindClass("java.util.UUID")
+local UUID = bindClass('java.util.UUID')
 
 local table_insert = table.insert
 local type = type
 
 local playerExt = {}
 
-local playerStorage = require("Storage"):create("getUniqueId", "player", playerExt)
+local playerStorage = require('Storage'):create('getUniqueId', 'player', playerExt)
 
 local Player
 
@@ -34,17 +34,17 @@ local consoleCommandSender = bukkitServer:getConsoleSender()
 
 local consolePlayer = {
 	getName = function(self)
-		return "[CONSOLE]"
+		return '[CONSOLE]'
 	end,
 	getDisplayName = function(self)
-		return "[CONSOLE]"
+		return '[CONSOLE]'
 	end,
 	getUniqueId = function(self)
 		return nil
 	end,
 	sendMessage = function(self, msg)
 		return consoleCommandSender:sendMessage(msg)
-	end
+	end,
 }
 
 local findConstraints
@@ -62,25 +62,24 @@ findConstraints = {
 	end,
 	matchName = function(match)
 		match = match:lower()
-		local matchFirst = match:sub(1,1)
-		if matchFirst == "@" then
+		local matchFirst = match:sub(1, 1)
+		if matchFirst == '@' then
 			return findConstraints.matchPlayer(playerStorage(bukkitServer:getPlayerExact(match:sub(2))))
-		elseif matchFirst == "*" then
+		elseif matchFirst == '*' then
 			match = match:sub(2)
-		elseif matchFirst == "$" then
+		elseif matchFirst == '$' then
 			return findConstraints.matchPlayer(Player:getByUUID(match:sub(2)))
 		end
 
-		if match:len() < 1 then
-			return
-		end
-
+		if match:len() < 1 then return end
 
 		return function(ply)
 			local nickName = ply.getNickName and ply:getNickName() or ply:getDisplayName()
-			return
-				ply:getName():lower():find(match, 1, true) or
-				(nickName and nickName:stripColors():lower():find(match, 1, true))
+			return ply:getName():lower():find(match, 1, true) or (nickName and nickName:stripColors():lower():find(
+				match,
+				1,
+				true
+			))
 		end
 	end,
 	immunityRestrictionLevel = function(level, delta)
@@ -99,8 +98,8 @@ findConstraints = {
 		end
 	end,
 	andConstraint = function(...)
-		local args = {... }
-		if type(args[1]) == "table" then
+		local args = { ... }
+		if type(args[1]) == 'table' then
 			args = args[1]
 		end
 		return function(ply)
@@ -113,8 +112,8 @@ findConstraints = {
 		end
 	end,
 	orConstraint = function(...)
-		local args = {... }
-		if type(args[1]) == "table" then
+		local args = { ... }
+		if type(args[1]) == 'table' then
 			args = args[1]
 		end
 		return function(ply)
@@ -125,19 +124,17 @@ findConstraints = {
 			end
 			return false
 		end
-	end
+	end,
 }
 
 Player = {
 	getByUUID = function(self, uuid)
-		if type(uuid) == "string" then
+		if type(uuid) == 'string' then
 			uuid = UUID:fromString(uuid)
 		end
 		return playerStorage(bukkitServer:getPlayer(uuid))
 	end,
-
 	constraints = findConstraints,
-
 	getAll = function(self)
 		local players = {}
 		local iter = bukkitServer:getOnlinePlayers()
@@ -153,7 +150,6 @@ Player = {
 		end
 		return players
 	end,
-
 	findSingle = function(self, constraint)
 		local matches = self:find(constraint, true)
 		if #matches ~= 1 then
@@ -161,7 +157,6 @@ Player = {
 		end
 		return matches[1]
 	end,
-
 	find = function(self, constraint, forbidMultiple)
 		local availablePlayers = self:getAll()
 
@@ -178,26 +173,22 @@ Player = {
 
 		return matches
 	end,
-
 	extend = function(self, player)
 		return playerStorage(player)
 	end,
-
 	getConsole = function(self)
 		return consolePlayer
 	end,
-
 	addConsoleExtensions = function(self, extensions)
 		for k, v in next, extensions do
 			consolePlayer[k] = v
 		end
 	end,
-
 	addExtensions = function(self, extensions)
 		for k, v in next, extensions do
 			playerExt[k] = v
 		end
-	end
+	end,
 }
 
 return Player

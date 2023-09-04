@@ -18,21 +18,19 @@
 
 ]]
 local luaState = __LUA_STATE
-local URL = bindClass("java.net.URL")
+local URL = bindClass('java.net.URL')
 
 return {
-    openConnection = function(self, url)
-        return luajava.new(URL, url):openConnection()
-    end,
-
-    runReqeust = function(self, connection, options)
-        local stream = connection:getInputStream()
-        local data = luaState:readStream(stream)
-        return data
-    end,
-
-    get = function(self, url, options)
-        local conn = self:openConnection(url)
-        return self:runReqeust(conn, options)
-    end
+	openConnection = function(self, url)
+		return luajava.new(URL, url):openConnection()
+	end,
+	runReqeust = function(self, connection, options)
+		local stream = connection:getInputStream()
+		local data = luaState:readStream(stream)
+		return data
+	end,
+	get = function(self, url, options)
+		local conn = self:openConnection(url)
+		return self:runReqeust(conn, options)
+	end,
 }

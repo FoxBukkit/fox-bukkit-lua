@@ -22,15 +22,15 @@ string.contains = function(self, sub)
 end
 
 string.containsAnyOf = function(self, chars)
-    return self:find("[" .. chars .. "]") ~= nil
+	return self:find('[' .. chars .. ']') ~= nil
 end
 
 string.containsNoneOf = function(self, chars)
-    return not self:containsAnyOf(chars)
+	return not self:containsAnyOf(chars)
 end
 
 string.stripColors = function(self)
-    return self:gsub('\xC2\xA7.', '')
+	return self:gsub('\xC2\xA7.', '')
 end
 
 string.ucfirst = function(self)

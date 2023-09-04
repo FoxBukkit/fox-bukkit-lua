@@ -26,20 +26,13 @@ return {
 	getBukkitServer = function(self)
 		return bukkitServer
 	end,
-    runConsoleCommand = function(self, cmd)
-        bukkitServer:dispatchCommand(bukkitServer:getConsoleSender(), cmd)
-    end,
+	runConsoleCommand = function(self, cmd)
+		bukkitServer:dispatchCommand(bukkitServer:getConsoleSender(), cmd)
+	end,
 	runOnMainThread = function(self, func, delay)
-        if delay then
-            return scheduler:scheduleSyncDelayedTask(
-                plugin,
-                luaState:createLuaValueRunnable(func),
-                delay
-            )
-        end
-	    return scheduler:scheduleSyncDelayedTask(
-	        plugin,
-	        luaState:createLuaValueRunnable(func)
-	    )
-	end
+		if delay then
+			return scheduler:scheduleSyncDelayedTask(plugin, luaState:createLuaValueRunnable(func), delay)
+		end
+		return scheduler:scheduleSyncDelayedTask(plugin, luaState:createLuaValueRunnable(func))
+	end,
 }

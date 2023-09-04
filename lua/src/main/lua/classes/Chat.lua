@@ -19,167 +19,146 @@
 ]]
 local chatAPI = __LUA_STATE:getEnhancedChatMessageManager()
 
-local Player = require("Player")
+local Player = require('Player')
 
 Player:addConsoleExtensions{
-    sendReply = function(self, message)
-        return self:sendMessage("[FB] " .. message)
-    end,
-
-    sendError = function(self, message)
-        return self:sendMessage("[FB] [ERROR] " .. message)
-    end
+	sendReply = function(self, message)
+		return self:sendMessage('[FB] ' .. message)
+	end,
+	sendError = function(self, message)
+		return self:sendMessage('[FB] [ERROR] ' .. message)
+	end,
 }
 
 if not chatAPI then
-    local bukkitServer = require("Server"):getBukkitServer()
+	local bukkitServer = require('Server'):getBukkitServer()
 
-    local Chat = {
-        isAvailable = function(self)
-            return false
-        end,
+	local Chat = {
+		isAvailable = function(self)
+			return false
+		end,
+		getConsole = Player.getConsole,
+		makeButton = function(self, command, label, color, run, addHover)
+			return '<BUTTON:' .. command'>' .. label .. '</BUTTON>'
+		end,
+		getPlayerUUID = function(self, name)
+			return nil
+		end,
+		sendGlobal = function(self, source, type, content)
+			bukkitServer:broadcastMessage(content)
+		end,
+		broadcastLocal = function(self, source, content)
+			bukkitServer:broadcastMessage(content)
+		end,
+		sendLocalToPlayer = function(self, source, content, target)
+			if target then
+				target:sendMessage(content)
+			else
+				-- content, target
+				content:sendMessage(source)
+			end
+		end,
+		sendLocalToPermission = function(self, source, content, target)
+			if target then
+				bukkitServer:broadcastMessage('$' + target, content)
+			else
+				-- content, target
+				bukkitServer:broadcastMessage('$' + content, source)
+			end
+		end,
+		sendLocal = function(self, source, content, chatTarget, targetFilter)
+			bukkitServer:broadcastMessage('!' .. tostring(targetFilter) .. '!' .. tostring(chatTarget), content)
+		end,
+		getPlayerNick = function(self, ply_or_uuid)
+			return ply_or_uuid:getDisplayName()
+		end,
+	}
 
-        getConsole = Player.getConsole,
+	Player:addExtensions{
+		sendXML = function(self, message)
+			return Chat:sendLocalToPlayer(message, self)
+		end,
+		sendReply = function(self, message)
+			return self:sendXML('[FB] ' .. message)
+		end,
+		sendError = function(self, message)
+			return self:sendXML('[FB] [ERROR] ' .. message)
+		end,
+		getNickName = function(self)
+			return self:getDisplayName()
+		end,
+	}
 
-        makeButton = function(self, command, label, color, run, addHover)
-            return "<BUTTON:" .. command ">" .. label .. "</BUTTON>"
-        end,
-
-        getPlayerUUID = function(self, name)
-            return nil
-        end,
-
-        sendGlobal = function(self, source, type, content)
-            bukkitServer:broadcastMessage(content)
-        end,
-
-        broadcastLocal = function(self, source, content)
-            bukkitServer:broadcastMessage(content)
-        end,
-
-        sendLocalToPlayer = function(self, source, content, target)
-            if target then
-                target:sendMessage(content)
-            else -- content, target
-                content:sendMessage(source)
-            end
-        end,
-
-        sendLocalToPermission = function(self, source, content, target)
-            if target then
-                bukkitServer:broadcastMessage("$" + target, content)
-            else -- content, target
-                bukkitServer:broadcastMessage("$" + content, source)
-            end
-        end,
-
-        sendLocal = function(self, source, content, chatTarget, targetFilter)
-            bukkitServer:broadcastMessage("!" .. tostring(targetFilter) .. "!" .. tostring(chatTarget), content)
-        end,
-
-        getPlayerNick = function(self, ply_or_uuid)
-            return ply_or_uuid:getDisplayName()
-        end,
-    }
-
-    Player:addExtensions{
-        sendXML = function(self, message)
-            return Chat:sendLocalToPlayer(message, self)
-        end,
-
-        sendReply = function(self, message)
-            return self:sendXML("[FB] " .. message)
-        end,
-
-        sendError = function(self, message)
-            return self:sendXML("[FB] [ERROR] " .. message)
-        end,
-
-        getNickName = function(self)
-            return self:getDisplayName()
-        end
-    }
-
-    return Chat
+	return Chat
 end
 
 local function fixPly(ply)
-    if ply and ply.__entity then
-        return ply.__entity
-    end
-    return ply
+	if ply and ply.__entity then
+		return ply.__entity
+	end
+	return ply
 end
 
 local Chat = {
-    isAvailable = function(self)
-        return chatAPI:isAvailable()
-    end,
-
-    getConsole = function(self)
-        return chatAPI:getConsole()
-    end,
-
-    makeButton = function(self, command, label, color, run, addHover)
-        return chatAPI:makeButton(command, label, color, run, (addHover ~= false))
-    end,
-
-    getPlayerUUID  = function(self, name)
-        return chatAPI:getPlayerUUID(name)
-    end,
-
-    sendGlobal = function(self, source, type, content)
-        return chatAPI:sendGlobal(fixPly(source), type, content)
-    end,
-
-    broadcastLocal = function(self, source, content)
-        return chatAPI:broadcastLocal(fixPly(source), content)
-    end,
-
-    sendLocalToPlayer = function(self, source, content, target)
-        if target then
-            return chatAPI:sendLocalToPlayer(fixPly(source), content, fixPly(target))
-        else -- content, target
-            return chatAPI:sendLocalToPlayer(source, fixPly(content))
-        end
-    end,
-
-    sendLocalToPermission = function(self, source, content, target)
-        if target then
-            return chatAPI:sendLocalToPermission(fixPly(source), content, target)
-        else -- content, target
-            return chatAPI:sendLocalToPermission(source, content)
-        end
-    end,
-
-    sendLocal = function(self, source, content, chatTarget, targetFilter)
-        return chatAPI:sendLocal(fixPly(source), content, chatTarget, targetFilter)
-    end,
-
-    getPlayerNick = function(self, ply_or_uuid)
-        if ply_or_uuid.__entity then
-            return chatAPI:getPlayerNick(ply_or_uuid.__entity)
-        else
-            return chatAPI:getPlayerNick(ply_or_uuid)
-        end
-    end
+	isAvailable = function(self)
+		return chatAPI:isAvailable()
+	end,
+	getConsole = function(self)
+		return chatAPI:getConsole()
+	end,
+	makeButton = function(self, command, label, color, run, addHover)
+		return chatAPI:makeButton(command, label, color, run, (addHover ~= false))
+	end,
+	getPlayerUUID = function(self, name)
+		return chatAPI:getPlayerUUID(name)
+	end,
+	sendGlobal = function(self, source, type, content)
+		return chatAPI:sendGlobal(fixPly(source), type, content)
+	end,
+	broadcastLocal = function(self, source, content)
+		return chatAPI:broadcastLocal(fixPly(source), content)
+	end,
+	sendLocalToPlayer = function(self, source, content, target)
+		if target then
+			return chatAPI:sendLocalToPlayer(fixPly(source), content, fixPly(target))
+		else
+			-- content, target
+			return chatAPI:sendLocalToPlayer(source, fixPly(content))
+		end
+	end,
+	sendLocalToPermission = function(self, source, content, target)
+		if target then
+			return chatAPI:sendLocalToPermission(fixPly(source), content, target)
+		else
+			-- content, target
+			return chatAPI:sendLocalToPermission(source, content)
+		end
+	end,
+	sendLocal = function(self, source, content, chatTarget, targetFilter)
+		return chatAPI:sendLocal(fixPly(source), content, chatTarget, targetFilter)
+	end,
+	getPlayerNick = function(self, ply_or_uuid)
+		if ply_or_uuid.__entity then
+			return chatAPI:getPlayerNick(ply_or_uuid.__entity)
+		else
+			return chatAPI:getPlayerNick(ply_or_uuid)
+		end
+	end,
 }
 
 Player:addExtensions{
-    sendXML = function(self, message)
-        return Chat:sendLocalToPlayer(message, self)
-    end,
-
-    sendReply = function(self, message)
-        return self:sendXML("<color name=\"dark_purple\">[FB]</color> " .. message)
-    end,
-
-    sendError = function(self, message)
-        return self:sendXML("<color name=\"dark_red\">[FB]</color> " .. message)
-    end,
-
-    getNickName = function(self)
-        return Chat:getPlayerNick(self)
-    end
+	sendXML = function(self, message)
+		return Chat:sendLocalToPlayer(message, self)
+	end,
+	sendReply = function(self, message)
+		return self:sendXML('<color name="dark_purple">[FB]</color> ' .. message)
+	end,
+	sendError = function(self, message)
+		return self:sendXML('<color name="dark_red">[FB]</color> ' .. message)
+	end,
+	getNickName = function(self)
+		return Chat:getPlayerNick(self)
+	end,
 }
 
 return Chat

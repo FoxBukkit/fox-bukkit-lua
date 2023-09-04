@@ -18,27 +18,27 @@
 
 ]]
 local eventManager = __LUA_STATE:getEventManager()
-local eventPriority = bindClass("org.bukkit.event.EventPriority")
+local eventPriority = bindClass('org.bukkit.event.EventPriority')
 
-local Player = require("Player")
+local Player = require('Player')
 
 local next = next
 
 local Event
 
 local _event_mt = {
-    __index = {
-        register = function(self)
-            return Event:register(self)
-        end,
-        unregister = function(self)
-            return Event:unregister(self)
-        end
-    },
-    __newindex = function()
-        error("Readonly")
-    end,
-    __metatable = false
+	__index = {
+		register = function(self)
+			return Event:register(self)
+		end,
+		unregister = function(self)
+			return Event:unregister(self)
+		end,
+	},
+	__newindex = function()
+		error('Readonly')
+	end,
+	__metatable = false,
 }
 
 local readOnlyPlayerJoinCallbacks = {}
@@ -47,11 +47,11 @@ Event = {
 	register = function(self, event)
 		if not event.__info then
 			event.__info = {}
-			if type(event.class) == "string" then
+			if type(event.class) == 'string' then
 				event.class = bindClass(event.class)
 			end
 			event.priority = event.priority or eventPriority.NORMAL
-			if type(event.priority) == "string" then
+			if type(event.priority) == 'string' then
 				event.priority = eventPriority[event.Priority:upper()]
 			end
 			event.ignoreCancelled = event.ignoreCancelled or false
@@ -62,23 +62,20 @@ Event = {
 		end)
 		return event
 	end,
-
 	registerReadOnlyPlayerJoin = function(self, callback)
 		table.insert(readOnlyPlayerJoinCallbacks, callback)
 	end,
-
 	unregister = function(self, event)
 		if event.__info.listener then
 			eventManager:unregister(event.__info.listener)
 			event.__info.listener = nil
 		end
 	end,
-
-	Priority = eventPriority
+	Priority = eventPriority,
 }
 
 Event:register{
-	class = "org.bukkit.event.player.PlayerJoinEvent",
+	class = 'org.bukkit.event.player.PlayerJoinEvent',
 	priority = Event.Priority.MONITOR,
 	ignoreCancelled = true,
 	run = function(self, event)
@@ -86,7 +83,7 @@ Event:register{
 		for _, cb in next, readOnlyPlayerJoinCallbacks do
 			cb(ply, event)
 		end
-	end
+	end,
 }
 
 return Event
