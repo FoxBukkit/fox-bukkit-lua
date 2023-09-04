@@ -43,7 +43,7 @@ local _entity_mt = {
 		local entity = rawget(tbl, 'entity')
 		local entityValue = entity[idx]
 		if entityValue and type(entityValue) == 'function' then
-			return function(self, ...)
+			return function(_, ...)
 				local args = { ... }
 				for k, v in next, args do
 					if type(v) == 'table' and v.__entity then
@@ -62,7 +62,6 @@ local _entity_mt = {
 			entity[idx] = value
 			return
 		end
-		local storage = rawget(tbl, 'storage')
 		rawget(tbl, 'storage')[idx] = value
 		rawget(tbl, 'save')(tbl)
 	end,
@@ -110,7 +109,7 @@ local _storage_mt = {
 
 _storage_mt.__index = _storage_mt
 
-return { create = function(self, idFunction, persisthash, extensions)
+return { create = function(_, idFunction, persisthash, extensions)
 	return setmetatable(
 		{
 			extensions = extensions or {},

@@ -23,13 +23,13 @@ local bukkitServer = plugin:getServer()
 local scheduler = bukkitServer:getScheduler()
 
 return {
-	getBukkitServer = function(self)
+	getBukkitServer = function()
 		return bukkitServer
 	end,
-	runConsoleCommand = function(self, cmd)
+	runConsoleCommand = function(_, cmd)
 		bukkitServer:dispatchCommand(bukkitServer:getConsoleSender(), cmd)
 	end,
-	runOnMainThread = function(self, func, delay)
+	runOnMainThread = function(_, func, delay)
 		if delay then
 			return scheduler:scheduleSyncDelayedTask(plugin, luaState:createLuaValueRunnable(func), delay)
 		end

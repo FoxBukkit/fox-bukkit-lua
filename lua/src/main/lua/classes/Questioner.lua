@@ -27,7 +27,7 @@ local table_concat = table.concat
 local next = next
 
 if not Chat:isAvailable() then
-	return { isAvailable = function(self)
+	return { isAvailable = function()
 		return false
 	end }
 end
@@ -36,7 +36,7 @@ Event:register{
 	class = 'org.bukkit.event.player.PlayerQuitEvent',
 	priority = Event.Priority.NORMAL,
 	ignoreCancelled = true,
-	run = function(self, event)
+	run = function(_, event)
 		Player:extend(event:getPlayer())._questions = nil
 	end,
 }
@@ -53,7 +53,7 @@ Command:register{
 		type = 'string',
 	} },
 	hidden = true,
-	run = function(self, ply, args)
+	run = function(_, ply, args)
 		local myQuestions = ply._questions
 		if not myQuestions then
 			ply:sendError('You answered an unknwon/expired question')
@@ -90,10 +90,10 @@ local function rememberConfirmation(ply, rememberKey, state)
 end
 
 local Questioner = {
-	isAvailable = function(self)
+	isAvailable = function()
 		return true
 	end,
-	forgetPlayerConfirmation = function(self, ply, rememberKey)
+	forgetPlayerConfirmation = function(_, ply, rememberKey)
 		if ply.rememberConfirmations then
 			ply.rememberConfirmations[rememberKey] = nil
 			ply:__save()
@@ -152,7 +152,7 @@ local Questioner = {
 			} })
 		end
 	end,
-	askPlayer = function(self, ply, buttons, rememberKey)
+	askPlayer = function(_, ply, buttons, rememberKey)
 		local msg = {}
 		local buttonCallbacks = {}
 

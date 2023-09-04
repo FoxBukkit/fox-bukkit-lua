@@ -44,7 +44,7 @@ local _event_mt = {
 local readOnlyPlayerJoinCallbacks = {}
 
 Event = {
-	register = function(self, event)
+	register = function(_, event)
 		if not event.__info then
 			event.__info = {}
 			if type(event.class) == 'string' then
@@ -62,10 +62,10 @@ Event = {
 		end)
 		return event
 	end,
-	registerReadOnlyPlayerJoin = function(self, callback)
+	registerReadOnlyPlayerJoin = function(_, callback)
 		table.insert(readOnlyPlayerJoinCallbacks, callback)
 	end,
-	unregister = function(self, event)
+	unregister = function(_, event)
 		if event.__info.listener then
 			eventManager:unregister(event.__info.listener)
 			event.__info.listener = nil
@@ -78,7 +78,7 @@ Event:register{
 	class = 'org.bukkit.event.player.PlayerJoinEvent',
 	priority = Event.Priority.MONITOR,
 	ignoreCancelled = true,
-	run = function(self, event)
+	run = function(_, event)
 		local ply = Player:extend(event:getPlayer())
 		for _, cb in next, readOnlyPlayerJoinCallbacks do
 			cb(ply, event)

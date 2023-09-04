@@ -34,23 +34,23 @@ if not chatAPI then
 	local bukkitServer = require('Server'):getBukkitServer()
 
 	local Chat = {
-		isAvailable = function(self)
+		isAvailable = function()
 			return false
 		end,
 		getConsole = Player.getConsole,
-		makeButton = function(self, command, label, color, run, addHover)
-			return '<BUTTON:' .. command'>' .. label .. '</BUTTON>'
+		makeButton = function(_, command, label, _, _, _)
+			return '<BUTTON:' .. command .. '>' .. label .. '</BUTTON>'
 		end,
-		getPlayerUUID = function(self, name)
+		getPlayerUUID = function()
 			return nil
 		end,
-		sendGlobal = function(self, source, type, content)
+		sendGlobal = function(_, _, _, content)
 			bukkitServer:broadcastMessage(content)
 		end,
-		broadcastLocal = function(self, source, content)
+		broadcastLocal = function(_, _, content)
 			bukkitServer:broadcastMessage(content)
 		end,
-		sendLocalToPlayer = function(self, source, content, target)
+		sendLocalToPlayer = function(_, source, content, target)
 			if target then
 				target:sendMessage(content)
 			else
@@ -58,7 +58,7 @@ if not chatAPI then
 				content:sendMessage(source)
 			end
 		end,
-		sendLocalToPermission = function(self, source, content, target)
+		sendLocalToPermission = function(_, source, content, target)
 			if target then
 				bukkitServer:broadcastMessage('$' + target, content)
 			else
@@ -66,10 +66,10 @@ if not chatAPI then
 				bukkitServer:broadcastMessage('$' + content, source)
 			end
 		end,
-		sendLocal = function(self, source, content, chatTarget, targetFilter)
+		sendLocal = function(_, _, content, chatTarget, targetFilter)
 			bukkitServer:broadcastMessage('!' .. tostring(targetFilter) .. '!' .. tostring(chatTarget), content)
 		end,
-		getPlayerNick = function(self, ply_or_uuid)
+		getPlayerNick = function(_, ply_or_uuid)
 			return ply_or_uuid:getDisplayName()
 		end,
 	}
@@ -100,25 +100,25 @@ local function fixPly(ply)
 end
 
 local Chat = {
-	isAvailable = function(self)
+	isAvailable = function()
 		return chatAPI:isAvailable()
 	end,
-	getConsole = function(self)
+	getConsole = function()
 		return chatAPI:getConsole()
 	end,
-	makeButton = function(self, command, label, color, run, addHover)
+	makeButton = function(_, command, label, color, run, addHover)
 		return chatAPI:makeButton(command, label, color, run, (addHover ~= false))
 	end,
-	getPlayerUUID = function(self, name)
+	getPlayerUUID = function(_, name)
 		return chatAPI:getPlayerUUID(name)
 	end,
-	sendGlobal = function(self, source, type, content)
+	sendGlobal = function(_, source, type, content)
 		return chatAPI:sendGlobal(fixPly(source), type, content)
 	end,
-	broadcastLocal = function(self, source, content)
+	broadcastLocal = function(_, source, content)
 		return chatAPI:broadcastLocal(fixPly(source), content)
 	end,
-	sendLocalToPlayer = function(self, source, content, target)
+	sendLocalToPlayer = function(_, source, content, target)
 		if target then
 			return chatAPI:sendLocalToPlayer(fixPly(source), content, fixPly(target))
 		else
@@ -126,7 +126,7 @@ local Chat = {
 			return chatAPI:sendLocalToPlayer(source, fixPly(content))
 		end
 	end,
-	sendLocalToPermission = function(self, source, content, target)
+	sendLocalToPermission = function(_, source, content, target)
 		if target then
 			return chatAPI:sendLocalToPermission(fixPly(source), content, target)
 		else
@@ -134,10 +134,10 @@ local Chat = {
 			return chatAPI:sendLocalToPermission(source, content)
 		end
 	end,
-	sendLocal = function(self, source, content, chatTarget, targetFilter)
+	sendLocal = function(_, source, content, chatTarget, targetFilter)
 		return chatAPI:sendLocal(fixPly(source), content, chatTarget, targetFilter)
 	end,
-	getPlayerNick = function(self, ply_or_uuid)
+	getPlayerNick = function(_, ply_or_uuid)
 		if ply_or_uuid.__entity then
 			return chatAPI:getPlayerNick(ply_or_uuid.__entity)
 		else

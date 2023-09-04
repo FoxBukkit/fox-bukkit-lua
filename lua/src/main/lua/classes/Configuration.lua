@@ -19,6 +19,6 @@
 ]]
 local configuration = __LUA_STATE:getFoxBukkitLua().configuration
 
-return { get = function(self, key, default)
+return { get = function(_, key, default)
 	return configuration:getValue(key, default)
 end }

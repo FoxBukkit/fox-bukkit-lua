@@ -49,19 +49,19 @@ Player:addExtensions{
 }
 
 Player:addConsoleExtensions{
-	compareImmunityLevel = function(self, other)
+	compareImmunityLevel = function()
 		return Permission.Immunity.GREATER
 	end,
-	fitsImmunityRequirement = function(self, other, requirement)
+	fitsImmunityRequirement = function(_, _, requirement)
 		return requirement == immunity.GREATER or requirement == immunity.GREATER_OR_EQUAL
 	end,
-	getImmunityLevel = function(self)
+	getImmunityLevel = function()
 		return 9999
 	end,
-	getGroup = function(self)
+	getGroup = function()
 		return 'console'
 	end,
-	hasPermission = function(self)
+	hasPermission = function()
 		return true
 	end,
 }
@@ -69,23 +69,23 @@ Player:addConsoleExtensions{
 if not permissionsAPI then
 	Permission = {
 		Immunity = immunity,
-		getImmunityLevel = function(ply_or_uuid)
+		getImmunityLevel = function()
 			return 0
 		end,
-		getGroupImmunityLevel = function(ply_or_uuid)
+		getGroupImmunityLevel = function()
 			return 0
 		end,
-		getGroup = function(ply_or_uuid)
+		getGroup = function()
 			return 'default'
 		end,
 		setGroup = function() end,
-		isAvailable = function(self)
+		isAvailable = function()
 			return false
 		end,
-		fitsImmunityRequirement = function(self, ply_or_uuid1, ply_or_uuid2, requirement)
+		fitsImmunityRequirement = function()
 			return true
 		end,
-		compareImmunityLevel = function(self, ply_or_uuid1, ply_or_uuid2)
+		compareImmunityLevel = function()
 			return immunity.EQUAL
 		end,
 	}
@@ -105,19 +105,19 @@ end
 
 Permission = {
 	Immunity = immunity,
-	getImmunityLevel = function(self, ply_or_uuid)
+	getImmunityLevel = function(_, ply_or_uuid)
 		return permissionsAPI:getImmunityLevel(fixPlyOrUUID(ply_or_uuid))
 	end,
-	getGroupImmunityLevel = function(self, group)
+	getGroupImmunityLevel = function(_, group)
 		return permissionsAPI:getImmunityLevel(tostring(group))
 	end,
-	getGroup = function(self, ply_or_uuid)
+	getGroup = function(_, ply_or_uuid)
 		return permissionsAPI:getGroup(fixPlyOrUUID(ply_or_uuid))
 	end,
-	setGroup = function(self, ply_or_uuid, group)
+	setGroup = function(_, ply_or_uuid, group)
 		return permissionsAPI:setGroup(fixPlyOrUUID(ply_or_uuid), group)
 	end,
-	isAvailable = function(self)
+	isAvailable = function()
 		return permissionsAPI:isAvailable()
 	end,
 	fitsImmunityRequirement = function(self, ply_or_uuid1, ply_or_uuid2, requirement)

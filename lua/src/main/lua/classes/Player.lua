@@ -18,7 +18,6 @@
 
 ]]
 local bukkitServer = require('Server'):getBukkitServer()
-local Permission
 local UUID = bindClass('java.util.UUID')
 
 local table_insert = table.insert
@@ -33,16 +32,16 @@ local Player
 local consoleCommandSender = bukkitServer:getConsoleSender()
 
 local consolePlayer = {
-	getName = function(self)
+	getName = function()
 		return '[CONSOLE]'
 	end,
-	getDisplayName = function(self)
+	getDisplayName = function()
 		return '[CONSOLE]'
 	end,
-	getUniqueId = function(self)
+	getUniqueId = function()
 		return nil
 	end,
-	sendMessage = function(self, msg)
+	sendMessage = function(_, msg)
 		return consoleCommandSender:sendMessage(msg)
 	end,
 }
@@ -128,14 +127,14 @@ findConstraints = {
 }
 
 Player = {
-	getByUUID = function(self, uuid)
+	getByUUID = function(_, uuid)
 		if type(uuid) == 'string' then
 			uuid = UUID:fromString(uuid)
 		end
 		return playerStorage(bukkitServer:getPlayer(uuid))
 	end,
 	constraints = findConstraints,
-	getAll = function(self)
+	getAll = function()
 		local players = {}
 		local iter = bukkitServer:getOnlinePlayers()
 		if not iter.length then
@@ -173,18 +172,18 @@ Player = {
 
 		return matches
 	end,
-	extend = function(self, player)
+	extend = function(_, player)
 		return playerStorage(player)
 	end,
-	getConsole = function(self)
+	getConsole = function()
 		return consolePlayer
 	end,
-	addConsoleExtensions = function(self, extensions)
+	addConsoleExtensions = function(_, extensions)
 		for k, v in next, extensions do
 			consolePlayer[k] = v
 		end
 	end,
-	addExtensions = function(self, extensions)
+	addExtensions = function(_, extensions)
 		for k, v in next, extensions do
 			playerExt[k] = v
 		end

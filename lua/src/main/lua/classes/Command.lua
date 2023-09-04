@@ -76,13 +76,13 @@ local function makePlayerFindConstraint(self, arg, ply, cmd)
 end
 
 local argTypes = {
-	string = { parser = function(self, arg)
+	string = { parser = function(_, arg)
 		return arg
 	end },
-	boolean = { parser = function(self, arg)
+	boolean = { parser = function(_, arg)
 		return BOOL_VALUES[arg]
 	end },
-	number = { parser = function(self, arg)
+	number = { parser = function(_, arg)
 		return tonumber(arg)
 	end },
 	player = {
@@ -137,11 +137,11 @@ local _command_mt = {
 		getSubPermission = function(self, sub)
 			return self.permission .. '.' .. sub
 		end,
-		sendActionReply = function(self, ply, target, overrides, ...)
+		sendActionReply = function(self, ply, actionTarget, overrides, ...)
 			overrides = overrides or {}
 
-			if target and target.__entity then
-				target = { target }
+			if actionTarget and actionTarget.__entity then
+				actionTarget = { actionTarget }
 			end
 
 			local format = overrides.format or self.action.format
@@ -188,7 +188,7 @@ local _command_mt = {
 			local function doFormat(sendTo, ...)
 				containsSelf = false
 				local args = { ... }
-				for k, v in next, args do
+				for k, _ in next, args do
 					local arg = args[k]
 					local targ = type(arg)
 					if targ == 'table' or targ == 'userdata' then
@@ -206,14 +206,14 @@ local _command_mt = {
 				sendTo:sendReply(format:format(table_unpack(args)))
 			end
 
-			if not target then
+			if not actionTarget then
 				doFormat(ply, ply, ...)
 			else
-				doFormat(ply, ply, target, ...)
+				doFormat(ply, ply, actionTarget, ...)
 				if not overrides.silentToTarget then
-					for _, targetPly in next, target do
+					for _, targetPly in next, actionTarget do
 						if targetPly ~= ply then
-							doFormat(targetPly, ply, target, ...)
+							doFormat(targetPly, ply, actionTarget, ...)
 						end
 					end
 				end
@@ -238,9 +238,9 @@ local _command_mt = {
 
 				for _, otherply in next, players do
 					if otherply ~= ply then
-						if target then
-							if not table_contains(target, otherply) then
-								doFormat(otherply, ply, target, ...)
+						if actionTarget then
+							if not table_contains(actionTarget, otherply) then
+								doFormat(otherply, ply, actionTarget, ...)
 							end
 						else
 							doFormat(otherply, ply, ...)
@@ -257,7 +257,7 @@ local _command_mt = {
 }
 
 class = {
-	register = function(self, cmd)
+	register = function(_, cmd)
 		if not cmd.__info then
 			cmd.__info = {}
 			cmd.permission = cmd.permission or (basePermission .. '.' .. cmd.name)
@@ -432,10 +432,10 @@ class = {
 			end
 		end
 	end,
-	getCommands = function(self)
+	getCommands = function()
 		return cmdManager:getCommands()
 	end,
-	getInfo = function(self, cmd)
+	getInfo = function(_, cmd)
 		return cmdManager:getInfo(cmd)
 	end,
 	BOOL_VALUES = BOOL_VALUES,

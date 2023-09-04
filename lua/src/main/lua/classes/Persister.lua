@@ -75,9 +75,9 @@ local function findSerializer(cls)
 	if type(cls) == 'string' then
 		cls = bindClass(cls)
 	end
-	local serializer = serializers[cls]
-	if serializer then
-		return serializer, cls
+	local cachedSerializer = serializers[cls]
+	if cachedSerializer then
+		return cachedSerializer, cls
 	end
 	for tryClass, serializer in next, serializers do
 		if isAssignableFrom(tryClass, cls) then
@@ -187,19 +187,18 @@ local loaderEnv = { u = function(class, data)
 end }
 
 local function loadPersist(hash)
-	local file = luajava.new(File, getPersistFile(hash))
-	if not file:exists() then
+	local fileObject = luajava.new(File, getPersistFile(hash))
+	if not fileObject:exists() then
 		return {}
 	end
-	local file = luajava.new(FileInputStream, file)
+	local file = luajava.new(FileInputStream, fileObject)
 	local storeType = file:read()
-	if storeType == 65 then
-	elseif storeType == 66 then
+	if storeType == 66 then
 		file = luajava.new(GZIPInputStream, file)
 	elseif storeType < 0 then
 		file:close()
-		return {}
-	else
+		return storeType
+	elseif storeType ~= 65 then
 		file:close()
 		print('ERROR: Invalid type: ' .. moduleName .. '|' .. hash .. '|' .. tostring(storeType))
 		return {}
@@ -237,7 +236,7 @@ local _persist_mt = {
 	__metatable = false,
 }
 
-return { get = function(self, hash, loader)
+return { get = function(_, hash, loader)
 	local tbl = {
 		value = loadPersist(hash),
 		save = function(tbl)
