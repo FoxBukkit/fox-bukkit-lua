@@ -1,6 +1,8 @@
-.idea
-*.iml
+/.idea
+/toolchains.xml
+/settings.xml
 target
+*.iml
 dependency-reduced-pom.xml
-lib
 node_modules
+lib

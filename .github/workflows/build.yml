@@ -1,0 +1,12 @@
+name: Build packages
+on: [push]
+jobs:
+  maven:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      -  uses: foxbukkit/packages/.github/actions/mvnbuild@main
+         with:
+           token: ${{ secrets.PACKAGE_PUBLISH_PAT }}
