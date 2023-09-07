@@ -79,6 +79,7 @@ public class CommandManagerMaster implements Listener {
             commandInfo.put(command, info);
 
             CommandManagerPluginCommand dummyCommand = new CommandManagerPluginCommand(command);
+            dummyCommand.setPermission(permission);
             dummyCommand.setLabel(command);
             getCommandMap().getKnownCommands().put(command, dummyCommand);
         }
