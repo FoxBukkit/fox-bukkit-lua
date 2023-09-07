@@ -17,19 +17,21 @@
  */
 package net.doridian.foxbukkit.lua;
 
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
-import org.bukkit.command.CommandSender;
+import org.bukkit.Bukkit;
+import org.bukkit.command.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.plugin.PluginManager;
+import org.bukkit.plugin.SimplePluginManager;
+import org.jetbrains.annotations.NotNull;
 import org.luaj.vm2.LuaBoolean;
 import org.luaj.vm2.LuaTable;
 import org.luaj.vm2.LuaValue;
 import org.luaj.vm2.Varargs;
 
+import java.lang.reflect.Field;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -38,21 +40,35 @@ import static org.luaj.vm2.lib.jse.CoerceJavaToLua.coerce;
 
 public class CommandManagerMaster implements Listener {
     private final PluginManager pluginManager;
+    private final FoxBukkitLua plugin;
     private final HashMap<String, LuaCommandHandler> commandHandlers = new HashMap<>();
     private final HashMap<String, Map<String, String>> commandInfo = new HashMap<>();
 
     private static final Pattern ARGUMENT_PATTERN = Pattern.compile("([^\"]\\S*|\".+?\")\\s*");
 
-    public CommandManagerMaster(FoxBukkitLua plugin) {
+    public class CommandManagerPluginCommand extends Command {
+        protected CommandManagerPluginCommand(@NotNull String name) {
+            super(name);
+        }
+
+        protected CommandManagerPluginCommand(@NotNull String name, @NotNull String description, @NotNull String usageMessage, @NotNull List<String> aliases) {
+            super(name, description, usageMessage, aliases);
+        }
+
+        @Override
+        public boolean execute(@NotNull CommandSender commandSender, @NotNull String s, @NotNull String[] strings) {
+            return true;
+        }
+    }
+
+    public CommandManagerMaster(FoxBukkitLua plugin_) {
+        plugin = plugin_;
         pluginManager = plugin.getServer().getPluginManager();
         pluginManager.registerEvents(this, plugin);
 
-        plugin.getServer().getPluginCommand("fbl").setExecutor(new CommandExecutor() {
-            @Override
-            public boolean onCommand(CommandSender commandSender, Command command, String s, String[] strings) {
-                processCommand(commandSender, Utils.concatArray(strings, 0, ""));
-                return true;
-            }
+        plugin.getServer().getPluginCommand("fbl").setExecutor((commandSender, command, s, strings) -> {
+            processCommand(commandSender, Utils.concatArray(strings, 0, ""));
+            return true;
         });
     }
 
@@ -61,6 +77,10 @@ public class CommandManagerMaster implements Listener {
         synchronized (commandHandlers) {
             commandHandlers.put(command, new LuaCommandHandler(permission, thread, handler));
             commandInfo.put(command, info);
+
+            CommandManagerPluginCommand dummyCommand = new CommandManagerPluginCommand(command);
+            dummyCommand.setLabel(command);
+            getCommandMap().getKnownCommands().put(command, dummyCommand);
         }
     }
 
@@ -71,6 +91,8 @@ public class CommandManagerMaster implements Listener {
             if(invoker.luaState == luaState) {
                 commandHandlers.remove(command);
                 commandInfo.remove(command);
+
+                getCommandMap().getKnownCommands().remove(command);
             }
         }
     }
@@ -86,6 +108,8 @@ public class CommandManagerMaster implements Listener {
             for(String command : toUnregister) {
                 commandHandlers.remove(command);
                 commandInfo.remove(command);
+
+                getCommandMap().getKnownCommands().remove(command);
             }
         }
     }
@@ -213,5 +237,16 @@ public class CommandManagerMaster implements Listener {
             return;
         }
         event.setCancelled(processCommand(event.getPlayer(), message.substring(1)));
+    }
+
+    private static CommandMap getCommandMap() {
+        try {
+            Field f = SimplePluginManager.class.getDeclaredField("commandMap");
+            f.setAccessible(true);
+
+            return (CommandMap)f.get(Bukkit.getPluginManager());
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 }
