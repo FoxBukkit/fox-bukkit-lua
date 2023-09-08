@@ -32,7 +32,7 @@ public class CommandManager {
     }
 
     public void unregisterAll() {
-        luaState.plugin.commandManagerMaster.unregisterAll(luaState);
+        luaState.plugin.commandManagerMain.unregisterAll(luaState);
     }
 
     public void register(String command, String permission, LuaValue handler, LuaTable luaInfo) {
@@ -43,18 +43,18 @@ public class CommandManager {
                     (String)CoerceLuaToJava.coerce(luaInfo.get(key), String.class)
             );
         }
-        luaState.plugin.commandManagerMaster.register(command, permission, luaState, handler, info);
+        luaState.plugin.commandManagerMain.register(command, permission, luaState, handler, info);
     }
 
     public void unregister(String command) {
-        luaState.plugin.commandManagerMaster.unregister(command, luaState);
+        luaState.plugin.commandManagerMain.unregister(command, luaState);
     }
 
     public Map<String, String> getInfo(String command) {
-        return luaState.plugin.commandManagerMaster.getInfo(command);
+        return luaState.plugin.commandManagerMain.getInfo(command);
     }
 
     public Map<String, Map<String, String>> getCommands() {
-        return luaState.plugin.commandManagerMaster.getCommands();
+        return luaState.plugin.commandManagerMain.getCommands();
     }
 }

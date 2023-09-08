@@ -38,7 +38,7 @@ import java.util.regex.Pattern;
 
 import static org.luaj.vm2.lib.jse.CoerceJavaToLua.coerce;
 
-public class CommandManagerMaster implements Listener {
+public class CommandManagerMain implements Listener {
     private final PluginManager pluginManager;
     private final FoxBukkitLua plugin;
     private final HashMap<String, LuaCommandHandler> commandHandlers = new HashMap<>();
@@ -61,7 +61,7 @@ public class CommandManagerMaster implements Listener {
         }
     }
 
-    public CommandManagerMaster(FoxBukkitLua plugin_) {
+    public CommandManagerMain(FoxBukkitLua plugin_) {
         plugin = plugin_;
         pluginManager = plugin.getServer().getPluginManager();
         pluginManager.registerEvents(this, plugin);

@@ -35,7 +35,7 @@ import java.util.logging.Level;
 public class FoxBukkitLua extends JavaPlugin {
     public Configuration configuration;
     private final HashMap<String, LuaState> luaStates = new HashMap<>();
-    public CommandManagerMaster commandManagerMaster;
+    public CommandManagerMain commandManagerMain;
 
     public File getLuaFolder() {
         return new File(getDataFolder(), "base");
@@ -179,7 +179,7 @@ public class FoxBukkitLua extends JavaPlugin {
         getLuaScriptsFolder().mkdirs();
 
         configuration = new Configuration(getDataFolder());
-        commandManagerMaster = new CommandManagerMaster(this);
+        commandManagerMain = new CommandManagerMain(this);
 
         LuaState.load(this);
 
