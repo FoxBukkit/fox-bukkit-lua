@@ -43,7 +43,7 @@ public class CommandManagerMain implements Listener {
 
     private final HashMap<String, LuaCommand> commandHandlers = new HashMap<>();
 
-    private final HashMap<String, HelpTopic> helpTopics = new HashMap<>();
+    private final HashMap<String, LuaTopic> helpTopics = new HashMap<>();
 
     public static class LuaCommand extends Command {
         private LuaState luaState;
@@ -91,6 +91,38 @@ public class CommandManagerMain implements Listener {
         }
     }
 
+    public static class LuaTopic extends HelpTopic {
+        private LuaCommand command;
+
+        private LuaTopic(LuaCommand command) {
+            this.command = command;
+        }
+
+        @Override
+        public boolean canSee(@NotNull CommandSender commandSender) {
+            String perm = command.getPermission();
+            if (perm == null) {
+                return true;
+            }
+            return commandSender.hasPermission(perm);
+        }
+
+        @Override
+        public @NotNull String getName() {
+            return command.getLabel();
+        }
+
+        @Override
+        public @NotNull String getShortText() {
+            return command.getDescription();
+        }
+
+        @Override
+        public @NotNull String getFullText(@NotNull CommandSender forWho) {
+            return command.getUsage();
+        }
+    }
+
     public CommandManagerMain(FoxBukkitLua plugin_) {
         plugin = plugin_;
         pluginManager = plugin.getServer().getPluginManager();
@@ -109,35 +141,15 @@ public class CommandManagerMain implements Listener {
             luaCommand.register(getCommandMap());
 
             final String helpTopicName = "/" + command;
-            HelpTopic helpTopic = helpTopics.get(helpTopicName);
+            LuaTopic helpTopic = helpTopics.get(helpTopicName);
             if (helpTopic == null) {
-                helpTopic = new HelpTopic() {
-                    @Override
-                    public boolean canSee(@NotNull CommandSender commandSender) {
-                        return commandSender.hasPermission(permission);
-                    }
-
-                    @Override
-                    public @NotNull String getName() {
-                        return helpTopicName;
-                    }
-
-                    @Override
-                    public @NotNull String getShortText() {
-                        return luaCommand.getDescription();
-                    }
-
-                    @Override
-                    public @NotNull String getFullText(@NotNull CommandSender forWho) {
-                        return luaCommand.getUsage();
-                    }
-                };
-
+                helpTopic = new LuaTopic(luaCommand);
                 IndexHelpTopic indexTopic = (IndexHelpTopic)Bukkit.getHelpMap().getHelpTopic(plugin.getName());
                 Collection<HelpTopic> allTopics = getAllTopics(indexTopic);
                 allTopics.add(helpTopic);
+                Bukkit.getHelpMap().addTopic(helpTopic);
             }
-            Bukkit.getHelpMap().addTopic(helpTopic);
+            helpTopic.command = luaCommand;
             syncCommands();
         }
     }
