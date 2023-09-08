@@ -4,10 +4,6 @@ version: 1.0.2
 api-version: '1.20'
 softdepend: [FoxBukkitChat, FoxBukkitPermissions]
 commands:
-  fbl:
-    description: Runs any FoxBukkit Lua command (used for console)
-    permission: foxbukkit.lua.no_one_has_this_ever
-    usage: /<command>
   lua_reload:
     description: Reloads the Lua threads (or a single module)
     permission: foxbukkit.lua.reload

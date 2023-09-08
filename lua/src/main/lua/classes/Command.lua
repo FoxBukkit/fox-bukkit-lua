@@ -294,12 +294,14 @@ class = {
 			cmd = setmetatable(cmd, _command_mt)
 		end
 
-		local executor = function(ply, cmdStr, args, argStr)
+		local executor = function(ply, cmdStr, args)
 			if ply and ply.getUniqueId then
 				ply = Player:extend(ply)
 			else
 				ply = Player:getConsole()
 			end
+
+			local argStr = table_concat(args, " ")
 
 			if not cmd.noLogging then
 				local str = ply:getName() .. ' executed /' .. cmdStr .. ' ' .. argStr

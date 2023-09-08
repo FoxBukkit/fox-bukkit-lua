@@ -18,6 +18,7 @@
 package net.doridian.foxbukkit.lua;
 
 import net.doridian.foxbukkit.dependencies.config.Configuration;
+import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -183,7 +184,7 @@ public class FoxBukkitLua extends JavaPlugin {
 
         LuaState.load(this);
 
-        restartAllLuaStates();
+        Bukkit.getScheduler().runTaskLater(this, this::restartAllLuaStates, 1);
 
         getServer().getPluginCommand("lua_reload").setExecutor(new CommandExecutor() {
             @Override

@@ -49,12 +49,4 @@ public class CommandManager {
     public void unregister(String command) {
         luaState.plugin.commandManagerMain.unregister(command, luaState);
     }
-
-    public Map<String, String> getInfo(String command) {
-        return luaState.plugin.commandManagerMain.getInfo(command);
-    }
-
-    public Map<String, Map<String, String>> getCommands() {
-        return luaState.plugin.commandManagerMain.getCommands();
-    }
 }
