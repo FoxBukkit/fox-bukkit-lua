@@ -314,18 +314,9 @@ class = {
 					parsedArgs[arg.name] = value
 				end
 
-				local function argApplicable(_)
-					return true
-				end
-
 				local currentFitArg = 1
 				local tryArg = cmd.arguments[currentFitArg]
 				for _, arg in next, args do
-					while tryArg and not argApplicable(tryArg) do
-						currentFitArg = currentFitArg + 1
-						tryArg = cmd.arguments[currentFitArg]
-					end
-
 					if not tryArg then
 						ply:sendReply('Too many arguments')
 						return
@@ -349,15 +340,13 @@ class = {
 				end
 				for i = currentFitArg, #cmd.arguments do
 					tryArg = cmd.arguments[i]
-					if argApplicable(tryArg) then
-						if tryArg.required then
-							ply:sendReply('Not enough arguments')
-							return
-						elseif type(tryArg.default) == 'function' then
-							pushArg(tryArg, tryArg:default(ply, cmd))
-						else
-							pushArg(tryArg, tryArg.default)
-						end
+					if tryArg.required then
+						ply:sendReply('Not enough arguments')
+						return
+					elseif type(tryArg.default) == 'function' then
+						pushArg(tryArg, tryArg:default(ply, cmd))
+					else
+						pushArg(tryArg, tryArg.default)
 					end
 				end
 			else
