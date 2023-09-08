@@ -314,7 +314,7 @@ class = {
 					parsedArgs[arg.name] = value
 				end
 
-				local function argApplicable(arg)
+				local function argApplicable(_)
 					return true
 				end
 
