@@ -294,7 +294,7 @@ class = {
 			cmd = setmetatable(cmd, _command_mt)
 		end
 
-		local executor = function(ply, cmdStr, args, argStr, flagStr)
+		local executor = function(ply, cmdStr, args, argStr)
 			if ply and ply.getUniqueId then
 				ply = Player:extend(ply)
 			else
@@ -315,12 +315,6 @@ class = {
 				end
 
 				local function argApplicable(arg)
-					if arg.flagsRequired and flagStr:containsNoneOf(arg.flagsRequired) then
-						return false
-					end
-					if arg.flagsForbidden and flagStr:containsAnyOf(arg.flagsForbidden) then
-						return false
-					end
 					return true
 				end
 
@@ -370,7 +364,7 @@ class = {
 				parsedArgs = args
 			end
 
-			return cmd:run(ply, parsedArgs, flagStr, argStr, cmdStr)
+			return cmd:run(ply, parsedArgs, argStr, cmdStr)
 		end
 
 		local info = {
@@ -380,31 +374,11 @@ class = {
 			hidden = cmd.hidden and 'true' or 'false',
 		}
 		if not info.usage and cmd.arguments then
-			local mainUsage = {}
-			local availableFlags = { [false] = true }
+			local usage = { '/' .. cmd.name }
 			for _, v in next, cmd.arguments do
-				if v.flagsForbidden then
-					for i = 1, v.flagsForbidden:len() do
-						availableFlags[v.flagsForbidden:sub(i, i)] = true
-					end
-				elseif v.flagsRequired then
-					for i = 1, v.flagsRequired:len() do
-						availableFlags[v.flagsRequired:sub(i, i)] = true
-					end
-				end
+				table_insert(usage, (v.required and '&lt;' or '[') .. v.name .. (v.required and '&gt;' or ']'))
 			end
-			for flag, _ in next, availableFlags do
-				local usage = { '/' .. cmd.name .. (flag and (' -' .. flag) or '') }
-				for _, v in next, cmd.arguments do
-					if (not v.flagsForbidden or not flag or not v.flagsForbidden:contains(
-						flag
-					)) and (not v.flagsRequired or (flag and v.flagsRequired:contains(flag))) then
-						table_insert(usage, (v.required and '&lt;' or '[') .. v.name .. (v.required and '&gt;' or ']'))
-					end
-				end
-				table_insert(mainUsage, table_concat(usage, ' '))
-			end
-			info.usage = table_concat(mainUsage, '\n')
+			info.usage = table_concat(usage, ' ')
 		end
 
 		cmdManager:register(cmd.name, cmd.permission, executor, info)

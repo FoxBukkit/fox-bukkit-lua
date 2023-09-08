@@ -167,40 +167,16 @@ public class CommandManagerMaster implements Listener {
         }
 
         final LuaTable parsedArguments;
-        final String flagStr;
         //Parse CMDLine
         parsedArguments = new LuaTable();
-        if(argStr.isEmpty()) {
-            flagStr = "";
-        } else {
-            String myArgStr = argStr;
-            if (myArgStr.length() > 1 && myArgStr.charAt(0) == '-') {
-                char firstFlag = myArgStr.charAt(1);
-                if ((firstFlag >= 'a' && firstFlag <= 'z') || (firstFlag >= 'A' && firstFlag <= 'Z')) {
-                    int spacePos = myArgStr.indexOf(' ');
-                    if (spacePos > 0) {
-                        flagStr = myArgStr.substring(1, spacePos).toLowerCase();
-                        myArgStr = myArgStr.substring(spacePos + 1).trim();
-                    } else {
-                        flagStr = myArgStr.toLowerCase();
-                        myArgStr = "";
-                    }
-                } else {
-                    flagStr = "";
+        if(!argStr.isEmpty()) {
+            Matcher m = ARGUMENT_PATTERN.matcher(argStr);
+            while(m.find()) {
+                String str = m.group(1);
+                if(str.charAt(0) == '"') {
+                    str = str.substring(1, str.length() - 1);
                 }
-            } else {
-                flagStr = "";
-            }
-
-            if(!myArgStr.isEmpty()) {
-                Matcher m = ARGUMENT_PATTERN.matcher(myArgStr);
-                while(m.find()) {
-                    String str = m.group(1);
-                    if(str.charAt(0) == '"') {
-                        str = str.substring(1, str.length() - 1);
-                    }
-                    parsedArguments.insert(0, coerce(str));
-                }
+                parsedArguments.insert(0, coerce(str));
             }
         }
         //END parse
@@ -209,8 +185,7 @@ public class CommandManagerMaster implements Listener {
                 coerce(source),
                 coerce(cmdStr),
                 parsedArguments,
-                coerce(argStr),
-                coerce(flagStr)
+                coerce(argStr)
         });
 
         try {
