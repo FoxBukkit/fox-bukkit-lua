@@ -94,8 +94,11 @@ public class CommandManagerMain implements Listener {
     public static class LuaTopic extends HelpTopic {
         private LuaCommand command;
 
-        private LuaTopic(LuaCommand command) {
+        private final String name;
+
+        private LuaTopic(LuaCommand command, String name) {
             this.command = command;
+            this.name = name;
         }
 
         @Override
@@ -109,7 +112,7 @@ public class CommandManagerMain implements Listener {
 
         @Override
         public @NotNull String getName() {
-            return "/" + command.getLabel();
+            return this.name;
         }
 
         @Override
@@ -143,7 +146,7 @@ public class CommandManagerMain implements Listener {
             final String helpTopicName = "/" + command;
             LuaTopic helpTopic = helpTopics.get(helpTopicName);
             if (helpTopic == null) {
-                helpTopic = new LuaTopic(luaCommand);
+                helpTopic = new LuaTopic(luaCommand, helpTopicName);
                 IndexHelpTopic indexTopic = (IndexHelpTopic)Bukkit.getHelpMap().getHelpTopic(plugin.getName());
                 Collection<HelpTopic> allTopics = getAllTopics(indexTopic);
                 allTopics.add(helpTopic);
