@@ -109,7 +109,7 @@ public class CommandManagerMain implements Listener {
 
         @Override
         public @NotNull String getName() {
-            return command.getLabel();
+            return "/" + command.getLabel();
         }
 
         @Override
