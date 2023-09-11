@@ -301,7 +301,7 @@ class = {
 				ply = Player:getConsole()
 			end
 
-			local argStr = table_concat(args, " ")
+			local argStr = table_concat(args, ' ')
 
 			if not cmd.noLogging then
 				local str = ply:getName() .. ' executed /' .. cmdStr .. ' ' .. argStr
