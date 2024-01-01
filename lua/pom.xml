@@ -60,7 +60,7 @@
                         <version>1.0.1-SNAPSHOT</version>
                     </dependency>
                 </dependencies>
-				<version>3.11.0</version>
+				<version>3.12.1</version>
 				<configuration>
                     <compilerId>luac</compilerId>
 				</configuration>
